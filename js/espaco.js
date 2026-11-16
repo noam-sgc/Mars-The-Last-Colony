@@ -1,10 +1,11 @@
-/* Conteúdo educativo baseado em fatos divulgados pela NASA (missões, Marte, Sistema Solar, exploração humana).
+/* Conteúdo educativo (missões, Marte, Sistema Solar, exploração humana).
    FACTS: cartões de leitura (ganha PP e moedas só se ler até o fim). QUIZ: perguntas com explicação.
-   Fontes: nasa.gov, mars.nasa.gov, science.nasa.gov, jpl.nasa.gov. */
+   Todo o conteúdo é baseado em fatos publicados pela agência espacial dos EUA; a referência aparece só como FONTE. */
+const FONTE = "Fonte: NASA (nasa.gov, science.nasa.gov, jpl.nasa.gov)";
 const FACTS = [
   ["Perseverance chegou a Marte", "O rover Perseverance pousou na cratera Jezero em 18 de fevereiro de 2021. Ele procura sinais de vida microbiana antiga e guarda amostras de rocha em tubos para uma futura devolução à Terra."],
   ["O primeiro voo em outro planeta", "Em 19 de abril de 2021, o helicóptero Ingenuity fez o primeiro voo motorizado e controlado em outro planeta. Ele pesava 1,8 kg e fez 72 voos antes de encerrar a missão em janeiro de 2024."],
-  ["Um dia em Marte", "Um dia marciano, chamado de sol, dura cerca de 24 horas e 39 minutos. Por isso as equipes da NASA que operam rovers ajustam seus relógios de trabalho ao horário de Marte."],
+  ["Um dia em Marte", "Um dia marciano, chamado de sol, dura cerca de 24 horas e 39 minutos. Por isso as equipes que operam rovers ajustam seus relógios de trabalho ao horário de Marte."],
   ["O ano marciano", "Marte leva cerca de 687 dias terrestres para dar uma volta ao redor do Sol, quase o dobro de um ano na Terra. As estações do ano existem lá, mas cada uma dura bem mais tempo."],
   ["Gravidade menor", "A gravidade na superfície de Marte é cerca de 38% da gravidade da Terra. Uma pessoa de 70 kg pesaria perto de 27 kg em Marte, o que facilita saltos, mas desafia os ossos e músculos em missões longas."],
   ["Olympus Mons", "O Monte Olimpo é o maior vulcão conhecido do Sistema Solar: tem cerca de 22 km de altura, mais de duas vezes a altitude do Monte Everest acima do nível do mar."],
@@ -35,9 +36,9 @@ const FACTS = [
   ["Guindaste celeste", "Curiosity e Perseverance pousaram com o 'sky crane': um estágio com foguetes que baixa o rover por cabos até o solo e depois voa para longe, evitando poeira e impactos."],
   ["Mariner 4", "Em julho de 1965, a Mariner 4 fez o primeiro sobrevoo bem-sucedido de Marte e enviou 22 imagens, mostrando um planeta com crateras, não os canais que alguns imaginavam."],
   ["O nome Perseverance", "O nome do rover foi escolhido num concurso para estudantes: Alexander Mather, aluno do 7º ano, propôs 'Perseverance' (Perseverança) e venceu mais de 28 mil sugestões."],
-  ["Planetas fora do Sistema Solar", "A NASA já confirmou mais de 5.000 exoplanetas, planetas que orbitam outras estrelas. O telescópio Kepler foi essencial para encontrar milhares deles."],
+  ["Planetas fora do Sistema Solar", "Já foram confirmados mais de 5.000 exoplanetas, planetas que orbitam outras estrelas. O telescópio Kepler foi essencial para encontrar milhares deles."],
   ["Vênus é o mais quente", "Vênus é o planeta mais quente do Sistema Solar, com cerca de 465 °C na superfície, por causa da atmosfera densa de dióxido de carbono. Lá, um dia dura mais que um ano."],
-  ["Teste de defesa planetária", "Em setembro de 2022, a missão DART da NASA colidiu de propósito com o asteroide Dimorphos e mudou sua órbita, o primeiro teste de desvio de um asteroide."],
+  ["Teste de defesa planetária", "Em setembro de 2022, a missão DART colidiu de propósito com o asteroide Dimorphos e mudou sua órbita, o primeiro teste de desvio de um asteroide."],
   ["Amostras de Bennu", "A sonda OSIRIS-REx coletou rochas e poeira do asteroide Bennu e entregou a cápsula com as amostras à Terra em setembro de 2023."],
   ["Luz do Sol", "A luz do Sol leva cerca de 8 minutos e 20 segundos para chegar à Terra. Para Marte, o trajeto leva por volta de 12 minutos e meio."],
   ["Estações em Marte", "O eixo de rotação de Marte é inclinado cerca de 25 graus, parecido com os 23,5 graus da Terra. Por isso Marte tem estações, com gelo polar que cresce e encolhe ao longo do ano."],
@@ -46,7 +47,7 @@ const FACTS = [
   ["Olhos do Perseverance", "O Perseverance tem mais de 20 câmeras, incluindo a Mastcam-Z, que faz imagens coloridas e em zoom, e microfones que gravaram os primeiros sons de um rover em Marte."],
   ["Cinturão de asteroides", "O principal cinturão de asteroides fica entre as órbitas de Marte e Júpiter. Apesar do nome, as rochas estão muito afastadas: as naves cruzam o cinturão sem perigo."],
 ];
-// [pergunta, [opções], índice correto, explicação (fato NASA)]
+// [pergunta, [opções], índice correto, explicação (fato publicado)]
 const QUIZ = [
   ["Em que data o rover Perseverance pousou na cratera Jezero?", ["6 de agosto de 2012", "18 de fevereiro de 2021", "20 de julho de 1976", "25 de dezembro de 2021"], 1, "O Perseverance pousou em Jezero em 18 de fevereiro de 2021."],
   ["Qual veículo fez o primeiro voo motorizado e controlado em outro planeta?", ["Curiosity", "Sojourner", "Ingenuity", "Opportunity"], 2, "O helicóptero Ingenuity voou em Marte em 19 de abril de 2021."],
@@ -93,12 +94,12 @@ const QUIZ = [
   ["Quem foi o primeiro americano a orbitar a Terra (1962)?", ["Alan Shepard", "John Glenn", "Neil Armstrong", "Sally Ride"], 1, "John Glenn, em 1962."],
   ["Em que ano o ônibus espacial Columbia fez seu primeiro voo?", ["1969", "1981", "1998", "2011"], 1, "Em abril de 1981."],
   ["Desde que ano a ISS é ocupada continuamente por tripulações?", ["1969", "1986", "2000", "2015"], 2, "Desde novembro de 2000."],
-  ["O que são exoplanetas?", ["Luas de Júpiter", "Planetas que orbitam outras estrelas", "Asteroides grandes", "Cometas"], 1, "A NASA já confirmou mais de 5.000."],
+  ["O que são exoplanetas?", ["Luas de Júpiter", "Planetas que orbitam outras estrelas", "Asteroides grandes", "Cometas"], 1, "Já foram confirmados mais de 5.000."],
   ["Qual é o planeta mais quente do Sistema Solar?", ["Mercúrio", "Marte", "Vênus", "Júpiter"], 2, "Vênus, com cerca de 465 °C."],
   ["Onde fica o principal cinturão de asteroides?", ["Entre Terra e Marte", "Entre Marte e Júpiter", "Depois de Netuno", "Em torno do Sol"], 1, "Entre as órbitas de Marte e Júpiter."],
   ["O que a missão DART testou em 2022?", ["Um novo foguete", "Desviar a órbita de um asteroide", "Pousar em Vênus", "Trazer água de Marte"], 1, "A DART colidiu com o asteroide Dimorphos."],
   ["Qual sonda trouxe amostras do asteroide Bennu à Terra em 2023?", ["OSIRIS-REx", "Cassini", "Juno", "Kepler"], 0, "A OSIRIS-REx."],
-  ["Qual telescópio da NASA encontrou milhares de exoplanetas?", ["Kepler", "Chandra", "Spitzer", "Voyager"], 0, "O Kepler."],
+  ["Qual telescópio espacial encontrou milhares de exoplanetas?", ["Kepler", "Chandra", "Spitzer", "Voyager"], 0, "O Kepler."],
   ["Qual desafio de saúde é comum para astronautas em microgravidade?", ["Perda de massa óssea", "Ganho de altura sem limites", "Perda de visão de cores", "Crescimento de cabelo"], 0, "Cerca de 1% de massa óssea por mês sem exercício."],
   ["Qual é a principal fonte de energia do Curiosity?", ["Painéis solares", "Gerador nuclear (MMRTG)", "Baterias comuns", "Vento"], 1, "Um gerador termoelétrico de radioisótopos."],
   ["O que significa 'sol' no vocabulário das missões a Marte?", ["Uma estrela", "Um dia marciano", "Um tipo de rover", "Uma tempestade"], 1, "Sol é o dia solar marciano."],
