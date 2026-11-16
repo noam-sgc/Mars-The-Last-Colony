@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <radialGradient id="goodSky" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </radialGradient>
+  </defs>
+  <!-- Beautiful Terraformed Martian Sky with blue tint -->
+  <rect width="1200" height="675" fill="url(#goodSky)"/>
+  
+  <!-- Martian Two Moons (Phobos & Deimos) in blue sky -->
+  <circle cx="850" cy="120" r="35" fill="#f8fafc" opacity="0.9"/>
+  <circle cx="940" cy="90" r="14" fill="#e2e8f0" opacity="0.8"/>
+
+  <!-- Verdant Terraformed Mountains -->
+  <polygon points="0,420 300,320 600,430 900,340 1200,400 1200,675 0,675" fill="#166534"/>
+  <polygon points="0,480 350,420 700,500 1050,430 1200,480 1200,675 0,675" fill="#15803d"/>
+
+  <!-- Blue Water Lake on Mars -->
+  <ellipse cx="600" cy="560" rx="450" ry="70" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+
+  <!-- Open air Martian cities with glass towers and green parks -->
+  <rect x="420" y="380" width="30" height="80" rx="4" fill="#f8fafc"/>
+  <rect x="460" y="350" width="40" height="110" rx="4" fill="#f8fafc"/>
+  <rect x="510" y="370" width="35" height="90" rx="4" fill="#f8fafc"/>
+  <rect x="700" y="360" width="45" height="100" rx="4" fill="#f8fafc"/>
+
+  <!-- Victory Banner -->
+  <rect x="250" y="60" width="700" height="90" rx="12" fill="#0f172a" opacity="0.75" stroke="#22c55e" stroke-width="2"/>
+  <text x="600" y="105" fill="#4ade80" font-family="'Orbitron', sans-serif" font-size="28" font-weight="900" text-anchor="middle">FINAL BOM: VITÓRIA DA HUMANIDADE</text>
+  <text x="600" y="132" fill="#f8fafc" font-family="sans-serif" font-size="16" letter-spacing="2" text-anchor="middle">A COLÔNIA SOBREVIVEU E PROSPEROU COMO UM NOVO LAR</text>
+</svg>

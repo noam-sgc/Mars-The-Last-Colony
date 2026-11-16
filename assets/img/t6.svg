@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <radialGradient id="alertGlow2" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#5a1010"/>
+      <stop offset="50%" stop-color="#240808"/>
+      <stop offset="100%" stop-color="#0a0202"/>
+    </radialGradient>
+    <linearGradient id="neonCyanGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#0077ff"/>
+    </linearGradient>
+    <filter id="flicker">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background Interior -->
+  <rect width="1200" height="675" fill="url(#alertGlow2)"/>
+  
+  <!-- Grid lines -->
+  <line x1="0" y1="520" x2="1200" y2="520" stroke="#ff3344" stroke-width="2" opacity="0.4"/>
+  <line x1="0" y1="570" x2="1200" y2="570" stroke="#ff3344" stroke-width="1" opacity="0.2"/>
+
+  <!-- Habitat Bulkheads -->
+  <polygon points="120,0 240,160 240,520 120,675" fill="#151b2d" stroke="#ff3344" stroke-width="3"/>
+  <polygon points="1080,0 960,160 960,520 1080,675" fill="#151b2d" stroke="#ff3344" stroke-width="3"/>
+
+  <!-- Huge Observation Window with View of Mars and Crack -->
+  <rect x="240" y="140" width="720" height="380" rx="12" fill="#101726" stroke="#ff3344" stroke-width="3" stroke-dasharray="16,8"/>
+  <ellipse cx="600" cy="300" rx="280" ry="140" fill="#451410" opacity="0.7"/>
+
+  <!-- Hull Breach Laser & Crack -->
+  <path d="M 600 160 L 585 240 L 630 310 L 590 390 L 620 480" stroke="#ff3344" stroke-width="5" fill="none" filter="url(#flicker)"/>
+  
+  <!-- Decompression Vapor Cloud -->
+  <ellipse cx="610" cy="310" rx="90" ry="60" fill="#00f0ff" opacity="0.3" filter="url(#flicker)"/>
+  <ellipse cx="620" cy="300" rx="45" ry="120" fill="#38bdf8" opacity="0.4" transform="rotate(-25 620 300)" filter="url(#flicker)"/>
+
+  <!-- Emergency Flashing Siren Beacon -->
+  <circle cx="600" cy="80" r="28" fill="#ff2233" filter="url(#flicker)"/>
+  <polygon points="600,80 420,260 780,260" fill="#ff3344" opacity="0.25"/>
+
+  <!-- Astronaut Hero Mechanic Sealing Breach -->
+  <circle cx="470" cy="390" r="26" fill="#f8fafc"/>
+  <rect x="445" y="416" width="50" height="70" rx="10" fill="#cbd5e1"/>
+  <!-- Welding Laser Beam -->
+  <line x1="495" y1="440" x2="590" y2="390" stroke="#00f0ff" stroke-width="6" stroke-linecap="round" filter="url(#flicker)"/>
+  <circle cx="590" cy="390" r="14" fill="#ffffff" filter="url(#flicker)"/>
+
+  <!-- Big Sci-Fi HUD Banner Overlay -->
+  <rect x="220" y="550" width="760" height="90" rx="12" fill="rgba(10, 14, 28, 0.9)" stroke="#ff3344" stroke-width="2"/>
+  <text x="600" y="590" fill="#ff3344" font-family="'Orbitron', sans-serif" font-size="28" font-weight="900" letter-spacing="4" text-anchor="middle" filter="url(#flicker)">⚠ ALERTA: DESPRESSURIZAÇÃO NO SETOR C</text>
+  <text x="600" y="622" fill="#f8fafc" font-family="'Rajdhani', sans-serif" font-size="18" font-weight="bold" letter-spacing="2" text-anchor="middle">REPARO AUTOMATIZADO • SELAGEM CRIOGÊNICA DE CASCO</text>
+
+  <!-- Top Badge -->
+  <rect x="40" y="35" width="310" height="50" rx="8" fill="rgba(255, 51, 68, 0.2)" stroke="#ff3344"/>
+  <text x="55" y="68" fill="#ff6b6b" font-family="'Orbitron', sans-serif" font-size="18" font-weight="bold">FASE 06: EMERGÊNCIA NA BASE</text>
+</svg>

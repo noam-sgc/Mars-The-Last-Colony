@@ -1,0 +1,10 @@
+{
+  "name": "mars-the-last-colony-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor web (HTTP estático + WebSocket) de Mars: The Last Colony",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "test": "node --test ../tests/hub.test.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "ws": "^8.18.0" }
+}

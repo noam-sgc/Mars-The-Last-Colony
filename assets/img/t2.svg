@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <radialGradient id="skyEntry" cx="50%" cy="80%" r="90%">
+      <stop offset="0%" stop-color="#ff3300"/>
+      <stop offset="30%" stop-color="#b91c1c"/>
+      <stop offset="70%" stop-color="#450a0a"/>
+      <stop offset="100%" stop-color="#050101"/>
+    </radialGradient>
+    <filter id="plasmaGlow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="url(#skyEntry)"/>
+
+  <!-- Mars Horizon below -->
+  <polygon points="0,520 400,480 800,500 1200,470 1200,675 0,675" fill="#3a110a"/>
+
+  <!-- Descending Capsule with Plasma Bow Shockwave -->
+  <g transform="translate(600, 280) rotate(40)">
+    <!-- Plasma Flame Trail -->
+    <polygon points="-40,-120 40,-120 70,-320 -70,-320" fill="#fbbf24" opacity="0.6" filter="url(#plasmaGlow)"/>
+    <polygon points="-25,-120 25,-120 40,-260 -40,-260" fill="#f8fafc" opacity="0.8" filter="url(#plasmaGlow)"/>
+    <!-- Heat Shield Bow Wave -->
+    <path d="M -90 60 Q 0 120 90 60" stroke="#ff0044" stroke-width="18" fill="none" filter="url(#plasmaGlow)"/>
+    <path d="M -75 55 Q 0 100 75 55" stroke="#ffaa00" stroke-width="10" fill="none" filter="url(#plasmaGlow)"/>
+    <!-- Lander Body -->
+    <polygon points="-65,50 65,50 45,-90 -45,-90" fill="#e2e8f0" stroke="#94a3b8" stroke-width="3"/>
+  </g>
+
+  <!-- Banner overlay -->
+  <rect x="180" y="540" width="840" height="95" rx="12" fill="rgba(20, 5, 5, 0.9)" stroke="#ff7a18" stroke-width="2"/>
+  <text x="600" y="580" fill="#ff7a18" font-family="'Orbitron', sans-serif" font-size="26" font-weight="900" letter-spacing="4" text-anchor="middle">POUSO &amp; OS 7 MINUTOS DE TERROR</text>
+  <text x="600" y="612" fill="#f8fafc" font-family="'Rajdhani', sans-serif" font-size="18" font-weight="bold" letter-spacing="2" text-anchor="middle">REENTRADA HIPERSÔNICA A 20.000 KM/H • ESCUDO TÉRMICO E RETROFOGUETES</text>
+
+  <rect x="40" y="35" width="370" height="50" rx="8" fill="rgba(255, 122, 24, 0.2)" stroke="#ff7a18"/>
+  <text x="55" y="68" fill="#ff7a18" font-family="'Orbitron', sans-serif" font-size="18" font-weight="bold">FASE 02: OS 7 MINUTOS DE TERROR</text>
+</svg>

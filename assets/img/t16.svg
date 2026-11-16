@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="chalSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b0114"/>
+      <stop offset="60%" stop-color="#3b0764"/>
+      <stop offset="100%" stop-color="#831843"/>
+    </linearGradient>
+    <radialGradient id="plasmaCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#a855f7"/>
+      <stop offset="80%" stop-color="#6b21a8"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#chalSky)"/>
+  
+  <!-- Relâmpagos de Tempestade Solar Extrema -->
+  <path d="M 120 0 L 150 90 L 130 130 L 180 220" stroke="#f472b6" stroke-width="3" fill="none" opacity="0.8"/>
+  <path d="M 680 0 L 640 110 L 660 160 L 620 250" stroke="#c084fc" stroke-width="3" fill="none" opacity="0.8"/>
+
+  <!-- Solo Marciano Noturno Violento -->
+  <polygon points="0,320 220,290 460,340 680,300 800,330 800,450 0,450" fill="#180424"/>
+  <polygon points="0,360 180,330 380,370 590,340 800,380 800,450 0,450" fill="#2e083a"/>
+
+  <!-- Vórtice de Tempestade de Plasma -->
+  <circle cx="400" cy="180" r="130" fill="url(#plasmaCore)" opacity="0.85"/>
+  <circle cx="400" cy="180" r="160" stroke="#e879f9" stroke-width="2" fill="none" stroke-dasharray="10, 15"/>
+
+  <!-- Base Marciana Sob Ataque de Sobrecarga -->
+  <polygon points="340,350 460,350 430,300 370,300" fill="#38bdf8" opacity="0.7"/>
+  <line x1="400" y1="300" x2="400" y2="230" stroke="#00f0ff" stroke-width="4"/>
+  <circle cx="400" cy="225" r="8" fill="#f43f5e"/>
+
+  <text x="400" y="420" font-family="'Orbitron', sans-serif" font-size="22" font-weight="900" fill="#f472b6" text-anchor="middle" letter-spacing="3">FASE 16: O DESAFIO SUPREMO • SOBRECARGA PLANETÁRIA</text>
+</svg>
