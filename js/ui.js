@@ -11,7 +11,6 @@ $("#adm").addEventListener("pointerdown", (e) => { if (e.target.id == "adm") clo
 function ctry(sel) { return MarsRules.COUNTRIES.map((c) => `<option value="${c.c}" ${c.c == sel ? "selected" : ""}>${MarsRules.flag(c.c)} ${c.n}</option>`).join(""); }
 function authScreen(tab) {
   tab = tab || "login"; screen("auth"); $("#auth").style.backgroundImage = `url(${IMG.b})`;
-  const demo = NET.mode == "local";
   $("#auth").innerHTML = `<h1>MARS<small>THE LAST COLONY</small></h1><div class="ab">
     <div class="tabs"><button data-t="login" class="${tab == "login" ? "sel" : ""}">Entrar</button><button data-t="reg" class="${tab == "reg" ? "sel" : ""}">Criar conta</button></div>
     <label class="f">Usuário<input id="au" maxlength="16" autocomplete="username" placeholder="3 a 16 letras/números"></label>
@@ -19,24 +18,64 @@ function authScreen(tab) {
     ${tab == "reg" ? `<label class="f">País<select id="ac">${ctry("BR")}</select></label>` : ""}
     <div class="err" id="ae"></div><button class="pri" id="ago">${tab == "reg" ? "Criar conta e jogar" : "Entrar"}</button>
     <button class="gh" id="agu">Continuar como convidado (sem multiplayer, chat e amigos)</button>
-    <small class="mu">${demo ? "🧪 Modo demonstração local: contas ficam só neste navegador. Para o servidor web real veja server/README. Contas ADM de teste: ADMVinnil, ADMKezle, ADMLefaar · senha <code>demo-admin</code>." : "🔒 Servidor conectado. Senhas são guardadas com hash scrypt."}</small></div>`;
+    <small class="mu">${worldLine()}</small><button class="gh" id="asw">← Trocar de mundo / entrar com código</button></div>`;
   $("#auth").querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => authScreen(b.dataset.t)));
   const go = async () => {
     const u = $("#au").value.trim(), p = $("#ap").value; $("#ae").textContent = ""; $("#ago").disabled = true;
-    const r = await NET.ask(tab == "reg" ? { t: "reg", u, p, c: $("#ac").value } : { t: "login", u, p }); $("#ago").disabled = false;
+    const go1 = $("#ago"), r = await NET.ask(tab == "reg" ? { t: "reg", u, p, c: $("#ac").value } : { t: "login", u, p }); go1.disabled = false;
     if (!r.ok) { $("#ae").textContent = r.err || "Falha"; return; } applyAuth(r);
   };
-  $("#ago").onclick = go; $("#ap").onkeydown = (e) => { if (e.key == "Enter") go(); }; $("#agu").onclick = () => { ACC.user = null; ACC.role = "guest"; loadLocal(); dailyBonus(); menu(); };
+  $("#ago").onclick = go; $("#ap").onkeydown = (e) => { if (e.key == "Enter") go(); }; $("#asw").onclick = () => switchWorld(); $("#agu").onclick = () => { ACC.user = null; ACC.role = "guest"; loadLocal(); dailyBonus(); menu(); };
 }
 function applyAuth(r) {
-  ACC.user = r.me.u; ACC.role = r.me.role; ACC.cc = r.me.cc; ACC.vf = r.me.vf; ACC.token = r.token; try { localStorage.setItem("mars-token", r.token); } catch (e) { /* ignore */ }
+  ACC.user = r.me.u; ACC.role = r.me.role; ACC.cc = r.me.cc; ACC.vf = r.me.vf; ACC.token = r.token; try { localStorage.setItem(NET.tokKey(), r.token); } catch (e) { /* ignore */ }
   loadLocal(); if (r.prof && r.prof.p) { Object.assign(P, r.prof.p); Object.assign(S, r.prof.s || {}); normalize(); } else { pushProf(); }
   P.name = ACC.user; applyCatalog(r.catalog); EV.custom = r.events || []; EV.refresh(); setSocial(r.social); SOC.party = r.party || null; (r.hist || []).forEach((m) => chatPush(m, true));
   dailyBonus(); saveP(); menu(); toast(`Bem-vindo, ${esc(ACC.user)}! ${r.me.vf ? "✔" : ""}`);
 }
 function dailyBonus() { const d = new Date().toISOString().slice(0, 10); if (P.day != d) { P.day = d; P.cr += 20; toast("🎁 Bônus diário: +20 créditos"); } saveP(); }
-function logout() { NET.send({ t: "logout", token: ACC.token }); try { localStorage.removeItem("mars-token"); } catch (e) { /* ignore */ } ACC.user = null; ACC.role = "guest"; ACC.vf = false; SOC.friends = []; SOC.party = null; chatReset(); S = { coins: 500, own: [], done: {}, color: "#d8d0c4", v: 3 }; P = { name: "", cr: 0, pp: 0, rp: 0, w: 0, day: "", own: DEF_OWN.slice(), eq: Object.assign({}, DEF_EQ), evs: {}, v: 3 }; authScreen(); }
-NET.on("closed", () => toast("⚠ Conexão perdida. Tentando reconectar…", 4000));
+function logout() { NET.send({ t: "logout", token: ACC.token }); try { localStorage.removeItem(NET.tokKey()); } catch (e) { /* ignore */ } ACC.user = null; ACC.role = "guest"; ACC.vf = false; SOC.friends = []; SOC.party = null; chatReset(); S = { coins: 500, own: [], done: {}, color: "#d8d0c4", v: 3 }; P = { name: "", cr: 0, pp: 0, rp: 0, w: 0, day: "", own: DEF_OWN.slice(), eq: Object.assign({}, DEF_EQ), evs: {}, v: 3 }; authScreen(); }
+NET.on("closed", () => { if (NET.mode === "p2p") { toast("⚠ O anfitrião saiu do mundo. Volte a entrar com o código.", 6000); setTimeout(() => switchWorld(), 1500); } else toast("⚠ Conexão perdida. Tentando reconectar…", 4000); });
+
+// ---------- mundos (sem servidor: o navegador do anfitrião é o servidor; amigos entram por WebRTC) ----------
+function copyText(t, label) {
+  const ok = () => toast("📋 " + (label || "Copiado") + ": <b>" + esc(t) + "</b>");
+  try { navigator.clipboard.writeText(t).then(ok, () => fb()); } catch (e) { fb(); }
+  function fb() { const i = document.createElement("input"); i.value = t; document.body.appendChild(i); i.select(); try { document.execCommand("copy"); ok(); } catch (e) { toast("Selecione e copie: " + esc(t)); } i.remove(); }
+}
+function worldLine() {
+  if (NET.mode == "server") return "🔒 Servidor conectado. Senhas guardadas com hash scrypt.";
+  if (NET.mode == "p2p") return `🌐 Conectado ao mundo <b>${esc(NET.world)}</b> (WebRTC). Sua conta fica neste mundo.`;
+  return `🌍 Seu mundo${P2P.ready ? ` · código <b>${esc(P2P.code)}</b>` : ""}. Contas ficam salvas neste navegador.`;
+}
+function switchWorld() { NET.disconnect(); ACC.user = null; ACC.role = "guest"; ACC.vf = false; SOC.friends = []; SOC.reqIn = []; SOC.reqOut = []; SOC.party = null; chatReset(); mpStop(); try { localStorage.removeItem("mars-last"); } catch (e) { /* ignore */ } worldScreen(); }
+async function enterSelf() { NET.startLocal(); try { localStorage.setItem("mars-last", "self"); } catch (e) { /* ignore */ } await resumeOrAuth(); }
+async function resumeOrAuth() {
+  let tok = null; try { tok = localStorage.getItem(NET.tokKey()); } catch (e) { /* ignore */ }
+  if (tok) { const r = await NET.ask({ t: "resume", token: tok }); if (r.ok) { r.token = tok; return applyAuth(r); } }
+  authScreen();
+}
+function worldScreen(msg) {
+  screen("auth"); $("#auth").style.backgroundImage = `url(${IMG.b})`; let last = ""; try { last = localStorage.getItem("mars-join") || ""; } catch (e) { /* ignore */ }
+  $("#auth").innerHTML = `<h1>MARS<small>THE LAST COLONY</small></h1><div class="ab">
+    <b>Jogar com amigos por código (WebRTC)</b><small class="mu">Cada jogador pode criar o próprio mundo e compartilhar o código. Não precisa de servidor.</small>
+    <button class="pri" id="wself">Entrar no meu mundo</button><div class="pill" id="wcode" style="text-align:center"></div>
+    <hr style="border:0;border-top:1px solid var(--bd);width:100%"><label class="f">Entrar no mundo de um amigo<input id="wjc" maxlength="12" placeholder="Código, ex.: K7M2QX" value="${esc(last)}" style="text-transform:uppercase;letter-spacing:.15em;text-align:center"></label>
+    <div class="err" id="wer">${msg ? esc(msg) : ""}</div><button id="wjoin">Conectar</button></div>`;
+  $("#wself").onclick = enterSelf;
+  $("#wjoin").onclick = async () => {
+    const c = $("#wjc").value.trim(), jb = $("#wjoin"), er = $("#wer"); er.textContent = ""; jb.disabled = true; jb.textContent = "Conectando…";
+    try { await NET.joinWorld(c); try { localStorage.setItem("mars-join", c.toUpperCase()); localStorage.setItem("mars-last", c.toUpperCase()); } catch (e) { /* ignore */ } await resumeOrAuth(); }
+    catch (e) { er.textContent = e.message || "Falha ao conectar"; } jb.disabled = false; jb.textContent = "Conectar";
+  };
+  $("#wjc").onkeydown = (e) => { if (e.key == "Enter") $("#wjoin").click(); };
+  if (!P2P.host) P2P.startHost(); worldUI();
+}
+function worldUI() {
+  const el = $("#wcode"); if (!el) return;
+  el.innerHTML = P2P.ready ? `Seu código: <b style="letter-spacing:.2em;font-size:18px">${esc(P2P.code)}</b> <button id="wcp" style="padding:3px 8px">Copiar</button><br><small class="mu">${P2P.guests} amigo(s) conectado(s)</small>` : `<small class="mu">${P2P.err ? "⚠ " + esc(P2P.err) : "Abrindo seu mundo para amigos…"}</small>`;
+  const b = $("#wcp"); if (b) b.onclick = () => copyText(P2P.code, "Código do mundo");
+}
 
 // ---------- menu ----------
 function menu() {
@@ -47,6 +86,7 @@ function menu() {
   m.innerHTML = `<h1>MARS<small>THE LAST COLONY</small></h1>
   <div class="ubar"><div class="pill">${ACC.user ? `${MarsRules.flag(ACC.cc)} <b>${esc(ACC.user)}</b>${vfBadge(ACC.role, ACC.vf)}${roleChip(ACC.role)} <button class="gh" id="mlo" style="padding:2px 8px">Sair</button>` : `👤 Convidado <button class="gh" id="mlo" style="padding:2px 8px">Entrar</button>`}</div>
   <div class="pill" style="text-align:center">🪙 <b>${Math.floor(S.coins)}</b> · ✨ <b>${P.cr}</b> · 🏆 <b>${P.pp}</b> PP · 🔬 <b>${P.rp}</b> RP</div></div>${ev}
+  <div class="pill" id="mworld" style="text-align:center">${worldLine()} ${NET.mode == "local" && P2P.ready ? `<button id="mwc" style="padding:2px 8px">📋 Copiar código</button>` : ""} <button class="gh" id="msw" style="padding:2px 8px">Trocar de mundo</button></div>
   <div class="mb"><button class="big pri" data-m="solo">Modo Solo · Campanha<small>${PH.length} fases · saga alienígena Ultimate</small></button>
   <button data-m="sand">Sandbox<small>Construção livre</small></button><button data-m="mp">Multiplayer<small>Coop · Equipes · Todos contra todos</small></button>
   <button data-m="ward">Guarda-roupa<small>Trajes, eventos e mais</small></button><button data-m="shop">Loja de upgrades</button>
@@ -55,7 +95,7 @@ function menu() {
   ${isAdminAcc() ? `<button data-m="adm" class="big" style="border-color:#6a4cff">🛡 Ferramentas ADM${isArtistAcc() ? " · Estúdio de criação" : ""}</button>` : ""}</div><div id="msg"></div>`;
   screen("menu"); sc.fog.density = .006;
   m.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => { const k = b.dataset.m; if (k == "solo") cat(); else if (k == "sand") start("sand"); else if (k == "mp") lobby(); else if (k == "ward") ward(); else if (k == "shop") shop(true); else if (k == "soc") social(); else if (k == "lbd") board(); else if (k == "evt") eventsPanel(); else if (k == "adm") adminTools(); }));
-  $("#mlo").onclick = () => (ACC.user ? logout() : authScreen());
+  $("#mlo").onclick = () => (ACC.user ? logout() : authScreen()); $("#msw").onclick = () => switchWorld(); if ($("#mwc")) $("#mwc").onclick = () => copyText(P2P.code, "Código do mundo");
 }
 
 // ---------- catálogo e loja ----------

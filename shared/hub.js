@@ -1,6 +1,6 @@
 /* Hub: toda a lógica do "servidor" (contas, amigos, chat, grupos, salas, eventos,
    catálogo global, ranking). Roda no Node (server/server.js, via WebSocket) e também
-   no navegador como servidor local de demonstração (js/localhub.js), com o mesmo protocolo. */
+   no navegador como "mundo" do anfitrião (js/localhub.js + WebRTC em js/p2p.js), com o mesmo protocolo. */
 (function (root, factory) {
   if (typeof module === "object" && module.exports) module.exports = factory(require("./rules.js"));
   else root.MarsHub = factory(root.MarsRules);
@@ -35,6 +35,15 @@
       }
       if (made.length) this.save();
       return made;
+    }
+    /** Define contas ADM a partir de hashes já prontos (modo sem servidor). A configuração é a fonte da verdade. */
+    setAdminHashes(map) {
+      let ch = false;
+      for (const name of R.ADMINS) {
+        const h = map && map[name]; if (!h) continue; const k = R.key(name), u = this.store.users[k];
+        if (!u) { this.store.users[k] = this.newUser(name, "BR", h); ch = true; } else if (u.pass !== h) { u.pass = h; ch = true; }
+      }
+      if (ch) this.save();
     }
     newUser(name, country, pass) {
       return { name, country, pass, friends: [], reqIn: [], reqOut: [], prof: null, created: this.now(), npc: false };

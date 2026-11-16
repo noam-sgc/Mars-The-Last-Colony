@@ -44,9 +44,10 @@ function loop(n) {
 
 // ---------- inicialização ----------
 (async function boot() {
-  const mode = await NET.connect(); EV.refresh(); setInterval(() => { EV.refresh(); }, 60000);
-  loadLocal(); let tok = null; try { tok = localStorage.getItem("mars-token"); } catch (e) { /* ignore */ }
-  requestAnimationFrame(loop);
-  if (tok) { const r = await NET.ask({ t: "resume", token: tok }); if (r.ok) { r.token = tok; return applyAuth(r); } }
-  authScreen();
+  loadLocal(); EV.refresh(); setInterval(() => { EV.refresh(); }, 60000); requestAnimationFrame(loop);
+  if (await NET.connectServer()) return resumeOrAuth();
+  let lastW = null; try { lastW = localStorage.getItem("mars-last"); } catch (e) { /* ignore */ }
+  if (lastW === "self") return enterSelf();
+  if (lastW && /^[A-Z0-9]{4,12}$/.test(lastW)) { try { await NET.joinWorld(lastW); return resumeOrAuth(); } catch (e) { return worldScreen("Não foi possível reconectar ao mundo " + lastW + ": " + e.message); } }
+  worldScreen();
 })();

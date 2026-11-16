@@ -12,7 +12,7 @@ O jogo é um único processo Node (HTTP + WebSocket em `/ws`) que também serve 
 ## Render (recomendado)
 1. Em render.com: **New → Blueprint** e escolha este repositório (usa `render.yaml`).
 2. No painel, defina o segredo `ADM_PASSWORDS`.
-3. Abra a URL `https://<nome>.onrender.com`: o jogo detecta o servidor sozinho (o modo "demonstração" só aparece sem servidor).
+3. Abra a URL `https://<nome>.onrender.com`: o jogo detecta o servidor sozinho.
 
 ## Docker em qualquer lugar (Fly.io, VPS, Railway…)
 ```bash
@@ -21,13 +21,15 @@ docker run -d -p 80:8080 -v mars-data:/data -e ADM_PASSWORDS="ADMVinnil=...,ADMK
 ```
 Use HTTPS na frente (o cliente usa `wss://` automaticamente).
 
-## Vercel (somente o cliente)
-A Vercel roda funções serverless e **não mantém conexões WebSocket**, então o servidor do jogo (`server/server.js`) não pode rodar nela.
-O que dá para publicar na Vercel é o **cliente estático** (`vercel.json` já incluso):
-1. Em vercel.com/new, importe o repositório; *Framework Preset: Other*; sem build command; *Output Directory*: raiz (padrão).
-2. **Sem servidor:** o jogo roda em *modo demonstração local* (contas só no navegador, sem multiplayer entre pessoas).
-3. **Com servidor real:** hospede o servidor no Render/Fly/VPS (acima) e, em `js/config.js`, preencha `window.MARS_SERVER = "wss://SEU-SERVIDOR/ws"`
-   (ou abra o site com `?server=wss://SEU-SERVIDOR/ws`). O site da Vercel passa a usar esse servidor.
+## Vercel (cliente + WebRTC, sem servidor)
+A Vercel não mantém WebSocket, então o servidor Node não roda nela, mas **não é necessário**: o jogo usa WebRTC.
+1. Em vercel.com/new, importe o repositório (*Framework Preset: Other*, sem build command). O `vercel.json` já está incluso.
+2. Abra o site: *Entrar no meu mundo* gera o código; amigos entram com ele. O site só serve os arquivos; o jogo roda nos navegadores.
+3. Para trocar o sinalizador gratuito do PeerJS por um seu, preencha `window.MARS_PEER` em `js/config.js`
+   (servidor `npx peerjs --port 9000`). Para usar um servidor WebSocket próprio no lugar do WebRTC, preencha `window.MARS_SERVER`.
+
+Limites do modo WebRTC: sem TURN, algumas redes (CGNAT/corporativas) não conectam diretamente; o mundo some quando o anfitrião fecha o jogo;
+eventos e catálogo publicados por ADM valem para quem está naquele mundo.
 
 ## Notas
 - Sem disco persistente, contas somem a cada deploy.

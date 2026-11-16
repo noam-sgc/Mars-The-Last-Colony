@@ -59,7 +59,8 @@ js/                   cliente (scripts clássicos, ordem em index.html)
   data.js             peças, fases (45), missões, upgrades, cosméticos
   state.js            S (moedas), P (perfil), ACC (conta), EV (eventos), CAT (catálogo global), earn()
   net.js              conexão: WebSocket do servidor; se indisponível usa o servidor local
-  localhub.js         servidor local de demonstração (mesmo Hub, dados em localStorage)
+  localhub.js         "mundo" local: o mesmo Hub dentro do navegador (dados em localStorage)
+  p2p.js              WebRTC (PeerJS): anfitrião aceita convidados por código; convidado conecta ao anfitrião
   world.js            renderer, terreno, peças (mk), astronauta (av), colonos
   input.js            WASD/setas, E, Esc, joystick
   game.js             modos, jogador, colonos, tanques, missões, fim de fase
@@ -82,16 +83,19 @@ vendor/three.min.js   Three.js r128 local (sem CDN)
   (`peers`, `chat`, `social`, `party`, `party.inv`, `party.go`, `gmsg`, `events`, `cat`).
 - **Multiplayer** usa presença por sala (`g-CÓDIGO`): cada cliente publica suas peças; o anfitrião (entrada mais antiga)
   simula os bots. Cada cliente simula localmente os tanques dos outros times/jogadores a partir das peças publicadas.
-- **Servidor local**: abrir `index.html` sem servidor (ou página estática publicada) usa o `Hub` no navegador.
-  Contas ADM de teste nesse modo: senha `demo-admin` (somente demonstração — não é seguro).
+- **Sem servidor (padrão na Vercel)**: o navegador de quem cria o mundo roda o `Hub` e aceita convidados por **WebRTC**
+  (código de 6 caracteres, copiável). O protocolo é o mesmo do WebSocket; só o transporte muda (`js/p2p.js`, `js/net.js`).
+  Contas, amigos, grupos, chat, eventos e catálogo vivem no mundo do anfitrião (não há servidor global).
+  Contas ADM: só hashes PBKDF2 em `js/config.js` (`tools/set-admin-passwords.js`).
 
 ## 3.1 Publicação
-Veja `docs/DEPLOY.md` (Dockerfile e `render.yaml`; variáveis `PORT`, `DATA_DIR`, `ADM_PASSWORDS`). O cliente reconecta sozinho ao WebSocket.
+Veja `docs/DEPLOY.md` (Vercel estático + WebRTC; ou Dockerfile e `render.yaml` para servidor; variáveis `PORT`, `DATA_DIR`, `ADM_PASSWORDS`). O cliente reconecta sozinho ao WebSocket.
 
 ## 4. Segurança (o que vale e o que não)
 - Servidor: senhas com **scrypt**, papéis checados **no servidor** (`adm.*`, `cat.*`), sanitização de textos/cores/números,
   limite de taxa no chat, nomes ADM reservados. Senhas dos admins vêm de `ADM_PASSWORDS` ou são geradas em
   `server/data/admin-credentials.txt` (fora do git).
+- Modo WebRTC: não há segredo no cliente além dos hashes ADM; um anfitrião com cliente modificado controla o próprio mundo (não afeta outros mundos).
 - **Limitação conhecida**: o progresso (moedas/créditos) é enviado pelo cliente; um cliente adulterado pode trapacear.
   Para torneios sérios, mover a economia para o servidor.
 
