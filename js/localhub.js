@@ -14,7 +14,6 @@ const LocalHub = (() => {
   try { store = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { /* ignore */ }
   const persist = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { /* ignore */ } };
   const hub = new MarsHub.Hub({ store, persist, hash, verify });
-  hub.setAdminHashes(window.MARS_ADMIN_HASHES || {});
   const ready = Promise.resolve();
   return {
     ready, hub,
