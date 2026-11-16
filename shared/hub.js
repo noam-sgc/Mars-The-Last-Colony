@@ -303,8 +303,8 @@
       const kind = m.kind, it = m.item || {}, name = clean(it.n, 40); if (!name) return no("Dê um nome");
       let out;
       if (kind === "cos") {
-        if (!["s", "p", "w"].includes(it.l)) return no("Camada inválida");
-        out = { id: "u_c_" + rnd(6), l: it.l, n: name, c: num(it.c, 0, 5000, 100), col: color(it.col, "#ff6a2b"), glow: it.glow ? color(it.glow, "#ffffff") : "", adm: ["admin", "artist"].includes(it.adm) ? it.adm : "", by: me.name };
+        const layer = ["s", "p", "w", "h", "b"].includes(it.l) ? it.l : "s";   // traje, calça, relógio, capacete, mochila
+        out = { id: "u_c_" + rnd(6), l: layer, n: name, c: num(it.c, 0, 5000, 100), col: color(it.col, "#ff6a2b"), glow: it.glow ? color(it.glow, "#ffffff") : "", adm: ["admin", "artist"].includes(it.adm) ? it.adm : "", by: me.name };
       } else if (kind === "part") {
         out = { id: "u_p_" + rnd(6), n: name, c: num(it.c, 5, 500, 50), k: ["eff", "water", "food", "oxy", "fuel", "morale"].includes(it.k) ? it.k : "eff", p: num(it.p, 0.2, 3, 1),
           shape: ["box", "cyl", "dome", "tower", "ring"].includes(it.shape) ? it.shape : "box", col: color(it.col, "#9aa7b8"), glow: color(it.glow, "#44ffcc"), h: num(it.h, 1, 8, 3), w: num(it.w, 1, 6, 3), by: me.name };
