@@ -103,7 +103,7 @@ const PH = A.map((a, i) => {
   const alien = i >= ALIEN_START, j = i - 2, n = Math.min(6, 2 + Math.floor(j / 2)), np = Math.min(4, 1 + Math.floor(j / 7)), hab = np, need = {}; let c = hab * 40;
   CL.slice(0, n).forEach((k) => { need[k] = np; c += np * MC[k]; });
   const parts = a[5] || {}; Object.keys(parts).forEach((k) => { c += parts[k] * TY[k].c; });
-  return { n: a[0], d: a[1], img: a[2], storm: a[3], alien, need, parts, hab, tg: Math.min(alien ? 90 : 85, 45 + j * 3), t: 180 + j * 10 + (alien ? 60 : 0), r: Math.ceil(c * 2 / 10) * 10, ms: genMissions(i, alien) };
+  return { n: a[0], d: a[1], img: a[2], storm: a[3], alien, need, parts, hab, tg: Math.min(alien ? 90 : 85, 45 + j * 3), t: Math.round((180 + j * 10 + (alien ? 60 : 0)) * 1.5), r: Math.ceil(c * 2 / 10) * 10, ms: genMissions(i, alien) };
 });
 
 // ---------- upgrades ----------

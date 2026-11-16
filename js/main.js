@@ -21,7 +21,7 @@ const pend = (e) => { PT.delete(e.pointerId); if (PT.size < 2) pinch = 0; };
 cv.addEventListener("pointercancel", pend);
 cv.addEventListener("pointerup", (e) => { pend(e); if (N) { N.nx = 0; N.ny = 0; } if (dr && dr.m < 6 && G.run && G.mode != "nav" && !DLG) { if (IN) interiorClick(e); else click(e); } dr = null; });
 cv.addEventListener("wheel", (e) => { zoomBy(1 + Math.sign(e.deltaY) * .1); }, { passive: true });
-INP.onEsc = () => { if ($("#setm").classList.contains("on")) closeSettings(); else if (DLG) closeDlg(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
+INP.onEsc = () => { if ($("#setm").classList.contains("on")) closeSettings(); else if (DLG) closeDlg(); else if (DR) exitRover(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
 $("#dlg").addEventListener("pointerdown", (e) => { if (e.target.id == "dlg" && DLG) closeDlg(); });
 
 function musicMood() {
@@ -40,7 +40,7 @@ function loop(n) {
     sun.position.set(PL.x + 50, 80, PL.z + 30); sun.target.position.set(PL.x, 0, PL.z); sun.target.updateMatrixWorld();
     UFOS.children.forEach((u) => { const a = t * .15 + u.userData.a, r = u.userData.r; u.position.set(Math.cos(a) * r, 34 + Math.sin(t + u.userData.a) * 2, Math.sin(a) * r); u.rotation.y = t; });
   }
-  G.placed.forEach((p) => { const u = p.m.userData; if (p.t == "rover") { p.m.position.x = p.x + Math.cos(t * .5 + p.a) * 4; p.m.position.z = p.z + Math.sin(t * .5 + p.a) * 4; p.m.rotation.y = -(t * .5 + p.a); } if (u.anim) u.anim.forEach((f) => f(t)); });
+  G.placed.forEach((p) => { const u = p.m.userData; if (p.t == "rover" && !p.park) { p.m.position.x = p.x + Math.cos(t * .5 + p.a) * 4; p.m.position.z = p.z + Math.sin(t * .5 + p.a) * 4; p.m.rotation.y = -(t * .5 + p.a); } if (u.anim) u.anim.forEach((f) => f(t)); });
   Object.keys(peerG).forEach((k) => { if (peerG[k].m) peerG[k].m.forEach((o) => o.userData.anim && o.userData.anim.forEach((f) => f(t))); });
   dust.position.x = (PL.x || 0) + Math.sin(t * .1) * 4; dust.position.z = PL.z || 0; dust.rotation.y = t * .01;
   if (G.mode == "nav") navCam(); else camU(); R.render(sc, cam); requestAnimationFrame(loop);

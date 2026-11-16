@@ -3,6 +3,7 @@ let G = { run: false, placed: [], mode: "", tool: "solar" };
 let yaw = .8, pit = .7, dist = 30;
 const ray = new THREE.Raycaster();
 const PL = { g: null, x: 0, z: 4, ry: 0, v: 0 };
+let DR = null;   // rover em condução: { p: peça, v: velocidade, ang: direção }
 const colG = new THREE.Group(); sc.add(colG);
 const peerG = {};
 let COL = [];
@@ -10,7 +11,7 @@ let COL = [];
 function toast(msg, ms) { const d = document.createElement("div"); d.className = "toast"; d.innerHTML = msg; $("#toasts").appendChild(d); setTimeout(() => d.remove(), ms || 3200); }
 function screen(id) { ["auth", "menu", "cat", "hud", "lob", "wait", "ward", "lbd", "soc"].forEach((s) => $("#" + s).classList.toggle("on", s == id)); $("#chb").classList.toggle("on", !!ACC.user && id != "auth" && id != "ward"); if (id != "hud") $("#hint").style.display = "none"; }
 function clear() {
-  G.placed.forEach((p) => sc.remove(p.m)); G.placed = [];
+  DR = null; G.placed.forEach((p) => sc.remove(p.m)); G.placed = [];
   for (const k in peerG) { sc.remove(peerG[k].g); delete peerG[k]; }
   COL.forEach((c) => colG.remove(c.g)); COL = []; if (PL.g) { sc.remove(PL.g); PL.g = null; }
 }
@@ -61,20 +62,46 @@ function click(e) {
   const r = cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height * 2 - 1)), cam);
   const hc = ray.intersectObjects(COL.map((c) => c.g), true)[0];
   if (hc) { const c = COL.find((q) => { for (let o = hc.object; o; o = o.parent) if (o === q.g) return true; return false; }); if (c && Math.hypot(c.g.position.x - PL.x, c.g.position.z - PL.z) < 14) return talk(c); toast("Aproxime-se do colono (WASD) para conversar"); return; }
-  if (G.tool == "use") { const h = ray.intersectObjects(G.placed.map((p) => p.m), true)[0]; if (h) { const i = ownerOf(h.object); if (i >= 0) return tryEnter(G.placed[i]); } return; }
+  if (DR) return;
+  if (G.tool == "use") { const h = ray.intersectObjects(G.placed.map((p) => p.m), true)[0]; if (h) { const i = ownerOf(h.object); if (i >= 0) { const q = G.placed[i]; if (q.t == "rover") { if (nearestRover(9) === q) return driveRover(q); return toast("Aproxime-se do rover (WASD) e toque nele de novo"); } return tryEnter(q); } } return; }
   if (G.tool == "del") {
     const h = ray.intersectObjects(G.placed.map((p) => p.m), true)[0];
     if (h) { const i = ownerOf(h.object); if (i >= 0) { const p = G.placed.splice(i, 1)[0]; sc.remove(p.m); if (G.mode == "solo") { S.coins += Math.floor(cost(p.t) / 2); save(); } sync(); } } return;
   }
   const h = ray.intersectObject(ter)[0]; if (h) place(h.point.x, h.point.z);
 }
-function nearestBuilding(r) { let b = null, d = r || 9; G.placed.forEach((p) => { const q = Math.hypot(p.x - PL.x, p.z - PL.z); if (q < d) { d = q; b = p; } }); return b; }
+function nearestBuilding(r) { let b = null, d = r || 9; G.placed.forEach((p) => { if (p.t == "rover") return; const q = Math.hypot(p.x - PL.x, p.z - PL.z); if (q < d) { d = q; b = p; } }); return b; }
 function tryEnter(p) { if (Math.hypot(p.x - PL.x, p.z - PL.z) > 11) { toast("Aproxime-se do edifício (WASD) e toque nele de novo"); return; } openInterior(p); }
 INP.onE = () => {
   if (IN) return interiorUse();
   if (!G.run || G.mode == "nav" || DLG) return;
-  const c = nearestColonist(); if (c) return talk(c); const b = nearestBuilding(); if (b) openInterior(b);
+  if (DR) return exitRover();
+  const c = nearestColonist(), r = nearestRover(); if (c && (!r || dTo(c.g) <= dTo(r.m))) return talk(c); if (r) return driveRover(r); const b = nearestBuilding(); if (b) openInterior(b);
 };
+const dTo = (o) => Math.hypot(o.position.x - PL.x, o.position.z - PL.z);
+// ---------- dirigir o rover ----------
+function nearestRover(r) { let b = null, d = r || 6.5; G.placed.forEach((p) => { if (p.t != "rover") return; const q = Math.hypot(p.m.position.x - PL.x, p.m.position.z - PL.z); if (q < d) { d = q; b = p; } }); return b; }
+function driveRover(p) {
+  if (DR || IN || DLG || !G.run || G.mode == "nav" || (G.paused && G.mode != "mp")) return;
+  DR = { p, v: 0, ang: p.m.rotation.y }; p.park = true; p.m.rotation.order = "YXZ"; PL.g.visible = false; PL.x = p.m.position.x; PL.z = p.m.position.z;
+  yaw = Math.atan2(-Math.cos(DR.ang), Math.sin(DR.ang)); pit = .5; dist = 14; toast("🚙 Dirigindo o rover: W/S acelera, A/D vira · E ou Esc para sair", 3800);
+}
+function exitRover() {
+  if (!DR) return; const p = DR.p, a = DR.ang; DR = null; p.x = p.m.position.x; p.z = p.m.position.z; p.m.rotation.z = 0;
+  PL.x = p.x + Math.sin(a) * 3; PL.z = p.z + Math.cos(a) * 3; pushOut(PL, .6, solids(true)); PL.g.visible = true; sync();
+}
+function driveUpdate(dt) {
+  const d = DR, p = d.p, [ax, ay] = INP.ax(), MAXF = 20, MAXR = 8;
+  d.v += (ay >= 0 ? ay * 24 : ay * 20) * dt; if (Math.abs(ay) < .05) d.v -= Math.sign(d.v) * Math.min(Math.abs(d.v), 10 * dt); d.v = clamp(d.v, -MAXR, MAXF);
+  d.ang += ax * clamp(d.v / 8, -1, 1) * 1.7 * dt;
+  const o = { x: p.m.position.x + Math.cos(d.ang) * d.v * dt, z: p.m.position.z - Math.sin(d.ang) * d.v * dt }, bx = o.x, bz = o.z;
+  pushOut(o, 1.7, solids(true, p)); o.x = clamp(o.x, -125, 125); o.z = clamp(o.z, -125, 125); if (Math.hypot(o.x - bx, o.z - bz) > .02) d.v *= .35;   // bateu: perde velocidade
+  p.m.position.set(o.x, H(o.x, o.z), o.z); p.m.rotation.y = d.ang;
+  p.m.rotation.z = clamp(Math.atan2(H(o.x + Math.cos(d.ang) * 1.3, o.z - Math.sin(d.ang) * 1.3) - H(o.x - Math.cos(d.ang) * 1.3, o.z + Math.sin(d.ang) * 1.3), 2.6), -.5, .5);
+  p.m.traverse((c) => { if (c.geometry && c.geometry.type == "CylinderGeometry" && Math.abs(c.rotation.x - Math.PI / 2) < .01) c.rotation.y += d.v * dt * .9; });   // rodas giram
+  PL.x = o.x; PL.z = o.z; PL.v = Math.abs(d.v) / 9;
+  if (!dr && Math.abs(d.v) > 3) { const want = Math.atan2(-Math.cos(d.ang), Math.sin(d.ang)); let df = want - yaw; df = Math.atan2(Math.sin(df), Math.cos(df)); yaw += df * Math.min(1, dt * 1.6) * (d.v > 0 ? 1 : 0); }   // a câmera acompanha a direção
+}
 function nearestColonist() { let b = null, d = 7; COL.forEach((c) => { const q = Math.hypot(c.g.position.x - PL.x, c.g.position.z - PL.z); if (q < d) { d = q; b = c; } }); return b; }
 
 // ---------- diálogo com colonos ----------
@@ -155,12 +182,15 @@ function tick(dt) {
   if (G.run && G.time <= 0) { G.why = "Tempo esgotado"; end(false); }
 }
 function hud() {
-  if (G.mode == "nav") { navHud(); return; }
+  if (G.mode == "nav") { navHud(); setAct(""); return; }
   $("#hc").textContent = Math.floor(S.coins); $("#hrv").textContent = P.rp; if (G.mode == "solo") $("#ht").textContent = "⏱ " + Math.max(0, Math.ceil(G.time)) + " s";
   $("#tk").innerHTML = K.map((k) => `<div class="tb"><span>${KN[k]}</span><u><i style="width:${G.tk[k]}%;background:${TC[k]}"></i></u><em>${(G.rate[k] || 0) >= 0 ? "▲" : "▼"}</em><b style="width:36px;text-align:right">${Math.floor(G.tk[k])}%</b></div>`).join("");
   if (G.mode == "solo" && !G.paused) goals();
   const h = $("#hint"), c = nearestColonist(), b = nearestBuilding();
-  setHint(h, c && !DLG ? `${TOUCH ? "Toque" : "E"} · conversar com ${c.info.name}` : b ? `${TOUCH ? "Toque no edifício" : "E"} · entrar em ${TY[b.t].n} (ordem ${Math.round(b.ord * 100)}%)` : "");
+  if (DR) { setHint(h, `🚙 ${Math.round(Math.abs(DR.v) * 3.6)} km/h · ${TOUCH ? "botão" : "E"} para sair`); setAct(TOUCH ? "Sair do rover" : ""); return; }
+  const rv = nearestRover(), roverFirst = rv && !(c && !DLG && dTo(c.g) <= dTo(rv.m));
+  setAct(TOUCH ? (roverFirst ? "Dirigir rover" : c && !DLG ? "Conversar" : b ? "Entrar" : "") : "");
+  setHint(h, roverFirst ? `${TOUCH ? "Toque no rover" : "E"} · dirigir o rover` : c && !DLG ? `${TOUCH ? "Toque" : "E"} · conversar com ${c.info.name}` : b ? `${TOUCH ? "Toque no edifício" : "E"} · entrar em ${TY[b.t].n} (ordem ${Math.round(b.ord * 100)}%)` : "");
 }
 
 // ---------- câmera e movimento ----------
@@ -173,8 +203,8 @@ function camU() {
 const COLR = { hab: 3.0, green: 3.3, rec: 2.7, emb: 2.9, xeno: 2.6, fuel: 2.5, solar: 2.2, ctrl: 2.2, hydro: 2.1, drill: 1.9, rover: 1.8, purif: 1.7, oxy: 1.5, ant: 1.2 };
 const solidR = (t) => { const c = TY[t] && TY[t].custom; return COLR[t] || (c ? Math.max(1.8, c.shape == "dome" ? (c.w || 3) + .3 : (c.w || 3) / 2 + .8) : 2.2); };
 /** Círculos sólidos do mundo: peças próprias (rover em movimento incluído), peças de outros jogadores/bots e rochas. */
-function solids(withExt) {
-  const out = []; G.placed.forEach((p) => out.push({ x: p.t == "rover" ? p.m.position.x : p.x, z: p.t == "rover" ? p.m.position.z : p.z, r: solidR(p.t) }));
+function solids(withExt, skip) {
+  const out = []; G.placed.forEach((p) => p !== skip && out.push({ x: p.t == "rover" ? p.m.position.x : p.x, z: p.t == "rover" ? p.m.position.z : p.z, r: solidR(p.t) }));
   if (withExt && G.mode == "mp" && MP.ents) MP.ents.forEach((e) => { if (!e.me) e.items.forEach((q) => out.push({ x: q.x, z: q.z, r: solidR(q.t) })); });
   ROCKS.forEach((r) => out.push({ x: r.position.x, z: r.position.z, r: r.userData.rad || 1 })); return out;
 }
@@ -183,6 +213,7 @@ function pushOut(o, rad, list) {
 }
 function movePlayer(dt, t) {
   if (!PL.g || DLG || (G.paused && G.mode != "mp") || IN) return;
+  if (DR) return driveUpdate(dt);
   const [ax, ay] = INP.ax(), len = Math.hypot(ax, ay), s = Math.sin(yaw), c = Math.cos(yaw);
   let mx = 0, mz = 0; if (len > .05) { const k = Math.min(1, len); mx = (-s * ay + c * ax) / len * k; mz = (-c * ay - s * ax) / len * k; }
   PL.x = clamp(PL.x + mx * 9 * dt, -125, 125); PL.z = clamp(PL.z + mz * 9 * dt, -125, 125);

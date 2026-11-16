@@ -26,6 +26,9 @@ document.addEventListener("click", (e) => {
   const hint = t.closest && t.closest("#hint, #inh"); if (hint) { hint.dataset.gone = hint.textContent; hint.style.display = "none"; return; }
   const pan = t.closest && t.closest("[data-min]"); if (pan && !t.closest("button, input, select, a")) pan.classList.toggle("min");
 });
+/** Botão de ação para celular (equivale à tecla E): mostra o que dá para fazer perto do jogador. */
+function setAct(label) { document.querySelectorAll(".act").forEach((b) => { if (!label) { b.style.display = "none"; return; } b.textContent = label; b.style.display = "block"; }); }
+document.querySelectorAll(".act").forEach((b) => b.addEventListener("click", () => { if (INP.onE) INP.onE(); }));
 function ariaInit() {
   const set = (s, a) => { const el = document.querySelector(s); if (el) Object.entries(a).forEach(([k, v]) => el.setAttribute(k, v)); };
   set("#toasts", { role: "status", "aria-live": "polite" }); set("#chb", { "aria-label": "Abrir chat" }); set("#setbtn", { "aria-label": "Configurações" });
