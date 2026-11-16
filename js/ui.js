@@ -78,6 +78,7 @@ function worldUI() {
 
 // ---------- menu ----------
 function menu() {
+  setAct("");
   mpStop(); navOff(); G.run = false; closeInterior(true); closeDlg(); clear(); setWeatherReset(); $("#hud").classList.remove("on"); $("#inhud").classList.remove("on");
   const top = EV.top(), up = MarsRules.upcoming(new Date(), 400, EV.custom).filter((x) => x.in > 0)[0];
   const ev = top ? `<div class="evb ${top.kind == "special" ? "sp" : ""}" style="border-color:${top.col}"><span style="font-size:26px">${top.icon || "🎉"}</span><div><b>${esc(top.name)}</b><div class="mu">Evento ativo · moedas <span class="x">x${top.mult}</span> em tudo!</div></div></div>` : up ? `<div class="evb"><span style="font-size:22px">${up.e.icon || "📅"}</span><div class="mu">Próximo evento em ${up.in} dia(s): <b>${esc(up.e.name)}</b> · moedas x${up.e.mult}</div></div>` : "";

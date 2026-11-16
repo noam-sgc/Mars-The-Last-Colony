@@ -40,7 +40,7 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 ### 2.4 Campanha
 - **+15 fases** da saga **Invasão Alienígena (pacífica) · Ultimate** → fases 31–45 (total: 45).
   Peças novas (Antena de contato, Embaixada, Jardim xeno), emissários alienígenas e naves-mãe no céu.
-- **Fases mais longas** (180 s + 10 s/fase; fases alienígenas +60 s) e **missões bônus** (2 por fase, 3 na saga alienígena):
+- **Fases mais longas** (270 s + 15 s/fase; fases alienígenas +90 s) e **missões bônus** (2 por fase, 3 na saga alienígena):
   conversar com colonos, arrumar edifícios, entrar em edifícios, construir peças, manter moral, contato alienígena.
 
 ### 2.4b Conteúdo educativo (fatos espaciais)
@@ -56,6 +56,8 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 
 ### 2.5 Jogabilidade 3D
 - **Colisão:** o astronauta e os colonos **não atravessam** edifícios (próprios e de outros jogadores/bots), rochas nem os móveis dos interiores (beliches, mesas, bancadas, canteiros); círculos por tipo de peça em `COLR`/`solids()` (`js/game.js`) e caixas `solidBoxes` (`js/interior.js`).
+- **Dirigir o rover:** perto de um rover, **E** (ou botão de ação no celular, ou 🖐 Interagir tocando nele) entra nele; **W/S** acelera/ré (até 72 km/h), **A/D** vira, a câmera acompanha a direção; colide com edifícios e rochas; **E/Esc** sai e o rover fica estacionado.
+- **Tempo das fases:** (180 s + 10 s/fase, +60 s na saga alienígena) × **1,5** (`js/data.js`).
 - **WASD** move o astronauta; **arrastar a tela** gira a câmera (roda do mouse = zoom). Joystick virtual em telas de toque.
 - **Interação com colonos** (NPCs): clicar ou `E` perto → conversar (+moral), pedir relatório, presentear.
 - **Entrar em edifícios** (`E` perto, ou ferramenta 🖐 Interagir): **pausa o tempo** (Solo/Sandbox; no Multi o tempo segue),
