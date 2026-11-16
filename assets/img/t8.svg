@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <radialGradient id="labBg2" cx="50%" cy="45%" r="70%">
+      <stop offset="0%" stop-color="#0e2340"/>
+      <stop offset="50%" stop-color="#071324"/>
+      <stop offset="100%" stop-color="#030810"/>
+    </radialGradient>
+    <filter id="holoGlow">
+      <feGaussianBlur stdDeviation="7" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#labBg2)"/>
+
+  <!-- Lab Tech Grid & Floor -->
+  <line x1="0" y1="520" x2="1200" y2="520" stroke="#00f0ff" stroke-width="2" opacity="0.3"/>
+  <line x1="100" y1="520" x2="0" y2="675" stroke="#00f0ff" stroke-width="1" opacity="0.2"/>
+  <line x1="1100" y1="520" x2="1200" y2="675" stroke="#00f0ff" stroke-width="1" opacity="0.2"/>
+
+  <!-- Central Holographic Projector Pedestal -->
+  <ellipse cx="600" cy="480" rx="270" ry="60" fill="#0b1626" stroke="#00f0ff" stroke-width="3" filter="url(#holoGlow)"/>
+  <ellipse cx="600" cy="480" rx="190" ry="40" fill="#040a12" stroke="#10b981" stroke-width="2"/>
+
+  <!-- Vertical Hologram Light Beam -->
+  <polygon points="410,480 790,480 730,140 470,140" fill="#00f0ff" opacity="0.12"/>
+
+  <!-- Alien Bio-Signature Fossil / Organism Hologram -->
+  <g filter="url(#holoGlow)">
+    <!-- Orbit Rings -->
+    <ellipse cx="600" cy="290" rx="130" ry="45" fill="none" stroke="#00f0ff" stroke-width="2" transform="rotate(-30 600 290)"/>
+    <ellipse cx="600" cy="290" rx="130" ry="45" fill="none" stroke="#c084fc" stroke-width="2" transform="rotate(30 600 290)"/>
+
+    <!-- Organic Extraterrestrial Cellular Structure -->
+    <circle cx="600" cy="290" r="75" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="12,8"/>
+    <circle cx="600" cy="290" r="45" fill="#10b981" opacity="0.4"/>
+    <path d="M 570 270 C 585 240, 625 240, 635 270 C 650 310, 600 340, 570 310 Z" fill="#34d399" opacity="0.9"/>
+    <circle cx="590" cy="280" r="8" fill="#f8fafc"/>
+    <circle cx="615" cy="300" r="6" fill="#f8fafc"/>
+  </g>
+
+  <!-- Holographic Floating HUD Cards -->
+  <g fill="#00f0ff" font-family="'Orbitron', sans-serif" font-size="13">
+    <rect x="180" y="210" width="220" height="90" rx="8" fill="rgba(11, 22, 38, 0.8)" stroke="#00f0ff" stroke-width="1.5"/>
+    <text x="195" y="235" font-weight="bold">[ BIOASSINATURA 08 ]</text>
+    <text x="195" y="260" fill="#fff" font-size="11">CÓDIGO GENÉTICO: XENO-RNA</text>
+    <text x="195" y="282" fill="#10b981" font-size="11">PROBABILIDADE DE VIDA: 99.8%</text>
+
+    <rect x="800" y="210" width="220" height="90" rx="8" fill="rgba(11, 22, 38, 0.8)" stroke="#10b981" stroke-width="1.5"/>
+    <text x="815" y="235" fill="#10b981" font-weight="bold">[ ESPECTROMETRIA ]</text>
+    <text x="815" y="260" fill="#fff" font-size="11">AMOSTRA: JEZERO-CORE-77</text>
+    <text x="815" y="282" fill="#00f0ff" font-size="11">STATUS: BSL-4 CONTIDO</text>
+  </g>
+
+  <!-- Scientist Silhouettes -->
+  <circle cx="340" cy="460" r="22" fill="#334155"/>
+  <rect x="320" y="482" width="40" height="70" rx="8" fill="#1e293b"/>
+  <circle cx="860" cy="460" r="22" fill="#334155"/>
+  <rect x="840" y="482" width="40" height="70" rx="8" fill="#1e293b"/>
+
+  <!-- Overlay Banner -->
+  <rect x="220" y="550" width="760" height="90" rx="12" fill="rgba(10, 14, 28, 0.9)" stroke="#10b981" stroke-width="2"/>
+  <text x="600" y="590" fill="#10b981" font-family="'Orbitron', sans-serif" font-size="28" font-weight="900" letter-spacing="4" text-anchor="middle" filter="url(#holoGlow)">DESCOBERTA DE BIOASSINATURAS MARCIANAS</text>
+  <text x="600" y="622" fill="#f8fafc" font-family="'Rajdhani', sans-serif" font-size="18" font-weight="bold" letter-spacing="2" text-anchor="middle">LABORATÓRIO AVANÇADO • INVESTIGAÇÃO CELULAR EXTRATERRESTRE</text>
+
+  <!-- Top Badge -->
+  <rect x="40" y="35" width="340" height="50" rx="8" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981"/>
+  <text x="55" y="68" fill="#10b981" font-family="'Orbitron', sans-serif" font-size="18" font-weight="bold">FASE 08: DESCOBERTA CIENTÍFICA</text>
+</svg>

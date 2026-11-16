@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <linearGradient id="canyonDusk" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b0406"/>
+      <stop offset="40%" stop-color="#2d0b10"/>
+      <stop offset="80%" stop-color="#541618"/>
+      <stop offset="100%" stop-color="#8c2a20"/>
+    </linearGradient>
+    <linearGradient id="rockLayer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#993322"/>
+      <stop offset="50%" stop-color="#661c12"/>
+      <stop offset="100%" stop-color="#360d08"/>
+    </linearGradient>
+    <filter id="neonSci">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="1200" height="675" fill="url(#canyonDusk)"/>
+  
+  <!-- Martian Moons & Stars -->
+  <circle cx="950" cy="90" r="12" fill="#fff" opacity="0.9"/>
+  <circle cx="1020" cy="130" r="6" fill="#e2e8f0" opacity="0.75"/>
+  <circle cx="250" cy="60" r="1.5" fill="#fff"/>
+  <circle cx="480" cy="110" r="2" fill="#fff"/>
+  <circle cx="780" cy="50" r="1.5" fill="#fff"/>
+
+  <!-- Distant Mountains -->
+  <polygon points="0,320 280,260 580,310 920,240 1200,290 1200,675 0,675" fill="#2d0a0d" opacity="0.6"/>
+  <polygon points="0,380 420,330 780,410 1200,350 1200,675 0,675" fill="#24070a" opacity="0.85"/>
+
+  <!-- Colossal Abyss / Chasm -->
+  <polygon points="340,480 860,490 740,675 460,675" fill="#080203"/>
+
+  <!-- Left Huge Cliff Wall with Science Station -->
+  <polygon points="0,220 380,330 400,470 320,675 0,675" fill="url(#rockLayer)"/>
+  <line x1="0" y1="280" x2="360" y2="360" stroke="#ff7a18" stroke-width="2" opacity="0.4"/>
+  <line x1="0" y1="360" x2="380" y2="440" stroke="#ff7a18" stroke-width="2" opacity="0.3"/>
+
+  <!-- High-Tech Research Outpost Station -->
+  <rect x="200" y="270" width="130" height="65" rx="12" fill="#f8fafc" stroke="#00f0ff" stroke-width="3"/>
+  <polygon points="265,270 245,210 285,210" fill="#38bdf8"/>
+  <path d="M 230 210 A 35 35 0 0 1 300 210" fill="none" stroke="#00f0ff" stroke-width="5" filter="url(#neonSci)"/>
+  <circle cx="265" cy="195" r="5" fill="#00f0ff" filter="url(#neonSci)"/>
+
+  <!-- Sensor Laser Scanning the Abyss -->
+  <line x1="265" y1="270" x2="600" y2="580" stroke="#00f0ff" stroke-width="3" stroke-dasharray="10,6" filter="url(#neonSci)"/>
+
+  <!-- Right Cliff with Exploration Rover -->
+  <polygon points="820,400 1200,250 1200,675 760,675" fill="url(#rockLayer)"/>
+  <!-- Rover -->
+  <rect x="900" y="360" width="65" height="30" rx="8" fill="#f8fafc"/>
+  <circle cx="915" cy="395" r="11" fill="#1e293b"/>
+  <circle cx="950" cy="395" r="11" fill="#1e293b"/>
+  <!-- Headlights Beam -->
+  <polygon points="900,375 730,340 730,420" fill="#fef08a" opacity="0.35"/>
+
+  <!-- Overlay Banner -->
+  <rect x="220" y="550" width="760" height="90" rx="12" fill="rgba(10, 14, 28, 0.9)" stroke="#00f0ff" stroke-width="2"/>
+  <text x="600" y="590" fill="#00f0ff" font-family="'Orbitron', sans-serif" font-size="28" font-weight="900" letter-spacing="4" text-anchor="middle" filter="url(#neonSci)">VALLES MARINERIS: EXPEDIÇÃO DE PROFUNDIDADE</text>
+  <text x="600" y="622" fill="#f8fafc" font-family="'Rajdhani', sans-serif" font-size="18" font-weight="bold" letter-spacing="2" text-anchor="middle">ESTAÇÃO CIENTÍFICA ABISSAL • MAPEAMENTO TOPOGRÁFICO NASA</text>
+
+  <!-- Top Badge -->
+  <rect x="40" y="35" width="340" height="50" rx="8" fill="rgba(0, 240, 255, 0.2)" stroke="#00f0ff"/>
+  <text x="55" y="68" fill="#00f0ff" font-family="'Orbitron', sans-serif" font-size="18" font-weight="bold">FASE 07: O GRANDE DESFILADEIRO</text>
+</svg>

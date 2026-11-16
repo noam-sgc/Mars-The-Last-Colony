@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <linearGradient id="expansionSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a101f"/>
+      <stop offset="50%" stop-color="#2d151c"/>
+      <stop offset="100%" stop-color="#59201a"/>
+    </linearGradient>
+    <filter id="cityNeon">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#expansionSky)"/>
+
+  <!-- Shuttles Descending -->
+  <polygon points="260,110 300,130 250,138" fill="#f8fafc"/>
+  <line x1="240" y1="145" x2="160" y2="170" stroke="#ff7a18" stroke-width="4" filter="url(#cityNeon)"/>
+  <polygon points="900,140 945,160 890,170" fill="#f8fafc"/>
+  <line x1="880" y1="178" x2="790" y2="205" stroke="#ff7a18" stroke-width="4" filter="url(#cityNeon)"/>
+
+  <!-- Martian Landscape Surface -->
+  <polygon points="0,480 300,450 650,470 1000,440 1200,470 1200,675 0,675" fill="#2d0f0c"/>
+
+  <!-- Connected Domes -->
+  <!-- Left Habitat Dome -->
+  <path d="M 100 480 A 150 120 0 0 1 400 480 Z" fill="#0284c7" opacity="0.35" stroke="#00f0ff" stroke-width="3"/>
+  <rect x="180" y="400" width="35" height="80" fill="#f8fafc" opacity="0.8"/>
+  <rect x="230" y="370" width="45" height="110" fill="#f8fafc" opacity="0.8"/>
+  <rect x="290" y="410" width="30" height="70" fill="#f8fafc" opacity="0.8"/>
+
+  <!-- Right Habitat Dome -->
+  <path d="M 800 480 A 160 130 0 0 1 1120 480 Z" fill="#0284c7" opacity="0.35" stroke="#00f0ff" stroke-width="3"/>
+  <rect x="880" y="390" width="45" height="90" fill="#f8fafc" opacity="0.8"/>
+  <rect x="940" y="360" width="55" height="120" fill="#f8fafc" opacity="0.8"/>
+
+  <!-- Center Metropolis Mega Dome -->
+  <path d="M 380 480 A 240 180 0 0 1 820 480 Z" fill="#0369a1" opacity="0.45" stroke="#ffaa00" stroke-width="4" filter="url(#cityNeon)"/>
+  <!-- Tall Skyscrapers Inside -->
+  <rect x="470" y="360" width="40" height="120" fill="#f8fafc" opacity="0.9"/>
+  <rect x="525" y="320" width="60" height="160" fill="#f8fafc" opacity="0.95"/>
+  <rect x="600" y="290" width="55" height="190" fill="#ffffff"/>
+  <rect x="670" y="340" width="45" height="140" fill="#f8fafc" opacity="0.9"/>
+
+  <!-- Pressurized Monorail Transit Tube -->
+  <line x1="0" y1="510" x2="1200" y2="510" stroke="#00f0ff" stroke-width="5" filter="url(#cityNeon)"/>
+  <rect x="520" y="500" width="160" height="20" rx="6" fill="#f8fafc" filter="url(#cityNeon)"/>
+
+  <!-- Spaceport Landing Pad in Foreground -->
+  <ellipse cx="600" cy="580" rx="260" ry="45" fill="#141c2e" stroke="#ff7a18" stroke-width="3" stroke-dasharray="14,8"/>
+  <text x="600" y="588" fill="#ff7a18" font-family="'Orbitron', sans-serif" font-size="16" font-weight="bold" text-anchor="middle">TERMINAL DE COLONOS • SETOR METROPOLITANO</text>
+
+  <!-- Overlay Banner -->
+  <rect x="220" y="550" width="760" height="90" rx="12" fill="rgba(10, 14, 28, 0.9)" stroke="#ff7a18" stroke-width="2"/>
+  <text x="600" y="590" fill="#ff7a18" font-family="'Orbitron', sans-serif" font-size="28" font-weight="900" letter-spacing="4" text-anchor="middle" filter="url(#cityNeon)">EXPANSÃO DA HUMANIDADE EM MARTE</text>
+  <text x="600" y="622" fill="#f8fafc" font-family="'Rajdhani', sans-serif" font-size="18" font-weight="bold" letter-spacing="2" text-anchor="middle">MALHA DE HABITATS METROPOLITANOS • CHEGADA DE NOVOS COLONOS</text>
+
+  <!-- Top Badge -->
+  <rect x="40" y="35" width="340" height="50" rx="8" fill="rgba(255, 122, 24, 0.2)" stroke="#ff7a18"/>
+  <text x="55" y="68" fill="#ff7a18" font-family="'Orbitron', sans-serif" font-size="18" font-weight="bold">FASE 09: EXPANSÃO DA HUMANIDADE</text>
+</svg>
