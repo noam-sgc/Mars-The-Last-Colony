@@ -5,7 +5,7 @@
 <meta name="description" content="Colônias em Marte: campanha solo, sandbox e multiplayer com equipes, chat, amigos e eventos.">
 <link rel="stylesheet" href="css/style.css">
 </head><body>
-<canvas id="c"></canvas>
+<canvas id="c" role="img" aria-label="Mapa 3D do jogo"></canvas>
 
 <!-- ===== telas ===== -->
 <div id="auth" class="scr col pg on"></div>
@@ -16,7 +16,7 @@
   <div class="mid"><div class="pill" id="hint"></div></div>
   <div id="joy"><i></i></div>
   <button id="nt" class="rnd">Impulso</button>
-  <div id="pk" class="pill"></div>
+  <div id="pk" class="pill" data-min="👥 Sala"></div>
   <div class="bar" id="pal"></div>
 </div>
 <div id="lob" class="scr col pg"></div>
@@ -26,7 +26,7 @@
 <div id="soc" class="scr col pg"></div>
 
 <!-- ===== painéis flutuantes ===== -->
-<div id="inhud" class="scr"><div class="bar"><button id="inx">⏎ Sair do edifício</button><div class="pill" id="ini"></div></div><div class="mid"><div class="pill" id="inh"></div></div><div id="joy2"><i></i></div></div>
+<div id="inhud" class="scr"><div class="bar"><button id="inx">⏎ Sair do edifício</button><div class="pill" id="ini" data-min="🏭 Edifício"></div></div><div class="mid"><div class="pill" id="inh"></div></div><div id="joy2"><i></i></div></div>
 <div id="chat" class="panel"></div>
 <button id="chb" class="fab" title="Chat">💬<b id="chn"></b></button>
 <div id="toasts"></div>
@@ -62,6 +62,7 @@
 <script src="js/learn.js"></script>
 <script src="js/studio.js"></script>
 <script src="js/music.js"></script>
+<script src="js/a11y.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/main.js"></script>
 </body></html>

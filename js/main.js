@@ -1,21 +1,26 @@
 /* Laço principal, entrada de ponteiro, HUD e inicialização. */
 function buildHud() {
-  $("#topbar").innerHTML = `<div class="pill">🪙 <b id="hc">0</b></div><div class="pill" id="evp" style="display:none"></div><div class="pill" id="ht">⏱</div><div class="pill" id="tk" style="min-width:210px"></div><div class="pill" id="gl"></div>
+  $("#topbar").innerHTML = `<div class="pill">🪙 <b id="hc">0</b></div><div class="pill" id="evp" style="display:none"></div><div class="pill" id="ht">⏱</div><div class="pill" id="tk" style="min-width:210px" data-min="📊 Tanques"></div><div class="pill" id="gl" data-min="📋 Objetivos"></div>
   <div class="pill" id="hr">🔬 <b id="hrv">0</b> RP <button id="hrt">Usar: não</button></div><button id="hs">Loja</button><button id="hz1">＋</button><button id="hz2">－</button><button id="hx">☰ Menu</button>`;
-  $("#hz1").onclick = () => (dist = clamp(dist * .85, 8, 90)); $("#hz2").onclick = () => (dist = clamp(dist * 1.15, 8, 90)); $("#hs").onclick = () => shop(true);
+  $("#hz1").onclick = () => (dist = clamp(dist * .85, 8, 90)); $("#hz2").onclick = () => (dist = clamp(dist * 1.15, 8, 90)); $("#hz1").setAttribute("aria-label", "Aproximar a câmera"); $("#hz2").setAttribute("aria-label", "Afastar a câmera"); $("#hx").setAttribute("aria-label", "Voltar ao menu"); ariaInit(); $("#hs").onclick = () => shop(true);
   $("#hx").onclick = () => { G.run = false; menu(); }; $("#hrt").onclick = () => { G.useRP = !G.useRP; $("#hrt").textContent = "Usar: " + (G.useRP ? "sim" : "não"); };
   const ep = $("#evp"); if (EV.mult > 1) { const e = EV.top(); ep.style.display = ""; ep.innerHTML = `${e.icon || "🎉"} <b>${esc(e.name)}</b> · moedas <b>x${EV.mult}</b>`; ep.style.borderColor = e.col; }
 }
 // ponteiro: arrastar gira a câmera; toque curto interage/constrói
-let dr = null;
-cv.addEventListener("pointerdown", (e) => { dr = { x: e.clientX, y: e.clientY, m: 0 }; cv.setPointerCapture(e.pointerId); });
+let dr = null; const PT = new Map(); let pinch = 0;
+const zoomBy = (f) => { if (IN) IN.dist = clamp(IN.dist * f, 7, 24); else dist = clamp(dist * f, 8, 90); };
+cv.addEventListener("pointerdown", (e) => { PT.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (PT.size === 2) { const [a, b] = [...PT.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); dr = null; } else dr = { x: e.clientX, y: e.clientY, m: 0 }; try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } });
 cv.addEventListener("pointermove", (e) => {
+  if (PT.has(e.pointerId)) PT.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (PT.size === 2 && !N) { const [a, b] = [...PT.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch > 0 && d > 0) zoomBy(pinch / d); pinch = d; return; }   // pinça = zoom
   if (!dr) return; const dx = e.clientX - dr.x, dy = e.clientY - dr.y; dr.m += Math.abs(dx) + Math.abs(dy); dr.x = e.clientX; dr.y = e.clientY;
   if (N) { if (e.buttons > 0 || e.pointerType == "touch") { N.nx = clamp((e.clientX / innerWidth - .5) * 2.4, -1, 1); N.ny = clamp(-(e.clientY / innerHeight - .5) * 2.4, -1, 1); } return; }
   if (IN) { IN.yaw -= dx * .006; IN.pit = clamp(IN.pit + dy * .005, .15, 1.2); } else { yaw -= dx * .005; pit = clamp(pit + dy * .005, .15, 1.4); }
 });
-cv.addEventListener("pointerup", (e) => { if (N) { N.nx = 0; N.ny = 0; } if (dr && dr.m < 6 && G.run && G.mode != "nav" && !DLG) { if (IN) interiorClick(e); else click(e); } dr = null; });
-cv.addEventListener("wheel", (e) => { if (IN) IN.dist = clamp(IN.dist * (1 + Math.sign(e.deltaY) * .1), 7, 24); else dist = clamp(dist * (1 + Math.sign(e.deltaY) * .1), 8, 90); }, { passive: true });
+const pend = (e) => { PT.delete(e.pointerId); if (PT.size < 2) pinch = 0; };
+cv.addEventListener("pointercancel", pend);
+cv.addEventListener("pointerup", (e) => { pend(e); if (N) { N.nx = 0; N.ny = 0; } if (dr && dr.m < 6 && G.run && G.mode != "nav" && !DLG) { if (IN) interiorClick(e); else click(e); } dr = null; });
+cv.addEventListener("wheel", (e) => { zoomBy(1 + Math.sign(e.deltaY) * .1); }, { passive: true });
 INP.onEsc = () => { if ($("#setm").classList.contains("on")) closeSettings(); else if (DLG) closeDlg(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
 $("#dlg").addEventListener("pointerdown", (e) => { if (e.target.id == "dlg" && DLG) closeDlg(); });
 

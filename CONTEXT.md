@@ -49,6 +49,11 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 - **Regra:** o nome da agência espacial não aparece em títulos, botões nem no texto das perguntas/fatos; só na linha de **Fonte** (constante `FONTE` em `js/espaco.js`) e nestas referências. Conteúdo baseado em fatos publicados em nasa.gov, science.nasa.gov e jpl.nasa.gov; ao editar, confira nas fontes.
 - **Campanha alienígena (fases 31–45) é uma campanha à parte**: a fase 31 já começa liberada e vencer a fase 30 não leva automaticamente a ela.
 
+### 2.4c Textos que somem e acessibilidade (smartphone)
+- **Tocar/clicar num texto faz ele desaparecer** (`js/a11y.js`): avisos (toasts) e dicas ("E · conversar…") somem (a dica só volta se o texto mudar); painéis grandes (Tanques, Objetivos, Sala, Edifício) viram um chip pequeno que reabre ao tocar. Configurações → "Mostrar todos" restaura tudo.
+- Celular: alvos de toque ≥ 44 px, campos com 16 px (sem zoom do iOS), barra de peças em linha única rolável, joystick maior, **pinça com dois dedos = zoom da câmera**, vibração curta ao tocar (opcional), `touch-action: manipulation`, ARIA (`role=dialog`, `aria-live`, rótulos), foco visível.
+- Configurações → "Acessibilidade e celular": tamanho do texto (Normal/Grande/Muito grande), alto contraste, reduzir animações (também respeita `prefers-reduced-motion`), vibração.
+
 ### 2.5 Jogabilidade 3D
 - **WASD** move o astronauta; **arrastar a tela** gira a câmera (roda do mouse = zoom). Joystick virtual em telas de toque.
 - **Interação com colonos** (NPCs): clicar ou `E` perto → conversar (+moral), pedir relatório, presentear.
