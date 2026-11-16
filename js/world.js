@@ -28,8 +28,8 @@ const tg = new THREE.PlaneGeometry(300, 300, 150, 150); tg.rotateX(-Math.PI / 2)
 const ter = new THREE.Mesh(tg, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })); ter.receiveShadow = true; sc.add(ter);
 const ROCKS = [];
 for (let i = 0; i < 80; i++) { const x = (Math.random() - .5) * 280, z = (Math.random() - .5) * 280; if (Math.hypot(x, z) < 24) continue;
-  const r = new THREE.Mesh(new THREE.DodecahedronGeometry(.6 + Math.random() * 2.4), new THREE.MeshStandardMaterial({ color: 0x7a3a22 + (Math.random() * 0x101010 | 0), roughness: .95, flatShading: true }));
-  r.position.set(x, H(x, z) + .3, z); r.rotation.set(Math.random() * 3, Math.random() * 3, 0); r.castShadow = r.receiveShadow = true; sc.add(r); ROCKS.push(r); }
+  const rr = .6 + Math.random() * 2.4, r = new THREE.Mesh(new THREE.DodecahedronGeometry(rr), new THREE.MeshStandardMaterial({ color: 0x7a3a22 + (Math.random() * 0x101010 | 0), roughness: .95, flatShading: true }));
+  r.position.set(x, H(x, z) + .3, z); r.userData.rad = rr * .85; r.rotation.set(Math.random() * 3, Math.random() * 3, 0); r.castShadow = r.receiveShadow = true; sc.add(r); ROCKS.push(r); }
 // poeira em suspensão
 const dust = new THREE.Points((() => { const g = new THREE.BufferGeometry(), a = new Float32Array(600); for (let i = 0; i < 600; i += 3) { a[i] = (Math.random() - .5) * 160; a[i + 1] = Math.random() * 22; a[i + 2] = (Math.random() - .5) * 160; } g.setAttribute("position", new THREE.BufferAttribute(a, 3)); return g; })(), new THREE.PointsMaterial({ color: 0xe8b890, size: .35, transparent: true, opacity: .45 }));
 sc.add(dust);

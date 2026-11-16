@@ -55,6 +55,7 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 - Configurações → "Acessibilidade e celular": tamanho do texto (Normal/Grande/Muito grande), alto contraste, reduzir animações (também respeita `prefers-reduced-motion`), vibração.
 
 ### 2.5 Jogabilidade 3D
+- **Colisão:** o astronauta e os colonos **não atravessam** edifícios (próprios e de outros jogadores/bots), rochas nem os móveis dos interiores (beliches, mesas, bancadas, canteiros); círculos por tipo de peça em `COLR`/`solids()` (`js/game.js`) e caixas `solidBoxes` (`js/interior.js`).
 - **WASD** move o astronauta; **arrastar a tela** gira a câmera (roda do mouse = zoom). Joystick virtual em telas de toque.
 - **Interação com colonos** (NPCs): clicar ou `E` perto → conversar (+moral), pedir relatório, presentear.
 - **Entrar em edifícios** (`E` perto, ou ferramenta 🖐 Interagir): **pausa o tempo** (Solo/Sandbox; no Multi o tempo segue),
