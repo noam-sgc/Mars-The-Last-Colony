@@ -160,7 +160,7 @@ function hud() {
   $("#tk").innerHTML = K.map((k) => `<div class="tb"><span>${KN[k]}</span><u><i style="width:${G.tk[k]}%;background:${TC[k]}"></i></u><em>${(G.rate[k] || 0) >= 0 ? "▲" : "▼"}</em><b style="width:36px;text-align:right">${Math.floor(G.tk[k])}%</b></div>`).join("");
   if (G.mode == "solo" && !G.paused) goals();
   const h = $("#hint"), c = nearestColonist(), b = nearestBuilding();
-  if (c && !DLG) { h.textContent = `E · conversar com ${c.info.name}`; h.style.display = "block"; } else if (b) { h.textContent = `E · entrar em ${TY[b.t].n} (ordem ${Math.round(b.ord * 100)}%)`; h.style.display = "block"; } else h.style.display = "none";
+  setHint(h, c && !DLG ? `${TOUCH ? "Toque" : "E"} · conversar com ${c.info.name}` : b ? `${TOUCH ? "Toque no edifício" : "E"} · entrar em ${TY[b.t].n} (ordem ${Math.round(b.ord * 100)}%)` : "");
 }
 
 // ---------- câmera e movimento ----------
