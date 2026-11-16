@@ -66,6 +66,7 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 - **Trilha sonora** (`js/music.js`): 2 músicas gravadas (`assets/audio/`: *Marte Tranquila* e *Marte Animada*) + 8 faixas geradas em tempo real com nomes inventados (Poeira de Jezero, Colônia ao Amanhecer, Sob a Cúpula, Travessia Vermelha, Tempestade de Ferro, Canção dos Visitantes, Noites de Valles, Aurora Polar). Modo **Automática** troca a faixa conforme o momento do jogo.
 - **Configurações** (`js/settings.js`): botão grande e fixo no canto superior direito, presente em todas as telas (a barra do HUD reserva espaço para ele). Permite ligar/desligar e mudar o volume (intensidade) da música, escolher a faixa, e configurar o **som de clique** (liga/desliga, volume, 4 estilos). Preferências em `localStorage`.
 - Visual melhorado: sombras, tonemapping, céu em degradê, crateras, peças com animações, astronauta com capacete/mochila/brilho.
+- **Espécie do jogador: humano ou alienígena** (primeiro acesso pergunta; muda no Guarda-roupa). O alienígena tem cabeça oval, olhos grandes, antenas e **5 cores de pele**; trajes, calças, relógios, capacetes (viram bolha de vidro) e mochilas continuam valendo. Aparece para os outros no multiplayer (`e.sp`, `e.sk`); colonos e emissários reagem à espécie. Salvo no perfil (`P.sp`, `P.skin`).
 - **Guarda-roupa** com pré-visualização 3D, abas (trajes, calças, relógios, capacetes, mochilas, eventos, admin).
 
 ## 3. Arquitetura

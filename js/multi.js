@@ -11,14 +11,14 @@ const mpSend = (patch) => { if (MP.room && NET.ready && ACC.user) NET.send({ t: 
 const BN = "Aurora,Cratera,Valles,Olympus,Phobos,Deimos,Hellas,Tharsis,Utopia,Gale,Jezero,Elysium,Arcadia,Syrtis,Noctis,Argyre,Isidis,Cerberus,Medusa,Amazonis,Acidalia,Chryse,Xanthe,Sinai,Lunae,Aonia,Thaumasia,Daedalia,Solis,Margaritifer,Meridiani,Sirenum,Eridania,Ismenius,Boreum,Cydonia,Zephyria,Hesperia,Promethei,Malea".split(",");
 function botDef(i) {
   const s = ["s1", "s2", "s3", "s4", "s5", "s6"], p = ["p1", "p2", "p3"], w = ["w0", "w1", "w2", "w3"], h = ["h0", "h1", "h2", "h3"], b = ["b0", "b1", "b2", "b3"];
-  return { i, n: "Bot-" + BN[i % BN.length] + (i >= BN.length ? Math.floor(i / BN.length) + 1 : ""), lv: 1 + i % 5, sp: CL[i % 6], tm: i % 2, e: { s: s[i % s.length], p: p[i % 3], w: w[i % 4], h: h[(i >> 1) % 4], b: b[(i >> 2) % 4] } };
+  return { i, n: "Bot-" + BN[i % BN.length] + (i >= BN.length ? Math.floor(i / BN.length) + 1 : ""), lv: 1 + i % 5, sp: CL[i % 6], tm: i % 2, e: { sp: i % 3 === 2 ? "alien" : "human", sk: ["verde", "violeta", "azul", "laranja", "cinza"][i % 5], s: s[i % s.length], p: p[i % 3], w: w[i % 4], h: h[(i >> 1) % 4], b: b[(i >> 2) % 4] } };
 }
 const botCap = () => clamp(Math.floor(400 / Math.max(1, MP.bc)), 1, 14);
 
 // ---------- entidades (humanos + bots) ----------
 const humans = () => {
   const l = (MP.peers || []).filter((p) => p.presence && p.presence.u != null);
-  if (!l.some((p) => p.isMe || p.peer === NET.id)) l.push({ isMe: true, peer: "~", presence: { u: ACC.user || P.name || "Colono", jt: MP.jt, e: P.eq, tm: MP.tm, vf: ACC.vf, cc: ACC.cc, rl: ACC.role } });
+  if (!l.some((p) => p.isMe || p.peer === NET.id)) l.push({ isMe: true, peer: "~", presence: { u: ACC.user || P.name || "Colono", jt: MP.jt, e: myEq(), tm: MP.tm, vf: ACC.vf, cc: ACC.cc, rl: ACC.role } });
   l.forEach((p) => { if (p.peer === NET.id) p.isMe = true; });
   return l.slice().sort((a, b) => ((a.presence.jt || 0) - (b.presence.jt || 0)) || (a.peer < b.peer ? -1 : 1));
 };
@@ -60,7 +60,7 @@ function lobPres() {
 function sync() {
   if (!MP.room || !NET.ready || !ACC.user) return; clearTimeout(sT);
   sT = setTimeout(() => { const hs = isHost(), f = (a) => a.map((q) => [tcode(q.t), Math.round(q.x), Math.round(q.z)]);
-    const patch = { u: ACC.user, jt: MP.jt, e: P.eq, tm: MP.tm, k: G.placed ? G.placed.length : 0, st: MP.started ? 1 : 0, b: f(G.placed.slice(-60)) };
+    const patch = { u: ACC.user, jt: MP.jt, e: myEq(), tm: MP.tm, k: G.placed ? G.placed.length : 0, st: MP.started ? 1 : 0, b: f(G.placed.slice(-60)) };
     if (hs) { patch.md = MPmode; patch.bc = MP.bc; patch.bb = []; Object.keys(MP.botP).forEach((i) => MP.botP[i].slice(-botCap()).forEach((q) => { if (patch.bb.length < 420) patch.bb.push([+i, tcode(q.t), Math.round(q.x), Math.round(q.z)]); })); }
     mpSend(patch); lobPres(); }, 150);
 }

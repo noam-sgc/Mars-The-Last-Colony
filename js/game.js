@@ -30,7 +30,7 @@ function start(mode, ph) {
   $("#ht").style.display = mode == "solo" ? "" : "none"; $("#hr").style.display = mode == "solo" ? "" : "none"; $("#hs").style.display = mode == "mp" ? "none" : "";
   $("#gl").style.display = mode == "solo" || mode == "mp" ? "" : "none"; $("#pk").style.display = mode == "mp" ? "block" : "none";
   $("#hrt").textContent = "Usar: não"; yaw = .8; pit = .75; dist = 40; pal(); setWeather();
-  PL.x = 0; PL.z = 6; PL.g = av(P.eq); PL.g.position.set(PL.x, H(PL.x, PL.z), PL.z); sc.add(PL.g);
+  PL.x = 0; PL.z = 6; PL.g = av(myEq()); PL.g.position.set(PL.x, H(PL.x, PL.z), PL.z); sc.add(PL.g);
   spawnColonists(); if (mode == "mp") mpBegin(); sync();
   if (mode == "solo" && PH[ph].alien) toast("👽 Fase pacífica: aproxime-se dos emissários verdes e converse.", 4500);
 }
@@ -108,6 +108,7 @@ function nearestColonist() { let b = null, d = 7; COL.forEach((c) => { const q =
 let DLG = null;
 function talkLines(c) {
   const t = G.tk, low = K.slice().sort((a, b) => t[a] - t[b])[0];
+  if (P.sp == "alien") return c.alien ? ["Irmão das estrelas! Que bom ver você por aqui.", "Sua luz é familiar. Que a colônia prospere em paz.", "Somos dois povos e um só lar agora."][Math.floor(Math.random() * 3)] : ["Uau, um alienígena de verdade! Posso ajudar em algo?", "Sempre sonhei em conhecer vocês. Bem-vindo à colônia!", "Os visitantes nos ensinaram muito. Obrigado por vir."][Math.floor(Math.random() * 3)];
   if (c.alien) return ["Paz entre mundos, colono. Seu povo constrói bem.", "Nossa nave canta quando sua colônia está em equilíbrio.", "Trouxemos sementes de luz. Podemos trocar?"][Math.floor(Math.random() * 3)];
   const mood = ["Estou animado, o dia está ótimo!", "Tudo sob controle por aqui.", "Cansei um pouco, mas seguimos."][c.mood > 80 ? 0 : c.mood > 50 ? 1 : 2];
   return mood + (t[low] < 40 ? ` Mas o nível de ${KN[low].toLowerCase()} está preocupante (${Math.floor(t[low])}%).` : "");
