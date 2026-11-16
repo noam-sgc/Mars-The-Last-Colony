@@ -46,7 +46,6 @@ function loop(n) {
 (async function boot() {
   loadLocal(); EV.refresh(); setInterval(() => { EV.refresh(); }, 60000); requestAnimationFrame(loop);
   let lastW = null; try { lastW = localStorage.getItem("mars-last"); } catch (e) { /* ignore */ }
-  if (lastW === "self") return enterSelf();
-  if (lastW && /^[A-Z0-9]{4,12}$/.test(lastW)) { try { await NET.joinWorld(lastW); return resumeOrAuth(); } catch (e) { return worldScreen("Não foi possível reconectar ao mundo " + lastW + ": " + e.message); } }
-  worldScreen();
+  if (lastW && /^[A-Z0-9]{4,12}$/.test(lastW) && lastW !== "SELF") { try { await NET.joinWorld(lastW); return resumeOrAuth(); } catch (e) { toast("Não foi possível reconectar ao mundo " + esc(lastW) + ". Abrindo o seu mundo.", 5000); } }
+  enterSelf();   // padrão: o seu mundo, com todo o jogo (solo, sandbox, bots, loja, guarda-roupa); amigos entram pelo código
 })();

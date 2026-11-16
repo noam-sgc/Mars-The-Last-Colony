@@ -17,7 +17,7 @@ function authScreen(tab) {
     <label class="f">Senha<input id="ap" type="password" autocomplete="${tab == "reg" ? "new-password" : "current-password"}" placeholder="mínimo 6 caracteres"></label>
     ${tab == "reg" ? `<label class="f">País<select id="ac">${ctry("BR")}</select></label>` : ""}
     <div class="err" id="ae"></div><button class="pri" id="ago">${tab == "reg" ? "Criar conta e jogar" : "Entrar"}</button>
-    <button class="gh" id="agu">Continuar como convidado (sem multiplayer, chat e amigos)</button>
+    <button class="gh" id="agu">Jogar agora como convidado (solo, sandbox e bots; sem chat e amigos)</button>
     <small class="mu">${worldLine()}</small><button class="gh" id="asw">← Trocar de mundo / entrar com código</button></div>`;
   $("#auth").querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => authScreen(b.dataset.t)));
   const go = async () => {
