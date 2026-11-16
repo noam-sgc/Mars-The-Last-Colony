@@ -1,4 +1,8 @@
 /* Cliente de rede: WebSocket do servidor web quando existir; senão, o servidor local (LocalHub). */
+function wsUrl() {
+  const q = (location.search.match(/[?&]server=([^&]+)/) || [])[1], u = q ? decodeURIComponent(q) : window.MARS_SERVER;
+  return /^wss?:\/\//.test(u || "") ? u : (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws";
+}
 const NET = {
   mode: "", ready: false, ws: null, lc: null, rid: 0, pend: {}, h: {},
   on(t, fn) { (this.h[t] = this.h[t] || []).push(fn); },
@@ -24,7 +28,7 @@ const NET = {
     this.ws.onclose = () => { this.ready = false; this.emit({ t: "closed" }); clearTimeout(this.rt); this.rt = setTimeout(() => this.retry(), 3000); };
   },
   retry() {
-    let ws; try { ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws"); } catch (e) { return (this.rt = setTimeout(() => this.retry(), 4000)); }
+    let ws; try { ws = new WebSocket(wsUrl()); } catch (e) { return (this.rt = setTimeout(() => this.retry(), 4000)); }
     ws.onerror = () => {}; ws.onclose = () => { if (!this.ready) this.rt = setTimeout(() => this.retry(), 4000); };
     ws.onmessage = async (e) => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } if (m.t !== "hi") return;
       this.ws = ws; this.ready = true; ws.onmessage = (ev) => { try { this.incoming(JSON.parse(ev.data)); } catch (x) { /* ignore */ } }; this.hook(); this.incoming(m);
@@ -34,11 +38,11 @@ const NET = {
   },
   /** Tenta o servidor web (mesma origem, /ws); se falhar, usa o servidor local. */
   async connect() {
-    const web = /^https?:$/.test(location.protocol) && !/[?&]local\b/.test(location.search);
+    const web = /^https?:$/.test(location.protocol) && !/[?&]local\b/.test(location.search) && !(location.hostname.endsWith(".vercel.app") && !/^wss?:/.test(window.MARS_SERVER || "") && !/[?&]server=/.test(location.search));
     if (web) {
       const ok = await new Promise((res) => {
         let ws; const to = setTimeout(() => { try { ws.close(); } catch (e) { /* ignore */ } res(false); }, 2500);
-        try { ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws"); } catch (e) { clearTimeout(to); return res(false); }
+        try { ws = new WebSocket(wsUrl()); } catch (e) { clearTimeout(to); return res(false); }
         ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } if (m.t === "hi") { clearTimeout(to); this.ws = ws; this.mode = "server"; this.ready = true; ws.onmessage = (ev) => { try { this.incoming(JSON.parse(ev.data)); } catch (x) { /* ignore */ } }; this.incoming(m); res(true); } };
         ws.onerror = () => { clearTimeout(to); res(false); };
       });
