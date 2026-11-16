@@ -11,7 +11,7 @@ let COL = [];
 function toast(msg, ms) { const d = document.createElement("div"); d.className = "toast"; d.innerHTML = msg; $("#toasts").appendChild(d); setTimeout(() => d.remove(), ms || 3200); }
 function screen(id) { ["auth", "menu", "cat", "hud", "lob", "wait", "ward", "lbd", "soc"].forEach((s) => $("#" + s).classList.toggle("on", s == id)); $("#chb").classList.toggle("on", !!ACC.user && id != "auth" && id != "ward"); if (id != "hud") $("#hint").style.display = "none"; }
 function clear() {
-  DR = null; G.placed.forEach((p) => sc.remove(p.m)); G.placed = [];
+  DR = null; RL = null; while (lootG.children.length) lootG.remove(lootG.children[0]); lootG.visible = false; G.placed.forEach((p) => sc.remove(p.m)); G.placed = [];
   for (const k in peerG) { sc.remove(peerG[k].g); delete peerG[k]; }
   COL.forEach((c) => colG.remove(c.g)); COL = []; if (PL.g) { sc.remove(PL.g); PL.g = null; }
 }
@@ -24,7 +24,7 @@ function setWeather() {
 function start(mode, ph) {
   if (mode == "nav") return navStart(ph);
   navOff(); clear(); closeInterior(true);
-  MAINT.off = false; G = { run: true, placed: [], mode, ph, tool: "solar", mats: 1e9, paused: false, time: 0, hold: 0, rate: {}, tk: { water: 30, food: 30, oxy: 30, fuel: 30, morale: 30, eff: 30 }, msd: {}, st: { talk: 0, tidy: 0, enter: new Set(), contact: 0 }, lastTalk: {}, useRP: false };
+  MAINT.off = false; G = { run: true, placed: [], mode, ph, tool: "solar", mats: 1e9, paused: false, time: 0, hold: 0, rate: {}, tk: { water: 30, food: 30, oxy: 30, fuel: 30, morale: 30, eff: 30 }, msd: {}, st: { talk: 0, tidy: 0, enter: new Set(), contact: 0, loot: 0 }, lastTalk: {}, useRP: false };
   if (mode == "solo") G.time = PH[ph].t + B("time");
   buildHud(); screen("hud");
   $("#ht").style.display = mode == "solo" ? "" : "none"; $("#hr").style.display = mode == "solo" ? "" : "none"; $("#hs").style.display = mode == "mp" ? "none" : "";
@@ -79,15 +79,37 @@ INP.onE = () => {
   const c = nearestColonist(), r = nearestRover(); if (c && (!r || dTo(c.g) <= dTo(r.m))) return talk(c); if (r) return driveRover(r); const b = nearestBuilding(); if (b) openInterior(b);
 };
 const dTo = (o) => Math.hypot(o.position.x - PL.x, o.position.z - PL.z);
+// ---------- achados: minimissões em edifícios e rovers ----------
+/** Entrega um achado: moedas, objeto de tanque (+12% num tanque) ou bônus da fase (moedas + tempo). */
+function lootGrant(kind, k) {
+  const solo = G.mode == "solo"; let msg;
+  if (kind === "coin") { const base = solo ? Math.round(12 + G.ph * 1.2) : 15, v = Math.round(earn(base * (1 + Math.floor(Math.random() * 2)))); msg = `🪙 Bolsa de moedas: +${v}`; }
+  else if (kind === "tank") { G.tk[k] = clamp(G.tk[k] + 12, 0, 100); msg = `🧪 Reserva de ${KN[k]}: +12% no tanque`; }
+  else { const c = Math.round(earn(solo ? Math.max(30, PH[G.ph].r * .03) : 40)); if (solo) G.time += 15; msg = `⭐ Bônus da fase: +${c} 🪙${solo ? " e +15 s" : ""}`; }
+  G.st.loot = (G.st.loot || 0) + 1; save(); toast(msg, 2600); if (typeof Music !== "undefined") Music.pick();
+}
+const lootKinds = (cls) => ["coin", "coin", "coin", "tank", "tank"].map((kd, i) => ({ kind: kd, k: kd == "tank" ? (i == 3 && K.includes(cls) ? cls : K[Math.floor(Math.random() * K.length)]) : null }));
+// rover: achados espalhados por Marte, visíveis SÓ enquanto você dirige
+const lootG = new THREE.Group(); sc.add(lootG); lootG.visible = false; let RL = null;
+function rollRoverLoot() {
+  while (lootG.children.length) lootG.remove(lootG.children[0]); const sol = solids(true), list = [];
+  const specs = lootKinds().concat([{ kind: "coin" }, { kind: "tank", k: K[Math.floor(Math.random() * K.length)] }, { kind: "phase" }]);
+  specs.forEach((s) => { for (let t = 0; t < 40; t++) { const a = Math.random() * 6.283, r = 20 + Math.random() * 65, x = Math.cos(a) * r, z = Math.sin(a) * r; if (sol.some((c) => Math.hypot(c.x - x, c.z - z) < c.r + 3)) continue; const m = mkLoot(s.kind, s.k, true); m.userData.y0 = H(x, z); m.position.set(x, H(x, z), z); lootG.add(m); list.push({ kind: s.kind, k: s.k, x, z, m, got: 0 }); break; } });
+  RL = { list, at: performance.now(), done: 0 };
+}
+function roverLootStep(o, t) {
+  if (!RL) return; lootG.visible = true; RL.list.forEach((q, i) => { if (!q.got) animLoot(q.m, t, i); });
+  RL.list.forEach((q) => { if (q.got || Math.hypot(q.x - o.x, q.z - o.z) > 3.2) return; q.got = 1; lootG.remove(q.m); lootGrant(q.kind, q.k); if (RL.list.every((x) => x.got)) { RL.done = performance.now(); const b = Math.round(earn(60 + (G.ph || 0) * 6)); toast(`🧭 Minimissão do rover cumprida! +${b} 🪙`, 3500); save(); } });
+}
 // ---------- dirigir o rover ----------
 function nearestRover(r) { let b = null, d = r || 6.5; G.placed.forEach((p) => { if (p.t != "rover") return; const q = Math.hypot(p.m.position.x - PL.x, p.m.position.z - PL.z); if (q < d) { d = q; b = p; } }); return b; }
 function driveRover(p) {
   if (DR || IN || DLG || !G.run || G.mode == "nav" || (G.paused && G.mode != "mp")) return;
   DR = { p, v: 0, ang: p.m.rotation.y }; p.park = true; p.m.rotation.order = "YXZ"; PL.g.visible = false; PL.x = p.m.position.x; PL.z = p.m.position.z;
-  yaw = Math.atan2(-Math.cos(DR.ang), Math.sin(DR.ang)); pit = .5; dist = 14; toast("🚙 Dirigindo o rover: W/S acelera, A/D vira · E ou Esc para sair", 3800);
+  yaw = Math.atan2(-Math.cos(DR.ang), Math.sin(DR.ang)); pit = .5; dist = 14; if (!RL || performance.now() - RL.at > 240000 || (RL.done && performance.now() - RL.done > 60000)) rollRoverLoot(); lootG.visible = true; toast("🚙 Rover: W/S acelera, A/D vira · E/Esc sai. 🧭 Minimissão: colete os achados (só aparecem enquanto você dirige)", 5200);
 }
 function exitRover() {
-  if (!DR) return; const p = DR.p, a = DR.ang; DR = null; p.x = p.m.position.x; p.z = p.m.position.z; p.m.rotation.z = 0;
+  if (!DR) return; lootG.visible = false; const p = DR.p, a = DR.ang; DR = null; p.x = p.m.position.x; p.z = p.m.position.z; p.m.rotation.z = 0;
   PL.x = p.x + Math.sin(a) * 3; PL.z = p.z + Math.cos(a) * 3; pushOut(PL, .6, solids(true)); PL.g.visible = true; sync();
 }
 function driveUpdate(dt) {
@@ -99,7 +121,7 @@ function driveUpdate(dt) {
   p.m.position.set(o.x, H(o.x, o.z), o.z); p.m.rotation.y = d.ang;
   p.m.rotation.z = clamp(Math.atan2(H(o.x + Math.cos(d.ang) * 1.3, o.z - Math.sin(d.ang) * 1.3) - H(o.x - Math.cos(d.ang) * 1.3, o.z + Math.sin(d.ang) * 1.3), 2.6), -.5, .5);
   p.m.traverse((c) => { if (c.geometry && c.geometry.type == "CylinderGeometry" && Math.abs(c.rotation.x - Math.PI / 2) < .01) c.rotation.y += d.v * dt * .9; });   // rodas giram
-  PL.x = o.x; PL.z = o.z; PL.v = Math.abs(d.v) / 9;
+  PL.x = o.x; PL.z = o.z; PL.v = Math.abs(d.v) / 9; roverLootStep(o, performance.now() / 1000);
   if (!dr && Math.abs(d.v) > 3) { const want = Math.atan2(-Math.cos(d.ang), Math.sin(d.ang)); let df = want - yaw; df = Math.atan2(Math.sin(df), Math.cos(df)); yaw += df * Math.min(1, dt * 1.6) * (d.v > 0 ? 1 : 0); }   // a câmera acompanha a direção
 }
 function nearestColonist() { let b = null, d = 7; COL.forEach((c) => { const q = Math.hypot(c.g.position.x - PL.x, c.g.position.z - PL.z); if (q < d) { d = q; b = c; } }); return b; }
@@ -147,7 +169,7 @@ const mpItems = () => (G.mode == "mp" ? mpMyItems() : null);
 function msProg(m) {
   switch (m.id) {
     case "talk": return G.st.talk; case "tidy": return G.st.tidy; case "enter": return G.st.enter.size; case "rec": return cnt("rec"); case "rover": return cnt("rover");
-    case "morale": return G.time < PH[G.ph].t - 15 + B("time") ? Math.floor(G.tk.morale) : 0; case "contact": return G.st.contact;
+    case "morale": return G.time < PH[G.ph].t - 15 + B("time") ? Math.floor(G.tk.morale) : 0; case "contact": return G.st.contact; case "loot": return G.st.loot || 0;
   } return 0;
 }
 function missions(dt) {
@@ -196,7 +218,7 @@ function hud() {
   if (G.mode == "solo" && !G.paused) goals();
   const h = $("#hint"), c = nearestColonist(), b = nearestBuilding();
   tiltUI();
-  if (DR) { setHint(h, `🚙 ${Math.round(Math.abs(DR.v) * 3.6)} km/h · ${TOUCH ? "botão" : "E"} para sair`); setAct(TOUCH ? "Sair do rover" : ""); return; }
+  if (DR) { const rem = RL ? RL.list.filter((q) => !q.got) : [], nr = rem.reduce((a, q) => Math.min(a, Math.hypot(q.x - PL.x, q.z - PL.z)), 1e9); setHint(h, `🚙 ${Math.round(Math.abs(DR.v) * 3.6)} km/h · 🧭 achados ${RL ? RL.list.length - rem.length : 0}/${RL ? RL.list.length : 0}${rem.length ? " · mais próximo " + Math.round(nr) + " m" : ""} · ${TOUCH ? "botão" : "E"} sai`); setAct(TOUCH ? "Sair do rover" : ""); return; }
   const rv = nearestRover(), roverFirst = rv && !(c && !DLG && dTo(c.g) <= dTo(rv.m));
   setAct(TOUCH ? (roverFirst ? "Dirigir rover" : c && !DLG ? "Conversar" : b ? "Entrar" : "") : "");
   setHint(h, roverFirst ? `${TOUCH ? "Toque no rover" : "E"} · dirigir o rover` : c && !DLG ? `${TOUCH ? "Toque" : "E"} · conversar com ${c.info.name}` : b ? `${TOUCH ? "Toque no edifício" : "E"} · entrar em ${TY[b.t].n} (ordem ${Math.round(b.ord * 100)}%)` : "");

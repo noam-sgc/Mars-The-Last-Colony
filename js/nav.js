@@ -16,7 +16,7 @@ function navOff() {
 function setWeatherReset() { UFOS.visible = false; sky.material.uniforms.mid.value.set(0xc8663a); sky.material.uniforms.top.value.set(0x1a0d1e); }
 function navStart(ph) {
   clear(); closeInterior(true); navOff(); const L = PH[ph].nav == 1 ? "fly" : "land";
-  G = { run: true, placed: [], mode: "nav", ph, tool: "", paused: false, tk: {}, rate: {}, hold: 0, time: 0, msd: {}, st: { talk: 0, tidy: 0, enter: new Set(), contact: 0 }, lastTalk: {} };
+  G = { run: true, placed: [], mode: "nav", ph, tool: "", paused: false, tk: {}, rate: {}, hold: 0, time: 0, msd: {}, st: { talk: 0, tidy: 0, enter: new Set(), contact: 0, loot: 0 }, lastTalk: {} };
   buildHud(); screen("hud"); ["#ht", "#hr", "#hs", "#pk"].forEach((s) => ($(s).style.display = "none")); $("#gl").style.display = ""; $("#pal").style.display = "none"; $("#nt").style.display = "block";
   ter.visible = L == "land"; ROCKS.forEach((r) => (r.visible = L == "land")); dust.visible = L == "land"; sky.visible = L == "land";
   N = { L, g: [], nx: 0, ny: 0, btn: 0, fuel: 100, hull: 100, t: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, prog: 0, obs: [], sp: 1, cp: 1.5, shake: 0 };
