@@ -128,6 +128,20 @@ const UP = [
   { id: "h9", k: "Hardware", n: "Cristais xeno", d: "+30% de Eficiência e -20% no consumo de O₂", c: 800, pm: { eff: .3 }, cr: { oxy: .2 } },
   { id: "h10", k: "Hardware", n: "Robôs de manutenção", d: "Edifícios perdem ordem 40% mais devagar", c: 600, tidy: .4 },
 ];
+// Bônus passivos por espécie (grátis; a espécie pode ser trocada a qualquer momento no Guarda-roupa).
+const SPB = { human: { disc: .1, rw: .1 }, alien: { pm: { eff: .15, morale: .1 }, cr: { oxy: .15 } } };
+const SPB_TXT = { human: "−10% no custo das peças · +10% de moedas por fase", alien: "+15% Eficiência · +10% Moral · −15% consumo de O₂" };
+const SPN = { human: "🧑‍🚀 Humano", alien: "👽 Alienígena" };
+// Itens da loja exclusivos de cada espécie (só funcionam enquanto você estiver nela).
+UP.push(
+  { id: "hs1", sp: "human", k: "Hardware", n: "Cúpulas de engenheiros colonos", d: "+25% de Comida produzida", c: 450, pm: { food: .25 } },
+  { id: "hs2", sp: "human", k: "Software", n: "Treinamento de astronautas", d: "+30 s em cada fase", c: 400, time: 30 },
+  { id: "hs3", sp: "human", k: "Software", n: "Rede de comércio humana", d: "+20% de moedas por fase", c: 600, rw: .2 },
+  { id: "hs4", sp: "human", k: "Hardware", n: "Cooperativas de colonos", d: "-20% no consumo de água e +10% de Moral", c: 500, cr: { water: .2 }, pm: { morale: .1 } },
+  { id: "as1", sp: "alien", k: "Hardware", n: "Cristais de luz viva", d: "+30% de Moral produzida", c: 450, pm: { morale: .3 } },
+  { id: "as2", sp: "alien", k: "Hardware", n: "Respiração xeno", d: "-25% no consumo de oxigênio", c: 500, cr: { oxy: .25 } },
+  { id: "as3", sp: "alien", k: "Hardware", n: "Pulso gravitacional", d: "+30% de Eficiência produzida", c: 550, pm: { eff: .3 } },
+  { id: "as4", sp: "alien", k: "Software", n: "Telepatia coletiva", d: "+20 s em cada fase e +10% de moedas", c: 600, time: 20, rw: .1 });
 const allUP = () => UP.concat((CAT && CAT.up) || []);
 
 // ---------- cosméticos ----------
@@ -139,6 +153,8 @@ const CX = [
   { id: "p0", l: "p", n: "Calça cinza padrão", c: 0, col: "#808690" }, { id: "p1", l: "p", n: "Calça verde militar", c: 100, col: "#4f6b3a" }, { id: "p2", l: "p", n: "Calça vermelha marciana", c: 120, col: "#b8432b" }, { id: "p3", l: "p", n: "Calça preta tática", c: 150, col: "#1e1e22" },
   { id: "w0", l: "w", n: "Sem relógio", c: 0, col: "" }, { id: "w1", l: "w", n: "Relógio cronógrafo prata", c: 80, col: "#d0d4dc" }, { id: "w2", l: "w", n: "Relógio neon ciano", c: 180, col: "#22e6ff", glow: "#22e6ff" }, { id: "w3", l: "w", n: "Relógio de ouro", c: 400, col: "#ffcc33", glow: "#ffcc33" },
   { id: "h0", l: "h", n: "Capacete branco", c: 0, col: "#f0f0f0" }, { id: "h1", l: "h", n: "Capacete grafite", c: 120, col: "#555a66" }, { id: "h2", l: "h", n: "Capacete laranja", c: 160, col: "#ff9a3c" }, { id: "h3", l: "h", n: "Capacete cromado", c: 300, col: "#c8d6e8", glow: "#9ec9ff" },
+  { id: "s7", l: "s", n: "Traje Pioneiro de Marte", c: 180, col: "#c9a66b", sp: "human" }, { id: "h5", l: "h", n: "Capacete Explorador", c: 150, col: "#d9c27a", sp: "human" },
+  { id: "s8", l: "s", n: "Manto Estelar", c: 220, col: "#6a4cff", glow: "#a58bff", sp: "alien" }, { id: "h6", l: "h", n: "Bolha Cósmica", c: 200, col: "#7fe8ff", glow: "#7fe8ff", sp: "alien" },
   { id: "b0", l: "b", n: "Mochila padrão", c: 0, col: "#b9bcc4" }, { id: "b1", l: "b", n: "Mochila de oxigênio azul", c: 110, col: "#4a86e8" }, { id: "b2", l: "b", n: "Mochila reforçada", c: 170, col: "#6b5a44" }, { id: "b3", l: "b", n: "Mochila a jato", c: 350, col: "#ff6a2b", glow: "#ffa04a" },
 ];
 const SL = { s: "Trajes", p: "Calças", w: "Relógios", h: "Capacetes", b: "Mochilas", e: "Eventos", a: "Admin" };

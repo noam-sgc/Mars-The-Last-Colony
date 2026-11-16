@@ -85,7 +85,7 @@ function menu() {
   const m = $("#menu"); m.style.backgroundImage = `url(${IMG.b})`;
   m.innerHTML = `<h1>MARS<small>THE LAST COLONY</small></h1>
   <div class="ubar"><div class="pill">${ACC.user ? `${MarsRules.flag(ACC.cc)} <b>${esc(ACC.user)}</b>${vfBadge(ACC.role, ACC.vf)}${roleChip(ACC.role)} <button class="gh" id="mlo" style="padding:2px 8px">Sair</button>` : `👤 Convidado <button class="gh" id="mlo" style="padding:2px 8px">Entrar</button>`}</div>
-  <div class="pill" style="text-align:center">🪙 <b>${Math.floor(S.coins)}</b> · ✨ <b>${P.cr}</b> · 🏆 <b>${P.pp}</b> PP · 🔬 <b>${P.rp}</b> RP</div></div>${ev}
+  <div class="pill" id="mspc" style="cursor:pointer" title="Trocar de espécie (grátis)">${SPN[P.sp]}</div><div class="pill" style="text-align:center">🪙 <b>${Math.floor(S.coins)}</b> · ✨ <b>${P.cr}</b> · 🏆 <b>${P.pp}</b> PP · 🔬 <b>${P.rp}</b> RP</div></div>${ev}
   <div class="pill" id="mworld" style="text-align:center">${worldLine()} ${NET.mode == "local" && P2P.ready ? `<button id="mwc" style="padding:2px 8px">📋 Copiar código</button>` : ""} <button class="gh" id="msw" style="padding:2px 8px">Trocar de mundo</button></div>
   <div class="mb"><button class="big pri" data-m="solo">Modo Solo · Campanha<small>30 fases + nova campanha alienígena (15 fases)</small></button>
   <button data-m="sand">Sandbox<small>Construção livre</small></button><button data-m="mp">Multiplayer<small>Coop · Equipes · Todos contra todos</small></button>
@@ -96,7 +96,7 @@ function menu() {
   ${isAdminAcc() ? `<button data-m="adm" class="big" style="border-color:#6a4cff">🛡 Ferramentas ADM${isArtistAcc() ? " · Estúdio de criação" : ""}</button>` : ""}</div><div id="msg"></div>`;
   screen("menu"); sc.fog.density = .006;
   m.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => { const k = b.dataset.m; if (k == "solo") cat(); else if (k == "sand") start("sand"); else if (k == "mp") lobby(); else if (k == "ward") ward(); else if (k == "shop") shop(true); else if (k == "soc") social(); else if (k == "lbd") board(); else if (k == "evt") eventsPanel(); else if (k == "quiz") quizHome(); else if (k == "facts") factsHome(); else if (k == "adm") adminTools(); }));
-  askSpecies(); $("#mlo").onclick = () => (ACC.user ? logout() : authScreen()); $("#msw").onclick = () => switchWorld(); if ($("#mwc")) $("#mwc").onclick = () => copyText(P2P.code, "Código do mundo");
+  $("#mspc").onclick = () => ward(); askSpecies(); $("#mlo").onclick = () => (ACC.user ? logout() : authScreen()); $("#msw").onclick = () => switchWorld(); if ($("#mwc")) $("#mwc").onclick = () => copyText(P2P.code, "Código do mundo");
 }
 
 // ---------- catálogo e loja ----------
@@ -115,7 +115,8 @@ function fin(s) { $("#fi").src = s; $("#fin").classList.add("on"); }
 $("#fb").onclick = () => { $("#fin").classList.remove("on"); clear(); cat(); };
 function shop(on) {
   $("#shop").classList.toggle("on", on); if (G.run && G.mode != "mp" && !IN) G.paused = on; if (!on) return; $("#sc").textContent = Math.floor(S.coins); $("#sr").textContent = P.rp; const l = $("#sl"); l.innerHTML = "";
-  allUP().forEach((u) => { const o = S.own.includes(u.id), d = document.createElement("div"); d.className = "up"; d.innerHTML = `<div><span class="tag">${u.k}${u.by ? " · ✨ " + esc(u.by) : ""}</span><br><b>${esc(u.n)}</b><p>${esc(u.d)}</p></div>`;
+  const sb = document.createElement("div"); sb.className = "pill"; sb.style.cssText = "margin:8px 0;font-size:12px"; sb.innerHTML = `${SPN[P.sp]} · bônus grátis: <b>${SPB_TXT[P.sp]}</b><br><span class="mu">Os itens marcados com a sua espécie só funcionam enquanto você estiver nela (troque a qualquer momento no Guarda-roupa).</span>`; l.appendChild(sb);
+  allUP().filter(spOk).sort((a, b) => (a.sp ? 0 : 1) - (b.sp ? 0 : 1)).forEach((u) => { const o = S.own.includes(u.id), d = document.createElement("div"); d.className = "up"; d.innerHTML = `<div><span class="tag">${u.sp ? SPN[u.sp] + " · " : ""}${u.k}${u.by ? " · ✨ " + esc(u.by) : ""}</span><br><b>${esc(u.n)}</b><p>${esc(u.d)}</p></div>`;
     const b = document.createElement("button"); b.textContent = o ? "Instalado" : u.c + " 🪙"; b.disabled = o || S.coins < u.c; b.onclick = () => { S.coins -= u.c; S.own.push(u.id); save(); shop(true); if (G.run && G.mode != "nav") pal(); }; d.appendChild(b);
     if (!o) { const r = Math.min(P.rp, u.c), b2 = document.createElement("button"); b2.textContent = r ? (r >= u.c ? "100% com RP" : u.c - r + " 🪙 + " + r + " RP") : "Sem RP"; b2.disabled = !r || S.coins < u.c - r; b2.onclick = () => { S.coins -= u.c - r; P.rp -= r; S.own.push(u.id); save(); saveP(); shop(true); }; d.appendChild(b2); } l.appendChild(d); });
 }
@@ -134,11 +135,11 @@ function eventsPanel() {
 }
 
 // ---------- espécie: humano ou alienígena ----------
-function setSpecies(sp) { P.sp = sp === "alien" ? "alien" : "human"; P.spChosen = true; saveP(); if ($("#ward").classList.contains("on")) ward(); }
+function setSpecies(sp) { P.sp = sp === "alien" ? "alien" : "human"; P.spChosen = true; LAYERS.forEach((l) => { const it = cxById(P.eq[l]); if (it && it.sp && it.sp !== P.sp) P.eq[l] = DEF_EQ[l]; }); saveP(); if ($("#ward").classList.contains("on")) ward(); }
 function askSpecies() {
   if (P.spChosen) return;
-  openDlgHTML(`<div class="dlgh"><div class="av">🪐</div><div><b>Quem é você em Marte?</b><div class="mu">Escolha sua espécie. Você pode mudar depois no Guarda-roupa.</div></div></div>
-  <div class="row" style="margin-top:12px;gap:12px"><button id="pH" style="flex:1;padding:16px"><div style="font-size:40px">🧑‍🚀</div><b>Humano</b><br><small class="mu">Astronauta colonizador</small></button><button id="pA" style="flex:1;padding:16px"><div style="font-size:40px">👽</div><b>Alienígena</b><br><small class="mu">Visitante pacífico das estrelas</small></button></div>
+  openDlgHTML(`<div class="dlgh"><div class="av">🪐</div><div><b>Quem é você em Marte?</b><div class="mu">Escolha sua espécie: é grátis e dá para mudar a qualquer momento no Guarda-roupa. Cada uma tem bônus e itens próprios na loja.</div></div></div>
+  <div class="row" style="margin-top:12px;gap:12px"><button id="pH" style="flex:1;padding:16px"><div style="font-size:40px">🧑‍🚀</div><b>Humano</b><br><small class="mu">Astronauta colonizador<br><b>Bônus:</b> ${SPB_TXT.human}</small></button><button id="pA" style="flex:1;padding:16px"><div style="font-size:40px">👽</div><b>Alienígena</b><br><small class="mu">Visitante pacífico das estrelas<br><b>Bônus:</b> ${SPB_TXT.alien}</small></button></div>
   <div class="row" style="margin-top:10px;justify-content:center"><button class="gh" id="pL">Decidir depois</button></div>`);
   const done = (sp) => { if (sp) P.sp = sp; P.spChosen = true; saveP(); $("#dlg").classList.remove("on"); };
   $("#pH").onclick = () => done("human"); $("#pA").onclick = () => done("alien"); $("#pL").onclick = () => done(null);
@@ -148,7 +149,7 @@ let WTAB = "s", WTRY = null;
 function ward() {
   screen("ward"); $("#ward").className = "scr pg on"; const el = $("#ward"); const role = ACC.role;
   const tabs = ["s", "p", "w", "h", "b", "e"].concat(isAdminAcc() ? ["a"] : []); if (!tabs.includes(WTAB)) WTAB = "s";
-  el.innerHTML = `<div class="left"><div class="top" style="width:100%"><button id="rb2">← Voltar</button><h2>Guarda-roupa</h2></div><div class="pv" id="pv"></div><div class="pill w" style="width:100%;text-align:center"><b>Espécie</b><div class="row" style="justify-content:center;margin-top:6px"><button id="spH" class="${P.sp != "alien" ? "sel" : ""}">🧑‍🚀 Humano</button><button id="spA" class="${P.sp == "alien" ? "sel" : ""}">👽 Alienígena</button></div>${P.sp == "alien" ? `<div class="row" style="justify-content:center;margin-top:8px">${Object.keys(SKINS).map((k) => `<button class="sw-btn ${P.skin == k ? "sel" : ""}" data-sk="${k}" title="${SKINS[k].n}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${SKINS[k].c};box-shadow:0 0 8px ${SKINS[k].g}"></button>`).join("")}</div><small class="mu">Cor da pele</small>` : ""}</div><div class="pill" style="text-align:center">Créditos: <b id="wc">${P.cr}</b> · PP: <b>${P.pp}</b></div><div class="row"><button id="wsp">⏸ Girar</button><button id="wrs">Padrão</button></div><small class="mu" style="text-align:center">Toque num item para experimentar. Arraste o boneco para girar.</small></div>
+  el.innerHTML = `<div class="left"><div class="top" style="width:100%"><button id="rb2">← Voltar</button><h2>Guarda-roupa</h2></div><div class="pv" id="pv"></div><div class="pill w" style="width:100%;text-align:center"><b>Espécie</b><div class="row" style="justify-content:center;margin-top:6px"><button id="spH" class="${P.sp != "alien" ? "sel" : ""}">🧑‍🚀 Humano</button><button id="spA" class="${P.sp == "alien" ? "sel" : ""}">👽 Alienígena</button></div><small class="mu" style="display:block;margin-top:6px">Grátis e pode mudar a qualquer momento.<br><b>Bônus:</b> ${SPB_TXT[P.sp]}</small>${P.sp == "alien" ? `<div class="row" style="justify-content:center;margin-top:8px">${Object.keys(SKINS).map((k) => `<button class="sw-btn ${P.skin == k ? "sel" : ""}" data-sk="${k}" title="${SKINS[k].n}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${SKINS[k].c};box-shadow:0 0 8px ${SKINS[k].g}"></button>`).join("")}</div><small class="mu">Cor da pele</small>` : ""}</div><div class="pill" style="text-align:center">Créditos: <b id="wc">${P.cr}</b> · PP: <b>${P.pp}</b></div><div class="row"><button id="wsp">⏸ Girar</button><button id="wrs">Padrão</button></div><small class="mu" style="text-align:center">Toque num item para experimentar. Arraste o boneco para girar.</small></div>
   <div class="right"><div class="tabs">${tabs.map((t) => `<button data-t="${t}" class="${t == WTAB ? "sel" : ""}">${SL[t]}</button>`).join("")}</div><div class="items" id="wi"></div></div>`;
   $("#rb2").onclick = () => { if (window.studioStop) studioStop(); menu(); }; el.querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => { WTAB = b.dataset.t; ward(); }));
   const eq = () => Object.assign({}, myEq(), WTRY || {});
@@ -157,8 +158,10 @@ function ward() {
   $("#spH").onclick = () => setSpecies("human"); $("#spA").onclick = () => setSpecies("alien"); el.querySelectorAll("[data-sk]").forEach((b) => (b.onclick = () => { P.skin = b.dataset.sk; saveP(); ward(); }));
   $("#wrs").onclick = () => { WTRY = null; P.eq = Object.assign({}, DEF_EQ); saveP(); ward(); };
   $("#wsp").onclick = () => { if (pv) { pv.spin = !pv.spin; $("#wsp").textContent = pv.spin ? "⏸ Girar" : "▶ Girar"; } };
+  const spItem = (x) => !x.sp || x.sp === P.sp;
   let items = []; if (WTAB == "e") items = allCX().filter((x) => x.ev || String(x.id).startsWith("ev_")); else if (WTAB == "a") items = allCX().filter((x) => x.adm && canUseItem(x)); else items = allCX().filter((x) => x.l == WTAB && !x.ev && !String(x.id).startsWith("ev_") && !(x.adm));
   if (WTAB == "e") { EV.active.forEach((e) => { if (!items.some((i) => i.id == e.suit.id)) items.push(e.suit); }); }
+  items = items.filter(spItem);
   const wi = $("#wi"); if (!items.length) wi.innerHTML = `<p class="mu">Nada aqui ainda. ${WTAB == "e" ? "Resgate trajes durante os eventos!" : ""}</p>`;
   items.forEach((x) => {
     const o = P.own.includes(x.id), equipped = P.eq[x.l] == x.id, usable = canUseItem(x), d = document.createElement("div"); d.className = "it" + (equipped ? " eq" : "");
