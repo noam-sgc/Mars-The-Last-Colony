@@ -1,0 +1,7 @@
+server/
+docs/
+tests/
+tools/
+Dockerfile
+render.yaml
+node_modules/

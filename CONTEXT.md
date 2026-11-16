@@ -21,8 +21,8 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 ### 2.2 Contas, papéis e verificação
 - Autenticação com **usuário + senha + país**. Convidado pode jogar Solo/Sandbox/bots, mas sem chat/amigos/multi online.
 - **Admins (3):** `ADMVinnil`, `ADMKezle`, `ADMLefaar` → acesso às *admin tools*: **mensagens globais** e **organização de eventos**.
-- **Desenhistas (2):** apenas `ADMKezle` e `ADMLefaar` → *Estúdio*: criar e **publicar globalmente** cosméticos, **peças** e **upgrades**.
-  (`ADMVinnil` é admin, mas **não** é desenhista.)
+- **Desenhistas (2):** apenas `ADMVinnil` e `ADMKezle` → *Estúdio*: criar e **publicar globalmente** cosméticos, **peças** e **upgrades**.
+  (`ADMLefaar` é admin, mas **não** é desenhista.)
 - Nomes reservados: ninguém mais pode registrar esses nomes nem qualquer nome iniciado em `ADM`.
 - **Selo de verificação (✔)**: administradores (selo dourado) e **amigos de administradores** (selo azul).
 - Trajes **para admins** (`adm_*`) só podem ser equipados por admins/desenhistas (validado no cliente **e** no servidor).
