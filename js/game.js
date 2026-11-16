@@ -169,19 +169,33 @@ function camU() {
   cam.position.set(tx + dist * Math.cos(pit) * Math.sin(yaw), ty + dist * Math.sin(pit), tz + dist * Math.cos(pit) * Math.cos(yaw));
   cam.lookAt(tx, ty, tz);
 }
+// ---------- colisão: ninguém atravessa edifícios, rochas ou peças dos outros ----------
+const COLR = { hab: 3.0, green: 3.3, rec: 2.7, emb: 2.9, xeno: 2.6, fuel: 2.5, solar: 2.2, ctrl: 2.2, hydro: 2.1, drill: 1.9, rover: 1.8, purif: 1.7, oxy: 1.5, ant: 1.2 };
+const solidR = (t) => { const c = TY[t] && TY[t].custom; return COLR[t] || (c ? Math.max(1.8, c.shape == "dome" ? (c.w || 3) + .3 : (c.w || 3) / 2 + .8) : 2.2); };
+/** Círculos sólidos do mundo: peças próprias (rover em movimento incluído), peças de outros jogadores/bots e rochas. */
+function solids(withExt) {
+  const out = []; G.placed.forEach((p) => out.push({ x: p.t == "rover" ? p.m.position.x : p.x, z: p.t == "rover" ? p.m.position.z : p.z, r: solidR(p.t) }));
+  if (withExt && G.mode == "mp" && MP.ents) MP.ents.forEach((e) => { if (!e.me) e.items.forEach((q) => out.push({ x: q.x, z: q.z, r: solidR(q.t) })); });
+  ROCKS.forEach((r) => out.push({ x: r.position.x, z: r.position.z, r: r.userData.rad || 1 })); return out;
+}
+function pushOut(o, rad, list) {
+  for (let it = 0; it < 3; it++) { let moved = false; for (const c of list) { const dx = o.x - c.x, dz = o.z - c.z, min = c.r + rad, d2 = dx * dx + dz * dz; if (d2 < min * min) { const d = Math.sqrt(d2) || .001; o.x = c.x + dx / d * min; o.z = c.z + dz / d * min; moved = true; } } if (!moved) break; }
+}
 function movePlayer(dt, t) {
   if (!PL.g || DLG || (G.paused && G.mode != "mp") || IN) return;
   const [ax, ay] = INP.ax(), len = Math.hypot(ax, ay), s = Math.sin(yaw), c = Math.cos(yaw);
   let mx = 0, mz = 0; if (len > .05) { const k = Math.min(1, len); mx = (-s * ay + c * ax) / len * k; mz = (-c * ay - s * ax) / len * k; }
   PL.x = clamp(PL.x + mx * 9 * dt, -125, 125); PL.z = clamp(PL.z + mz * 9 * dt, -125, 125);
-  G.placed.forEach((p) => { const dx = PL.x - p.x, dz = PL.z - p.z, d = Math.hypot(dx, dz); if (d < 3.1 && d > 0) { PL.x = p.x + dx / d * 3.1; PL.z = p.z + dz / d * 3.1; } });
+  pushOut(PL, .6, solids(true)); PL.x = clamp(PL.x, -125, 125); PL.z = clamp(PL.z, -125, 125);
   PL.v = Math.hypot(mx, mz); if (PL.v > .05) { const a = Math.atan2(mx, mz); let d = a - PL.ry; d = Math.atan2(Math.sin(d), Math.cos(d)); PL.ry += d * Math.min(1, dt * 12); }
   PL.g.position.set(PL.x, H(PL.x, PL.z), PL.z); PL.g.rotation.y = PL.ry; walkAnim(PL.g, t, PL.v);
 }
 function moveColonists(dt, t) {
+  const sol = solids(false);
   COL.forEach((c) => {
     const p = c.g.position; c.wait -= dt; let mv = 0;
     if (c.wait <= 0) { const dx = c.tx - p.x, dz = c.tz - p.z, d = Math.hypot(dx, dz); if (d < .5) { c.wait = 2 + Math.random() * 5; const a = Math.random() * 6.28, r = 6 + Math.random() * 22; c.tx = clamp(Math.cos(a) * r, -60, 60); c.tz = clamp(Math.sin(a) * r, -60, 60); } else { const sp = c.alien ? 1.6 : 2.1; if (!DLG || DLG !== c) { p.x += dx / d * sp * dt; p.z += dz / d * sp * dt; c.g.rotation.y = Math.atan2(dx, dz); mv = 1; } } }
+    if (!c.alien || true) { const o = { x: p.x, z: p.z }; pushOut(o, .5, sol); p.x = o.x; p.z = o.z; }
     p.y = H(p.x, p.z) + (c.alien ? .35 + .15 * Math.sin(t * 3) : 0); walkAnim(c.g, t + c.mood, mv);
   });
 }
