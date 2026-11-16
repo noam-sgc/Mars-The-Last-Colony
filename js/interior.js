@@ -37,7 +37,7 @@ function openInterior(p) {
   for (let i = 0; i < total; i++) { const o = mkItem(i), s = slots[i % slots.length], it = { o, slot: s, tidy: i >= messy, fly: 0 };
     if (it.tidy) { o.position.set(s.x, s.y + .1, s.z); o.userData.ring.visible = false; } else { let x, z; do { x = (Math.random() * 2 - 1) * (RW - 3); z = (Math.random() * 2 - 1) * (RD - 3) + 1; } while (Math.hypot(x, z + 2) < 6.5 || solidBoxes.some((b) => Math.abs(x - b.x) < b.w / 2 + 1.2 && Math.abs(z - b.z) < b.d / 2 + 1.2)); o.position.set(x, .4, z); o.rotation.set(Math.random() * .4, Math.random() * 6, Math.random() * .4); o.userData.ring.position.set(x, .03, z); }
     items.push(it); }
-  const pg = av(P.eq); pg.position.set(0, 0, RD - 1); isc.add(pg);
+  const pg = av(myEq()); pg.position.set(0, 0, RD - 1); isc.add(pg);
   const cols = []; const nc = 1 + (G.placed.length > 4 ? 1 : 0) + (p.t == "emb" || (G.mode == "solo" && PH[G.ph].alien) ? 1 : 0);
   for (let i = 0; i < nc; i++) { const al = i == nc - 1 && (p.t == "emb" || (G.mode == "solo" && PH[G.ph].alien)), g = mkColonist(77 + i * 31 + p.x, al); g.position.set(-6 + i * 6, 0, 4); isc.add(g); cols.push({ g, x: g.position.x, z: g.position.z, tx: g.position.x, tz: 4, wait: 1, alien: al, info: g.userData.info, mood: 70 }); }
   IN = { solidBoxes, p, sc: isc, cam: icam, pg, x: 0, z: RD - 1, ry: Math.PI, yaw: 0, pit: .5, dist: 10, items, cols, door, v: 0, done: !messy, ring: [] };

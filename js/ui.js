@@ -96,7 +96,7 @@ function menu() {
   ${isAdminAcc() ? `<button data-m="adm" class="big" style="border-color:#6a4cff">🛡 Ferramentas ADM${isArtistAcc() ? " · Estúdio de criação" : ""}</button>` : ""}</div><div id="msg"></div>`;
   screen("menu"); sc.fog.density = .006;
   m.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => { const k = b.dataset.m; if (k == "solo") cat(); else if (k == "sand") start("sand"); else if (k == "mp") lobby(); else if (k == "ward") ward(); else if (k == "shop") shop(true); else if (k == "soc") social(); else if (k == "lbd") board(); else if (k == "evt") eventsPanel(); else if (k == "quiz") quizHome(); else if (k == "facts") factsHome(); else if (k == "adm") adminTools(); }));
-  $("#mlo").onclick = () => (ACC.user ? logout() : authScreen()); $("#msw").onclick = () => switchWorld(); if ($("#mwc")) $("#mwc").onclick = () => copyText(P2P.code, "Código do mundo");
+  askSpecies(); $("#mlo").onclick = () => (ACC.user ? logout() : authScreen()); $("#msw").onclick = () => switchWorld(); if ($("#mwc")) $("#mwc").onclick = () => copyText(P2P.code, "Código do mundo");
 }
 
 // ---------- catálogo e loja ----------
@@ -133,17 +133,28 @@ function eventsPanel() {
   $("#cls").onclick = closeModal; $("#admb").querySelectorAll("[data-c]").forEach((b) => (b.onclick = () => { const e = EV.active.find((x) => x.id == b.dataset.c); if (e && EV.claim(e)) { toast(`🎽 Traje resgatado: ${esc(e.suit.n)}`); eventsPanel(); } }));
 }
 
+// ---------- espécie: humano ou alienígena ----------
+function setSpecies(sp) { P.sp = sp === "alien" ? "alien" : "human"; P.spChosen = true; saveP(); if ($("#ward").classList.contains("on")) ward(); }
+function askSpecies() {
+  if (P.spChosen) return;
+  openDlgHTML(`<div class="dlgh"><div class="av">🪐</div><div><b>Quem é você em Marte?</b><div class="mu">Escolha sua espécie. Você pode mudar depois no Guarda-roupa.</div></div></div>
+  <div class="row" style="margin-top:12px;gap:12px"><button id="pH" style="flex:1;padding:16px"><div style="font-size:40px">🧑‍🚀</div><b>Humano</b><br><small class="mu">Astronauta colonizador</small></button><button id="pA" style="flex:1;padding:16px"><div style="font-size:40px">👽</div><b>Alienígena</b><br><small class="mu">Visitante pacífico das estrelas</small></button></div>
+  <div class="row" style="margin-top:10px;justify-content:center"><button class="gh" id="pL">Decidir depois</button></div>`);
+  const done = (sp) => { if (sp) P.sp = sp; P.spChosen = true; saveP(); $("#dlg").classList.remove("on"); };
+  $("#pH").onclick = () => done("human"); $("#pA").onclick = () => done("alien"); $("#pL").onclick = () => done(null);
+}
 // ---------- guarda-roupa ----------
 let WTAB = "s", WTRY = null;
 function ward() {
   screen("ward"); $("#ward").className = "scr pg on"; const el = $("#ward"); const role = ACC.role;
   const tabs = ["s", "p", "w", "h", "b", "e"].concat(isAdminAcc() ? ["a"] : []); if (!tabs.includes(WTAB)) WTAB = "s";
-  el.innerHTML = `<div class="left"><div class="top" style="width:100%"><button id="rb2">← Voltar</button><h2>Guarda-roupa</h2></div><div class="pv" id="pv"></div><div class="pill" style="text-align:center">Créditos: <b id="wc">${P.cr}</b> · PP: <b>${P.pp}</b></div><div class="row"><button id="wsp">⏸ Girar</button><button id="wrs">Padrão</button></div><small class="mu" style="text-align:center">Toque num item para experimentar. Arraste o boneco para girar.</small></div>
+  el.innerHTML = `<div class="left"><div class="top" style="width:100%"><button id="rb2">← Voltar</button><h2>Guarda-roupa</h2></div><div class="pv" id="pv"></div><div class="pill w" style="width:100%;text-align:center"><b>Espécie</b><div class="row" style="justify-content:center;margin-top:6px"><button id="spH" class="${P.sp != "alien" ? "sel" : ""}">🧑‍🚀 Humano</button><button id="spA" class="${P.sp == "alien" ? "sel" : ""}">👽 Alienígena</button></div>${P.sp == "alien" ? `<div class="row" style="justify-content:center;margin-top:8px">${Object.keys(SKINS).map((k) => `<button class="sw-btn ${P.skin == k ? "sel" : ""}" data-sk="${k}" title="${SKINS[k].n}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${SKINS[k].c};box-shadow:0 0 8px ${SKINS[k].g}"></button>`).join("")}</div><small class="mu">Cor da pele</small>` : ""}</div><div class="pill" style="text-align:center">Créditos: <b id="wc">${P.cr}</b> · PP: <b>${P.pp}</b></div><div class="row"><button id="wsp">⏸ Girar</button><button id="wrs">Padrão</button></div><small class="mu" style="text-align:center">Toque num item para experimentar. Arraste o boneco para girar.</small></div>
   <div class="right"><div class="tabs">${tabs.map((t) => `<button data-t="${t}" class="${t == WTAB ? "sel" : ""}">${SL[t]}</button>`).join("")}</div><div class="items" id="wi"></div></div>`;
   $("#rb2").onclick = () => { if (window.studioStop) studioStop(); menu(); }; el.querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => { WTAB = b.dataset.t; ward(); }));
-  const eq = () => Object.assign({}, P.eq, WTRY || {});
+  const eq = () => Object.assign({}, myEq(), WTRY || {});
   const pv = new MiniView($("#pv"), 300, 360);
   const refresh = () => { if (pv) pv.setObj(av(eq()), 0); }; refresh();
+  $("#spH").onclick = () => setSpecies("human"); $("#spA").onclick = () => setSpecies("alien"); el.querySelectorAll("[data-sk]").forEach((b) => (b.onclick = () => { P.skin = b.dataset.sk; saveP(); ward(); }));
   $("#wrs").onclick = () => { WTRY = null; P.eq = Object.assign({}, DEF_EQ); saveP(); ward(); };
   $("#wsp").onclick = () => { if (pv) { pv.spin = !pv.spin; $("#wsp").textContent = pv.spin ? "⏸ Girar" : "▶ Girar"; } };
   let items = []; if (WTAB == "e") items = allCX().filter((x) => x.ev || String(x.id).startsWith("ev_")); else if (WTAB == "a") items = allCX().filter((x) => x.adm && canUseItem(x)); else items = allCX().filter((x) => x.l == WTAB && !x.ev && !String(x.id).startsWith("ev_") && !(x.adm));
