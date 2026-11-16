@@ -57,7 +57,8 @@
     isVerified(k) {
       const u = this.store.users[k]; if (!u) return false;
       if (R.isAdmin(u.name)) return true;
-      return u.friends.some((f) => this.store.users[f] && R.isAdmin(this.store.users[f].name));
+      const gf = u.prof && u.prof.p && u.prof.p.fr && u.prof.p.fr.f;
+      return u.friends.some((f) => this.store.users[f] && R.isAdmin(this.store.users[f].name)) || (Array.isArray(gf) && gf.some((n) => R.isAdmin(n)));
     }
     pub(k) {
       const u = this.store.users[k]; if (!u) return null;
@@ -170,8 +171,9 @@
       const allowed = (id) => { const it = all.find((x) => x.id === id); return !it || R.canUse(it, role); };
       const own = (Array.isArray(p.own) ? p.own : []).filter((x) => typeof x === "string" && x.length < 40 && allowed(x)).slice(0, 300);
       const eq = {}; ["s", "p", "w", "h", "b"].forEach((l) => { const id = p.eq && p.eq[l]; eq[l] = typeof id === "string" && allowed(id) && own.includes(id) ? id : l + "0"; });
+      const nm = (a) => (Array.isArray(a) ? a.filter((x) => R.validName(x)).slice(0, 300) : []), fr0 = p.fr || {}, frs = { f: nm(fr0.f), in: nm(fr0.in), out: nm(fr0.out) };
       const evs = {}; Object.keys(p.evs || {}).slice(0, 100).forEach((id) => { const e = p.evs[id] || {}; if (/^ev_[\w-]{1,40}$/.test(id)) evs[id] = { id, l: "s", c: 0, ev: clean(e.ev, 40), n: clean(e.n, 60), col: color(e.col, "#ff6a2b"), glow: color(e.glow, "#ff6a2b") }; });
-      return { p: { cr: num(p.cr, 0, 1e9, 0), pp: num(p.pp, 0, 1e9, 0), rp: num(p.rp, 0, 1e9, 0), w: num(p.w, 0, 1e6, 0), own, eq, evs, day: clean(p.day, 10) },
+      return { p: { cr: num(p.cr, 0, 1e9, 0), pp: num(p.pp, 0, 1e9, 0), rp: num(p.rp, 0, 1e9, 0), w: num(p.w, 0, 1e6, 0), own, eq, evs, fr: frs, day: clean(p.day, 10) },
         s: { coins: num(s.coins, 0, 1e12, 500), own: (Array.isArray(s.own) ? s.own : []).filter((x) => typeof x === "string").slice(0, 200), done: s.done && typeof s.done === "object" ? s.done : {}, color: color(s.color, "#d8d0c4") } };
     }
 
