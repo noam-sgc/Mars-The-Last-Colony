@@ -14,8 +14,7 @@ Cada jogador tem o **próprio mundo**: o navegador dele roda a lógica do servid
 Amigos escolhem *Entrar no mundo de um amigo*, digitam o código e jogam juntos por conexão direta entre navegadores. O sinalizador gratuito do
 PeerJS só ajuda a se achar; os dados do jogo não passam por ele. As contas e o chat vivem no mundo do anfitrião, que precisa estar com o jogo aberto.
 
-**Contas ADM (3):** só existem como hash em `js/config.js`. Gere/troque as senhas com `node tools/set-admin-passwords.js`
-(ou `node tools/set-admin-passwords.js ADMKezle=nova-senha`).
+**Contas ADM (3):** os nomes `ADMVinnil`, `ADMKezle` e `ADMLefaar` são reservados: **quem os criar primeiro** (em *Criar conta*, com a própria senha) fica com o nome e com os poderes de admin/desenhista. Crie as três no seu mundo.
 
 ## Controles
 | Ação | Como |

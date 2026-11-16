@@ -26,7 +26,7 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 - **Admins (3):** `ADMVinnil`, `ADMKezle`, `ADMLefaar` → acesso às *admin tools*: **mensagens globais** e **organização de eventos**.
 - **Desenhistas (2):** apenas `ADMKezle` e `ADMLefaar` → *Estúdio*: criar e **publicar** cosméticos, **peças** e **upgrades** (valem para todos no mundo).
   (`ADMVinnil` é admin, mas **não** é desenhista.)
-- Nomes reservados: ninguém mais pode registrar esses nomes nem qualquer nome iniciado em `ADM`.
+- Nomes reservados: os três nomes acima valem para **quem os criar primeiro** (a conta é criada pelo fluxo normal, com a senha escolhida pela pessoa); depois de registrados, ninguém mais os usa. Outros nomes iniciados em `ADM` ficam proibidos.
 - **Selo de verificação (✔)**: administradores (selo dourado) e **amigos de administradores** (selo azul).
 - Trajes **para admins** (`adm_*`) só podem ser equipados por admins/desenhistas (validado no cliente **e** no servidor).
 
@@ -76,7 +76,7 @@ js/                   cliente (scripts clássicos, ordem em index.html)
   main.js             laço principal, ponteiro, HUD, boot
 shared/rules.js       papéis, países, eventos (cliente e servidor)
 shared/hub.js         lógica do "mundo" (contas, amigos, chat, grupos, salas, eventos, catálogo, ranking)
-tools/                serve.js (estático p/ dev), set-admin-passwords.js, build-preview.js
+tools/                serve.js (estático p/ dev), build-preview.js
 tests/hub.test.js     testes do Hub e das regras (node --test)
 assets/img/           imagens extraídas do antigo index.html monolítico
 vendor/three.min.js   Three.js r128 local (sem CDN)
@@ -89,14 +89,14 @@ vendor/three.min.js   Three.js r128 local (sem CDN)
 - **Sem servidor (padrão na Vercel)**: o navegador de quem cria o mundo roda o `Hub` e aceita convidados por **WebRTC**
   (código de 6 caracteres, copiável). O mesmo protocolo (`shared/hub.js`) corre pelo canal de dados WebRTC (`js/p2p.js`, `js/net.js`).
   Contas, amigos, grupos, chat, eventos e catálogo vivem no mundo do anfitrião (não há servidor global).
-  Contas ADM: só hashes PBKDF2 em `js/config.js` (`tools/set-admin-passwords.js`).
+  Contas ADM: criadas pelo fluxo normal; o primeiro a registrar o nome o possui (em cada mundo).
 
 ## 3.1 Publicação
 Veja `docs/DEPLOY.md` (site estático na Vercel; sem servidor de jogo).
 
 ## 4. Segurança
-- Contas ADM: só hashes PBKDF2 (150 mil iterações) em `js/config.js`; papéis checados no Hub do mundo (`adm.*`, `cat.*`); textos/cores/números sanitizados; limite de taxa no chat; nomes ADM reservados.
-- Um anfitrião com cliente modificado controla o próprio mundo (não afeta outros mundos). O progresso (moedas/créditos) é do cliente.
+- Senhas com PBKDF2 (150 mil iterações); papéis checados no Hub do mundo (`adm.*`, `cat.*`); textos/cores/números sanitizados; limite de taxa no chat; nomes ADM reservados.
+- Um anfitrião com cliente modificado controla o próprio mundo (não afeta outros mundos). Em mundo alheio, quem registrar um nome ADM antes do dono o ocupa: crie suas contas ADM no seu mundo. O progresso (moedas/créditos) é do cliente.
 
 ## 5. Em aberto / ideias
 - Posições dos outros jogadores em tempo real no Multi (hoje ficam em círculo no centro).

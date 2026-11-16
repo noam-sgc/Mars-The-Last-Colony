@@ -21,8 +21,11 @@ test("eventos: x5 em 1/fev, 11/abr, 12/jun; x2 em feriados e fins de semana", ()
 });
 test("registro, login, nomes reservados e países", async () => {
   const h = mk(), a = client(h);
-  assert.equal((await a.ask({ t: "reg", u: "ADMKezle", p: "secret1", c: "BR" })).ok, false);
-  assert.equal((await a.ask({ t: "reg", u: "ADMFalso", p: "secret1", c: "BR" })).ok, false);
+  assert.equal((await a.ask({ t: "reg", u: "ADMFalso", p: "secret1", c: "BR" })).ok, false);   // outros nomes ADM* continuam proibidos
+  const adm = await a.ask({ t: "reg", u: "ADMKezle", p: "secret1", c: "BR" });                   // quem cria primeiro fica com o nome reservado
+  assert.ok(adm.ok && adm.me.role === "artist");
+  assert.equal((await client(h).ask({ t: "reg", u: "admkezle", p: "outra123", c: "BR" })).ok, false);
+  assert.equal((await client(h).ask({ t: "login", u: "ADMKezle", p: "outra123" })).ok, false);
   assert.equal((await a.ask({ t: "reg", u: "Joao", p: "123", c: "BR" })).ok, false);
   assert.equal((await a.ask({ t: "reg", u: "Joao", p: "secret1", c: "XX" })).ok, false);
   const r = await a.ask({ t: "reg", u: "Joao", p: "secret1", c: "PT" });
@@ -84,13 +87,4 @@ test("perfil: itens de admin são removidos de usuários comuns", async () => {
   await a.ask({ t: "prof", data: { p: { own: ["s0", "adm_s1"], eq: { s: "adm_s1", p: "p0", w: "w0" }, cr: 10 }, s: { coins: 99 } } });
   const b = client(h), r = await b.ask({ t: "login", u: "Ana", p: "secret1" });
   assert.deepEqual(r.prof.p.own, ["s0"]); assert.equal(r.prof.p.eq.s, "s0"); assert.equal(r.prof.p.cr, 10);
-});
-
-test("modo sem servidor: contas ADM vêm de hashes de configuração e só entram com a senha certa", async () => {
-  const h = mk(); h.setAdminHashes({ ADMVinnil: "hvinnil", ADMKezle: "hkezle", ADMLefaar: "hlefaar" });
-  const a = client(h); assert.equal((await a.ask({ t: "login", u: "ADMKezle", p: "errada" })).ok, false);
-  const r = await a.ask({ t: "login", u: "ADMKezle", p: "kezle" }); assert.ok(r.ok && r.me.role === "artist");
-  assert.equal((await client(h).ask({ t: "login", u: "ADMVinnil", p: "vinnil" })).me.role, "admin");
-  h.setAdminHashes({ ADMKezle: "hnova" }); assert.equal((await client(h).ask({ t: "login", u: "ADMKezle", p: "kezle" })).ok, false);
-  assert.ok((await client(h).ask({ t: "login", u: "ADMKezle", p: "nova" })).ok);
 });

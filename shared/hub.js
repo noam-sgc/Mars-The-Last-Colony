@@ -36,15 +36,6 @@
       if (made.length) this.save();
       return made;
     }
-    /** Define contas ADM a partir de hashes já prontos (modo sem servidor). A configuração é a fonte da verdade. */
-    setAdminHashes(map) {
-      let ch = false;
-      for (const name of R.ADMINS) {
-        const h = map && map[name]; if (!h) continue; const k = R.key(name), u = this.store.users[k];
-        if (!u) { this.store.users[k] = this.newUser(name, "BR", h); ch = true; } else if (u.pass !== h) { u.pass = h; ch = true; }
-      }
-      if (ch) this.save();
-    }
     newUser(name, country, pass) {
       return { name, country, pass, friends: [], reqIn: [], reqOut: [], prof: null, created: this.now(), npc: false };
     }
@@ -150,11 +141,11 @@
     async register(c, m, ok, no) {
       const name = clean(m.u, 16), k = R.key(name);
       if (!R.validName(name)) return no("Usuário: 3 a 16 letras, números, _ ou -");
-      if (R.isAdmin(name)) return no("Este nome é reservado");
-      if (/^adm/i.test(name)) return no("Nomes iniciados em ADM são reservados");
+      // Nomes ADM são reservados a quem os criar primeiro: depois de registrados, ninguém mais os usa.
+      if (!R.isAdmin(name) && /^adm/i.test(name)) return no("Nomes iniciados em ADM são reservados");
       if (String(m.p || "").length < 6) return no("A senha precisa de 6+ caracteres");
       if (!R.validCountry(m.c)) return no("Escolha um país");
-      if (this.store.users[k]) return no("Usuário já existe");
+      if (this.store.users[k]) return no(R.isAdmin(name) ? "Este nome reservado já foi registrado por outra pessoa" : "Usuário já existe");
       this.store.users[k] = this.newUser(name, m.c, await this.o.hash(String(m.p)));
       this.save(); const token = rnd(32); this.store.sessions[token] = k; this.save();
       return this.enter(c, k, token, ok);

@@ -13,5 +13,5 @@ O jogo é 100% estático: não há servidor de jogo. Qualquer hospedagem de arqu
 - Sem TURN, algumas redes (CGNAT/corporativas) não fecham a conexão direta.
 
 ## Contas ADM
-`node tools/set-admin-passwords.js` gera senhas aleatórias e grava só os hashes em `js/config.js` (commite o arquivo).
+Crie ADMVinnil, ADMKezle e ADMLefaar pelo fluxo normal de *Criar conta* (o primeiro a registrar cada nome o possui).
 Admins: ADMVinnil, ADMKezle, ADMLefaar. Desenhistas: apenas ADMKezle e ADMLefaar.
