@@ -12,6 +12,15 @@ const LocalHub = (() => {
   const verify = async (pw, h) => { const [v, it, s, d] = String(h).split(":"); if (v !== "p1" || !s) return false; return (await pbkdf2(pw, s, +it)) === d; };
   let store = {};
   try { store = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { /* ignore */ }
+  // Migração (v4): versões antigas pré-criaram contas ADM (senha desconhecida) e usuários fictícios.
+  // Nomes ADM só podiam existir assim, então são removidos para que o dono possa criá-los de verdade.
+  if ((store.ver || 0) < 4) {
+    const users = store.users || {}, gone = new Set();
+    Object.keys(users).forEach((k) => { if (users[k].npc || MarsRules.isAdmin(users[k].name)) { gone.add(k); delete users[k]; } });
+    Object.keys(users).forEach((k) => ["friends", "reqIn", "reqOut"].forEach((f) => (users[k][f] = (users[k][f] || []).filter((x) => !gone.has(x)))));
+    Object.keys(store.sessions || {}).forEach((t) => { if (gone.has(store.sessions[t])) delete store.sessions[t]; });
+    store.ver = 4; try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* ignore */ }
+  }
   const persist = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { /* ignore */ } };
   const hub = new MarsHub.Hub({ store, persist, hash, verify });
   const ready = Promise.resolve();
