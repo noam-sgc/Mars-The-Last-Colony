@@ -28,6 +28,8 @@ servidor local no navegador (contas ADM de teste com senha `demo-admin`). Use `?
 | Sair do edifício / fechar diálogo | **Esc** |
 | Naves (fases 1–2) | WASD ou arrastar; **Espaço** = impulso |
 
+Publicação em servidor de verdade (Docker/Render): **[docs/DEPLOY.md](docs/DEPLOY.md)**. A trilha sonora é gerada no navegador; use o botão 🔊 ou a tecla **M**.
+
 ## Testes
 ```bash
 npm test

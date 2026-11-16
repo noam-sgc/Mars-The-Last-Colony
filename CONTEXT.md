@@ -46,6 +46,7 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 - **Entrar em edifícios** (`E` perto, ou ferramenta 🖐 Interagir): **pausa o tempo** (Solo/Sandbox; no Multi o tempo segue),
   abre **outra simulação 3D** (interior) onde se **organiza** itens bagunçados nas prateleiras. A *ordem* do edifício (0–100%)
   altera a produção (x0,75 a x1,25) e decai devagar com o tempo.
+- **Trilha sonora** procedural (Web Audio, `js/music.js`): 6 climas (menu, colônia, interior, pilotagem, tempestade, alienígena); botão 🔊, volume e tecla **M**. Sem arquivos de áudio.
 - Visual melhorado: sombras, tonemapping, céu em degradê, crateras, peças com animações, astronauta com capacete/mochila/brilho.
 - **Guarda-roupa** com pré-visualização 3D, abas (trajes, calças, relógios, capacetes, mochilas, eventos, admin).
 
@@ -67,6 +68,7 @@ js/                   cliente (scripts clássicos, ordem em index.html)
   multi.js            salas, modos, bots ilimitados, lobby/sala de espera, resultados
   ui.js               conta, menu, catálogo, loja, guarda-roupa, social, chat
   studio.js           visualizador 3D, ferramentas ADM e Estúdio
+  music.js            trilha sonora procedural
   main.js             laço principal, ponteiro, HUD, boot
 shared/rules.js       papéis, países, eventos (cliente e servidor)
 shared/hub.js         lógica do servidor (contas, amigos, chat, grupos, salas, eventos, catálogo, ranking)
@@ -82,6 +84,9 @@ vendor/three.min.js   Three.js r128 local (sem CDN)
   simula os bots. Cada cliente simula localmente os tanques dos outros times/jogadores a partir das peças publicadas.
 - **Servidor local**: abrir `index.html` sem servidor (ou página estática publicada) usa o `Hub` no navegador.
   Contas ADM de teste nesse modo: senha `demo-admin` (somente demonstração — não é seguro).
+
+## 3.1 Publicação
+Veja `docs/DEPLOY.md` (Dockerfile e `render.yaml`; variáveis `PORT`, `DATA_DIR`, `ADM_PASSWORDS`). O cliente reconecta sozinho ao WebSocket.
 
 ## 4. Segurança (o que vale e o que não)
 - Servidor: senhas com **scrypt**, papéis checados **no servidor** (`adm.*`, `cat.*`), sanitização de textos/cores/números,

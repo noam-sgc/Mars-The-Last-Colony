@@ -7,7 +7,7 @@ const { WebSocketServer } = require("ws");
 const { Hub } = require("../shared/hub.js");
 const R = require("../shared/rules.js");
 
-const ROOT = path.resolve(__dirname, ".."), DATA = path.join(__dirname, "data"), DB = path.join(DATA, "db.json");
+const ROOT = path.resolve(__dirname, ".."), DATA = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, "data"), DB = path.join(DATA, "db.json");
 fs.mkdirSync(DATA, { recursive: true });
 let store = {}; try { store = JSON.parse(fs.readFileSync(DB, "utf8")); } catch (e) { /* primeira execução */ }
 
@@ -36,7 +36,7 @@ store = hub.store;
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css", ".svg": "image/svg+xml", ".jpg": "image/jpeg", ".png": "image/png", ".json": "application/json", ".md": "text/plain; charset=utf-8" };
 const PUBLIC = ["index.html", "css", "js", "shared", "assets", "vendor"];
 const server = http.createServer((req, res) => {
-  let p = decodeURIComponent((req.url || "/").split("?")[0]); if (p === "/") p = "/index.html";
+  let p = decodeURIComponent((req.url || "/").split("?")[0]); if (p === "/healthz") { res.writeHead(200, { "Content-Type": "text/plain" }); return res.end("ok"); } if (p === "/") p = "/index.html";
   const f = path.normalize(path.join(ROOT, p));
   const rel = path.relative(ROOT, f).split(path.sep);
   if (!f.startsWith(ROOT + path.sep) || !PUBLIC.includes(rel[0])) { res.writeHead(404); return res.end("404"); }
@@ -49,5 +49,5 @@ wss.on("connection", (ws) => {
   ws.on("close", () => hub.disconnect(c)); ws.on("error", () => {});
 });
 const PORT = +process.env.PORT || 8080;
-server.listen(PORT, () => console.log(`Mars: The Last Colony em http://localhost:${PORT}`));
+server.listen(PORT, "0.0.0.0", () => console.log(`Mars: The Last Colony em http://localhost:${PORT}`));
 process.on("SIGTERM", () => { fs.writeFileSync(DB, JSON.stringify(hub.store)); process.exit(0); });

@@ -36,7 +36,7 @@ function applyAuth(r) {
 }
 function dailyBonus() { const d = new Date().toISOString().slice(0, 10); if (P.day != d) { P.day = d; P.cr += 20; toast("🎁 Bônus diário: +20 créditos"); } saveP(); }
 function logout() { NET.send({ t: "logout", token: ACC.token }); try { localStorage.removeItem("mars-token"); } catch (e) { /* ignore */ } ACC.user = null; ACC.role = "guest"; ACC.vf = false; SOC.friends = []; SOC.party = null; chatReset(); S = { coins: 500, own: [], done: {}, color: "#d8d0c4", v: 3 }; P = { name: "", cr: 0, pp: 0, rp: 0, w: 0, day: "", own: DEF_OWN.slice(), eq: Object.assign({}, DEF_EQ), evs: {}, v: 3 }; authScreen(); }
-NET.on("closed", () => toast("⚠ Conexão com o servidor perdida. Recarregue a página.", 6000));
+NET.on("closed", () => toast("⚠ Conexão perdida. Tentando reconectar…", 4000));
 
 // ---------- menu ----------
 function menu() {

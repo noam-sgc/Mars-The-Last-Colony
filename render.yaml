@@ -1,0 +1,14 @@
+# Deploy no Render (https://render.com): "New + > Blueprint" e aponte para este repositório.
+services:
+  - type: web
+    name: mars-the-last-colony
+    runtime: docker
+    plan: starter            # precisa de disco persistente para contas/ranking
+    healthCheckPath: /healthz
+    disk:
+      name: mars-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: ADM_PASSWORDS   # defina no painel: ADMVinnil=...,ADMKezle=...,ADMLefaar=...
+        sync: false

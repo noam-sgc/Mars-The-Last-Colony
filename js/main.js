@@ -19,6 +19,12 @@ cv.addEventListener("wheel", (e) => { if (IN) IN.dist = clamp(IN.dist * (1 + Mat
 INP.onEsc = () => { if (DLG) closeDlg(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
 $("#dlg").addEventListener("pointerdown", (e) => { if (e.target.id == "dlg" && DLG) closeDlg(); });
 
+function musicMood() {
+  if (IN) return "interior"; if (!G.run) return "menu"; if (G.mode == "nav") return "nav";
+  const ph = G.mode == "solo" ? PH[G.ph] : null; return ph && ph.alien ? "alien" : ph && ph.storm ? "storm" : "colony";
+}
+$("#musb").onclick = () => Music.toggle(); $("#musv").oninput = (e) => Music.setVol(+e.target.value);
+setInterval(() => Music.setMood(musicMood()), 500);
 let last = performance.now(), fogT = 0;
 function loop(n) {
   const dt = Math.min(.1, (n - last) / 1000), t = n / 1000; last = n; if (G.run && !G.paused) { tick(dt); hud(); }
