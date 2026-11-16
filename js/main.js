@@ -1,6 +1,6 @@
 /* Laço principal, entrada de ponteiro, HUD e inicialização. */
 function buildHud() {
-  $("#topbar").innerHTML = `<div class="pill">🪙 <b id="hc">0</b></div><div class="pill" id="evp" style="display:none"></div><div class="pill" id="ht">⏱</div><div class="pill" id="tk" style="min-width:210px" data-min="📊 Tanques"></div><div class="pill" id="gl" data-min="📋 Objetivos"></div>
+  $("#topbar").innerHTML = `<div class="pill">🪙 <b id="hc">0</b></div><div class="pill" id="mt" style="display:none" title="Custo de manutenção dos upgrades (só na campanha)"></div><div class="pill" id="evp" style="display:none"></div><div class="pill" id="ht">⏱</div><div class="pill" id="tk" style="min-width:210px" data-min="📊 Tanques"></div><div class="pill" id="gl" data-min="📋 Objetivos"></div>
   <div class="pill" id="hr">🔬 <b id="hrv">0</b> RP <button id="hrt">Usar: não</button></div><button id="hs">Loja</button><button id="hz1">＋</button><button id="hz2">－</button><button id="hx">☰ Menu</button>`;
   $("#hz1").onclick = () => (dist = clamp(dist * .85, 8, 90)); $("#hz2").onclick = () => (dist = clamp(dist * 1.15, 8, 90)); $("#hz1").setAttribute("aria-label", "Aproximar a câmera"); $("#hz2").setAttribute("aria-label", "Afastar a câmera"); $("#hx").setAttribute("aria-label", "Voltar ao menu"); ariaInit(); $("#hs").onclick = () => shop(true);
   $("#hx").onclick = () => { G.run = false; menu(); }; $("#hrt").onclick = () => { G.useRP = !G.useRP; $("#hrt").textContent = "Usar: " + (G.useRP ? "sim" : "não"); };
