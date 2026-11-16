@@ -93,7 +93,7 @@ function exitRover() {
 function driveUpdate(dt) {
   const d = DR, p = d.p, [ax, ay] = INP.ax(), MAXF = 20, MAXR = 8;
   d.v += (ay >= 0 ? ay * 24 : ay * 20) * dt; if (Math.abs(ay) < .05) d.v -= Math.sign(d.v) * Math.min(Math.abs(d.v), 10 * dt); d.v = clamp(d.v, -MAXR, MAXF);
-  d.ang += ax * clamp(d.v / 8, -1, 1) * 1.7 * dt;
+  d.ang -= ax * clamp(d.v / 8, -1, 1) * 1.7 * dt;   // D (ax>0) = virar à direita (sentido horário)
   const o = { x: p.m.position.x + Math.cos(d.ang) * d.v * dt, z: p.m.position.z - Math.sin(d.ang) * d.v * dt }, bx = o.x, bz = o.z;
   pushOut(o, 1.7, solids(true, p)); o.x = clamp(o.x, -125, 125); o.z = clamp(o.z, -125, 125); if (Math.hypot(o.x - bx, o.z - bz) > .02) d.v *= .35;   // bateu: perde velocidade
   p.m.position.set(o.x, H(o.x, o.z), o.z); p.m.rotation.y = d.ang;
@@ -188,6 +188,7 @@ function hud() {
   $("#tk").innerHTML = K.map((k) => `<div class="tb"><span>${KN[k]}</span><u><i style="width:${G.tk[k]}%;background:${TC[k]}"></i></u><em>${(G.rate[k] || 0) >= 0 ? "▲" : "▼"}</em><b style="width:36px;text-align:right">${Math.floor(G.tk[k])}%</b></div>`).join("");
   if (G.mode == "solo" && !G.paused) goals();
   const h = $("#hint"), c = nearestColonist(), b = nearestBuilding();
+  tiltUI();
   if (DR) { setHint(h, `🚙 ${Math.round(Math.abs(DR.v) * 3.6)} km/h · ${TOUCH ? "botão" : "E"} para sair`); setAct(TOUCH ? "Sair do rover" : ""); return; }
   const rv = nearestRover(), roverFirst = rv && !(c && !DLG && dTo(c.g) <= dTo(rv.m));
   setAct(TOUCH ? (roverFirst ? "Dirigir rover" : c && !DLG ? "Conversar" : b ? "Entrar" : "") : "");

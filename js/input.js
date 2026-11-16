@@ -1,6 +1,7 @@
 /* Entrada: teclado (WASD/setas), joystick virtual e atalhos. */
 const INP = { l: 0, r: 0, u: 0, d: 0, s: 0, jx: 0, jy: 0, onE: null, onEsc: null };
-INP.ax = () => [((INP.r - INP.l) || INP.jx), ((INP.u - INP.d) || -INP.jy)];
+INP.tiltFn = null;
+INP.ax = () => { const k = [((INP.r - INP.l) || INP.jx), ((INP.u - INP.d) || -INP.jy)]; if (!k[0] && !k[1] && INP.tiltFn) { const t = INP.tiltFn(); if (t) return t; } return k; };
 const KM = { ArrowLeft: "l", a: "l", A: "l", ArrowRight: "r", d: "r", D: "r", ArrowUp: "u", w: "u", W: "u", ArrowDown: "d", s: "d", S: "d", " ": "s" };
 const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || "");
 addEventListener("keydown", (e) => {

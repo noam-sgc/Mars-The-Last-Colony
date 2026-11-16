@@ -48,7 +48,7 @@ function navEnd(ok, q, why) {
   else { G.why = why; end(false); $("#rp").textContent = why + ". Tente de novo."; }
 }
 function navTick(dt) {
-  const n = N, ix = (INP.r - INP.l) || INP.jx || n.nx, iy = (INP.u - INP.d) || -INP.jy || n.ny, th = (INP.s || n.btn) && n.fuel > 0; n.t += dt; n.shake *= .9;
+  const n = N, [kx, ky] = INP.ax(), ix = kx || n.nx, iy = ky || n.ny, th = (INP.s || n.btn) && n.fuel > 0; n.t += dt; n.shake *= .9;
   if (n.L == "fly") {
     const tx = ix * 28, ty = iy * 16, f = Math.min(1, 3 * dt); n.x += (tx - n.x) * f; n.y += (ty - n.y) * f; const spd = th ? 40 : 22; n.fuel = Math.max(0, n.fuel - (.8 + (th ? 4 : 0)) * dt); n.prog = Math.min(1, n.prog + spd * dt / 2400);
     n.sp -= dt; if (n.sp <= 0) { n.sp = Math.max(.25, .7 - n.prog * .3); nSpawn(0); } n.cp -= dt; if (n.cp <= 0) { n.cp = 2.2; nSpawn(1); }
@@ -70,7 +70,7 @@ function navTick(dt) {
 }
 function navCam() { const n = N; if (!n) return; const s = n.shake * (Math.random() - .5); if (n.L == "fly") { cam.position.set(n.x * .6 + s, n.y * .6 + 5 + s, 16); cam.lookAt(n.x * .6, n.y * .6, -30); } else { cam.position.set(n.x + s, n.y + 14, n.z + 24); cam.lookAt(n.x * .8, Math.max(0, n.y - 60), n.z - 20); } }
 function navHud() {
-  const n = N; if (!n) return; $("#hint").style.display = "none"; $("#hc").textContent = Math.floor(S.coins);
+  const n = N; if (!n) return; tiltUI(); $("#hint").style.display = "none"; $("#hc").textContent = Math.floor(S.coins);
   const row = (a, p, c, t) => `<div class="tb"><span>${a}</span><u><i style="width:${clamp(p, 0, 100)}%;background:${c}"></i></u><b style="width:56px;text-align:right">${t}</b></div>`;
   let s = row("Combustível", n.fuel, TC.fuel, Math.floor(n.fuel) + "%");
   if (n.L == "fly") s += row("Casco", n.hull, "#ff6a6a", Math.max(0, Math.floor(n.hull)) + "%") + row("Trajeto", n.prog * 100, TC.water, Math.floor(n.prog * 100) + "%");
