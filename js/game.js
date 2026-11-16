@@ -24,7 +24,7 @@ function setWeather() {
 function start(mode, ph) {
   if (mode == "nav") return navStart(ph);
   navOff(); clear(); closeInterior(true);
-  MAINT.off = false; G = { run: true, placed: [], mode, ph, tool: "solar", mats: 1e9, paused: false, time: 0, hold: 0, rate: {}, tk: { water: 30, food: 30, oxy: 30, fuel: 30, morale: 30, eff: 30 }, msd: {}, st: { talk: 0, tidy: 0, enter: new Set(), contact: 0, loot: 0 }, lastTalk: {}, useRP: false };
+  MAINT.off = false; G = { hunger: 100, rest: 100, nloss: 0, zero: { h: 0, r: 0 }, warn: {}, run: true, placed: [], mode, ph, tool: "solar", mats: 1e9, paused: false, time: 0, hold: 0, rate: {}, tk: { water: 30, food: 30, oxy: 30, fuel: 30, morale: 30, eff: 30 }, msd: {}, st: { talk: 0, tidy: 0, enter: new Set(), contact: 0, loot: 0 }, lastTalk: {}, useRP: false };
   if (mode == "solo") G.time = PH[ph].t + B("time");
   buildHud(); screen("hud");
   $("#ht").style.display = mode == "solo" ? "" : "none"; $("#hr").style.display = mode == "solo" ? "" : "none"; $("#hs").style.display = mode == "mp" ? "none" : "";
@@ -191,11 +191,25 @@ function win() {
 function end(w, rw) {
   G.run = false; closeDlg(); $("#rt").textContent = w ? G.rank : G.why;
   const done = G.mode == "solo" ? PH[G.ph].ms.filter((m) => G.msd[m.id]).length + "/" + PH[G.ph].ms.length : "";
-  $("#rp").innerHTML = w ? `Média dos tanques: ${G.avg}%. Você ganhou <b>${rw}</b> moedas${EV.mult > 1 ? ` (evento x${EV.mult} aplicado!)` : ""}; quanto mais cheios os tanques, maior o prêmio.<br>Pesquisa: +${10 + 3 * G.ph} RP · Missões bônus: ${done}.${G.mspent ? ` Manutenção dos upgrades paga: ${Math.round(G.mspent)} 🪙.` : ""}` : "A colônia não sustentou os tanques. Construa as peças de cada classe, arrume os edifícios por dentro ou compre upgrades.";
+  $("#rp").innerHTML = w ? `Média dos tanques: ${G.avg}%. Você ganhou <b>${rw}</b> moedas${EV.mult > 1 ? ` (evento x${EV.mult} aplicado!)` : ""}; quanto mais cheios os tanques, maior o prêmio.<br>Pesquisa: +${10 + 3 * G.ph} RP · Missões bônus: ${done}.${G.mspent ? ` Manutenção dos upgrades paga: ${Math.round(G.mspent)} 🪙.` : ""}${G.nloss > 1 ? ` Fome/cansaço custaram ${Math.round(G.nloss)} 🪙.` : ""}` : "A colônia não sustentou os tanques. Construa as peças de cada classe, arrume os edifícios por dentro ou compre upgrades.";
   const b = $("#rb"); b.innerHTML = ""; const add = (t, f) => { const x = document.createElement("button"); x.textContent = t; x.onclick = () => { $("#res").classList.remove("on"); f(); }; b.appendChild(x); };
   if (w && G.ph + 1 < PH.length && G.ph + 1 !== ALIEN_START) add("Próxima fase", () => { const q = PH[G.ph + 1]; start(q.nav ? "nav" : "solo", G.ph + 1); }); else if (w) { add("Ver final", () => fin(SV.fb)); if (G.ph + 1 === ALIEN_START) add("👽 Campanha alienígena", () => start("solo", ALIEN_START)); } else if (S.coins < 20) add("Ver final", () => fin(SV.fr)); else add("Tentar de novo", () => start(PH[G.ph].nav ? "nav" : "solo", G.ph));
   add("Loja", () => { menu(); shop(true); }); add("Catálogo", () => { clear(); cat(); }); $("#res").classList.add("on");
 }
+/** Necessidades pessoais (campanha): fome e cansaço. Comer em Hidroponia, dormir em Habitat (dentro do edifício). */
+const NEED = { H_DECAY: .3, R_DECAY: .22, LOSS: 3, LIMIT: 20, FAINT: 6 };
+function needs(dt) {
+  G.hunger = clamp(G.hunger - NEED.H_DECAY * dt, 0, 100); G.rest = clamp(G.rest - NEED.R_DECAY * dt, 0, 100);
+  const dh = Math.max(0, (NEED.LIMIT - G.hunger) / NEED.LIMIT), dr = Math.max(0, (NEED.LIMIT - G.rest) / NEED.LIMIT), loss = (dh + dr) * NEED.LOSS * dt;   // perda proporcional ao quanto passou de 20%
+  if (loss > 0 && S.coins > 0) { const l = Math.min(S.coins, loss); S.coins -= l; G.nloss += l; }
+  [["h", G.hunger, "🍽 Você está com fome. Entre numa Hidroponia e coma", "desmaiou de fome"], ["r", G.rest, "😴 Você está cansado. Entre num Habitat e durma", "desmaiou de cansaço"]].forEach(([k, v, msg, why]) => {
+    if (v < 40 && !G.warn[k + "40"]) { G.warn[k + "40"] = 1; toast(msg.replace("Você está", "Você vai ficar") + " (abaixo de 20% você perde moedas)", 4200); }
+    if (v < NEED.LIMIT && !G.warn[k + "20"]) { G.warn[k + "20"] = 1; toast("⚠ " + msg + " ou perderá moedas e acabará derrotado!", 5000); }
+    if (v > 45) { G.warn[k + "40"] = G.warn[k + "20"] = 0; }
+    G.zero[k] = v <= 0 ? G.zero[k] + dt : 0; if (G.zero[k] >= NEED.FAINT && G.run) { G.why = "Você " + why; end(false); }
+  });
+}
+const needSpeed = () => 1 - .3 * Math.max(Math.max(0, (NEED.LIMIT - G.rest) / NEED.LIMIT), Math.max(0, (NEED.LIMIT - G.hunger) / NEED.LIMIT));
 /** Cobra a manutenção dos upgrades. Sem moedas, os upgrades ficam suspensos até haver saldo para ~6 s de manutenção. */
 function maintain(dt) {
   const r = maintRate(); G.mrate = r; if (r <= 0) { MAINT.off = false; return; }
@@ -206,7 +220,7 @@ function maintain(dt) {
 function tick(dt) {
   if (G.mode == "nav") { navTick(dt); return; }
   tank(dt); if (G.mode == "mp") mpTick(dt); if (G.mode != "solo") return;
-  earn((1 + B("inc")) * dt); maintain(dt); G.time -= dt; missions(dt);
+  earn((1 + B("inc")) * dt); maintain(dt); needs(dt); G.time -= dt; missions(dt);
   if (G.tk.oxy <= 0 || G.tk.water <= 0) { G.why = "Colapso: " + (G.tk.oxy <= 0 ? "sem oxigênio" : "sem água"); end(false); }
   else if (goals()) { G.hold += dt; if (G.hold >= 5) win(); } else G.hold = 0;
   if (G.run && G.time <= 0) { G.why = "Tempo esgotado"; end(false); }
@@ -215,6 +229,9 @@ function hud() {
   if (G.mode == "nav") { navHud(); setAct(""); return; }
   $("#hc").textContent = Math.floor(S.coins); $("#hrv").textContent = P.rp; { const m = $("#mt"), r = G.mode == "solo" ? maintRate() : 0; m.style.display = r > 0 ? "" : "none"; if (r > 0) { m.innerHTML = MAINT.off ? "🔧 <b style=\"color:var(--bad)\">upgrades suspensos</b>" : `🔧 −${(r * 60).toFixed(1)} 🪙/min`; } } if (G.mode == "solo") $("#ht").textContent = "⏱ " + Math.max(0, Math.ceil(G.time)) + " s";
   $("#tk").innerHTML = K.map((k) => `<div class="tb"><span>${KN[k]}</span><u><i style="width:${G.tk[k]}%;background:${TC[k]}"></i></u><em>${(G.rate[k] || 0) >= 0 ? "▲" : "▼"}</em><b style="width:36px;text-align:right">${Math.floor(G.tk[k])}%</b></div>`).join("");
+  { const nd = $("#nd"); if (G.mode == "solo") { nd.style.display = ""; const row = (ic, n, v) => `<div class="tb"><span>${ic} ${n}</span><u><i style="width:${v}%;background:${v < 20 ? "var(--bad)" : v < 40 ? "#ffb347" : "var(--ok)"}"></i></u><b style="width:36px;text-align:right;${v < 20 ? "color:var(--bad)" : ""}">${Math.floor(v)}%</b></div>`;
+      const near = (t) => G.placed.filter((p) => p.t == t).reduce((a, p) => Math.min(a, Math.hypot(p.x - PL.x, p.z - PL.z)), 1e9), low = G.hunger < 40 ? ["hydro", "Hidroponia"] : G.rest < 40 ? ["hab", "Habitat"] : null;
+      nd.innerHTML = row("🍽", "Alimentação", G.hunger) + row("😴", "Descanso", G.rest) + (low ? `<small class="mu">${cnt(low[0]) ? low[1] + " mais perto: " + Math.round(near(low[0])) + " m" : "Construa uma " + low[1]}</small>` : ""); } else nd.style.display = "none"; }
   if (G.mode == "solo" && !G.paused) goals();
   const h = $("#hint"), c = nearestColonist(), b = nearestBuilding();
   tiltUI();
@@ -247,7 +264,7 @@ function movePlayer(dt, t) {
   if (DR) return driveUpdate(dt);
   const [ax, ay] = INP.ax(), len = Math.hypot(ax, ay), s = Math.sin(yaw), c = Math.cos(yaw);
   let mx = 0, mz = 0; if (len > .05) { const k = Math.min(1, len); mx = (-s * ay + c * ax) / len * k; mz = (-c * ay - s * ax) / len * k; }
-  PL.x = clamp(PL.x + mx * 9 * dt, -125, 125); PL.z = clamp(PL.z + mz * 9 * dt, -125, 125);
+  const sp = 9 * (G.mode == "solo" ? needSpeed() : 1); PL.x = clamp(PL.x + mx * sp * dt, -125, 125); PL.z = clamp(PL.z + mz * sp * dt, -125, 125);
   pushOut(PL, .6, solids(true)); PL.x = clamp(PL.x, -125, 125); PL.z = clamp(PL.z, -125, 125);
   PL.v = Math.hypot(mx, mz); if (PL.v > .05) { const a = Math.atan2(mx, mz); let d = a - PL.ry; d = Math.atan2(Math.sin(d), Math.cos(d)); PL.ry += d * Math.min(1, dt * 12); }
   PL.g.position.set(PL.x, H(PL.x, PL.z), PL.z); PL.g.rotation.y = PL.ry; walkAnim(PL.g, t, PL.v);
