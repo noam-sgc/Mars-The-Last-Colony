@@ -85,3 +85,12 @@ test("perfil: itens de admin são removidos de usuários comuns", async () => {
   const b = client(h), r = await b.ask({ t: "login", u: "Ana", p: "secret1" });
   assert.deepEqual(r.prof.p.own, ["s0"]); assert.equal(r.prof.p.eq.s, "s0"); assert.equal(r.prof.p.cr, 10);
 });
+
+test("modo sem servidor: contas ADM vêm de hashes de configuração e só entram com a senha certa", async () => {
+  const h = mk(); h.setAdminHashes({ ADMVinnil: "hvinnil", ADMKezle: "hkezle", ADMLefaar: "hlefaar" });
+  const a = client(h); assert.equal((await a.ask({ t: "login", u: "ADMKezle", p: "errada" })).ok, false);
+  const r = await a.ask({ t: "login", u: "ADMKezle", p: "kezle" }); assert.ok(r.ok && r.me.role === "artist");
+  assert.equal((await client(h).ask({ t: "login", u: "ADMLefaar", p: "lefaar" })).me.role, "admin");
+  h.setAdminHashes({ ADMKezle: "hnova" }); assert.equal((await client(h).ask({ t: "login", u: "ADMKezle", p: "kezle" })).ok, false);
+  assert.ok((await client(h).ask({ t: "login", u: "ADMKezle", p: "nova" })).ok);
+});

@@ -15,6 +15,7 @@ const NET = {
   send(m) {
     if (this.mode === "server" && this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(m));
     else if (this.mode === "local" && this.lc) this.lc.send(m);
+    else if (this.mode === "p2p" && this.pc) this.pc.send(m);
   },
   ask(m, ms) {
     return new Promise((r) => {
@@ -32,23 +33,34 @@ const NET = {
     ws.onerror = () => {}; ws.onclose = () => { if (!this.ready) this.rt = setTimeout(() => this.retry(), 4000); };
     ws.onmessage = async (e) => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } if (m.t !== "hi") return;
       this.ws = ws; this.ready = true; ws.onmessage = (ev) => { try { this.incoming(JSON.parse(ev.data)); } catch (x) { /* ignore */ } }; this.hook(); this.incoming(m);
-      let tok = null; try { tok = localStorage.getItem("mars-token"); } catch (x) { /* ignore */ }
+      let tok = null; try { tok = localStorage.getItem(this.tokKey()); } catch (x) { /* ignore */ }
       if (tok && ACC.user) { const r = await this.ask({ t: "resume", token: tok }); if (r.ok) { setSocial(r.social); toast("🔌 Reconectado ao servidor"); } }
     };
   },
-  /** Tenta o servidor web (mesma origem, /ws); se falhar, usa o servidor local. */
-  async connect() {
-    const web = /^https?:$/.test(location.protocol) && !/[?&]local\b/.test(location.search) && !(location.hostname.endsWith(".vercel.app") && !/^wss?:/.test(window.MARS_SERVER || "") && !/[?&]server=/.test(location.search));
-    if (web) {
-      const ok = await new Promise((res) => {
-        let ws; const to = setTimeout(() => { try { ws.close(); } catch (e) { /* ignore */ } res(false); }, 2500);
-        try { ws = new WebSocket(wsUrl()); } catch (e) { clearTimeout(to); return res(false); }
-        ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } if (m.t === "hi") { clearTimeout(to); this.ws = ws; this.mode = "server"; this.ready = true; ws.onmessage = (ev) => { try { this.incoming(JSON.parse(ev.data)); } catch (x) { /* ignore */ } }; this.incoming(m); res(true); } };
-        ws.onerror = () => { clearTimeout(to); res(false); };
-      });
-      if (ok) { this.hook(); return "server"; }
-    }
-    await LocalHub.ready; this.mode = "local"; this.ready = true;
-    this.lc = LocalHub.connect((m) => this.incoming(m)); return "local";
+  /** Servidor WebSocket (opcional): mesma origem em /ws, ou window.MARS_SERVER / ?server=. */
+  async connectServer() {
+    const explicit = /^wss?:/.test(window.MARS_SERVER || "") || /[?&]server=/.test(location.search);
+    const web = /^https?:$/.test(location.protocol) && !/[?&]local\b/.test(location.search) && (explicit || !location.hostname.endsWith(".vercel.app"));
+    if (!web) return false;
+    const ok = await new Promise((res) => {
+      let ws; const to = setTimeout(() => { try { ws.close(); } catch (e) { /* ignore */ } res(false); }, 2500);
+      try { ws = new WebSocket(wsUrl()); } catch (e) { clearTimeout(to); return res(false); }
+      ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } if (m.t === "hi") { clearTimeout(to); this.ws = ws; this.mode = "server"; this.world = "srv"; this.ready = true; ws.onmessage = (ev) => { try { this.incoming(JSON.parse(ev.data)); } catch (x) { /* ignore */ } }; this.incoming(m); res(true); } };
+      ws.onerror = () => { clearTimeout(to); res(false); };
+    });
+    if (ok) this.hook(); return ok;
   },
+  /** Meu próprio mundo: o Hub roda neste navegador e aceita amigos por WebRTC. */
+  startLocal() { this.disconnect(); this.mode = "local"; this.world = "self"; this.ready = true; this.lc = LocalHub.connect((m) => this.incoming(m)); P2P.startHost(); },
+  /** Entra no mundo de outro jogador pelo código (WebRTC). */
+  async joinWorld(code) {
+    const r = await P2P.join(code); this.disconnect(); this.mode = "p2p"; this.world = r.code; this.pc = r; this.ready = true;
+    r.conn.on("data", (m) => this.incoming(m)); r.conn.on("close", () => { if (this.pc === r) { this.ready = false; this.emit({ t: "closed" }); } });
+  },
+  disconnect() {
+    if (this.lc) { try { this.lc.close(); } catch (e) { /* ignore */ } } if (this.pc) { try { this.pc.close(); } catch (e) { /* ignore */ } }
+    if (this.ws) { this.ws.onclose = null; try { this.ws.close(); } catch (e) { /* ignore */ } } clearTimeout(this.rt);
+    this.lc = this.pc = this.ws = null; this.ready = false; this.mode = ""; this.world = ""; Object.values(this.pend).forEach((p) => { clearTimeout(p.to); p.r({ ok: false, err: "Desconectado" }); }); this.pend = {};
+  },
+  tokKey() { return "mars-token:" + (this.world || "x"); },
 };

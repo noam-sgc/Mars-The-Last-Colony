@@ -1,32 +1,32 @@
-/* Servidor local de demonstração: roda o MESMO Hub do servidor Node dentro do navegador,
-   com dados em localStorage. Usado quando não há servidor web (ex.: abrir index.html direto
-   ou publicar a página estática). Não é seguro: serve apenas para jogar/testar offline. */
+/* Mundo local: roda o MESMO Hub do servidor Node dentro do navegador (dados em localStorage).
+   Em modo sem servidor, cada jogador é o "servidor" do próprio mundo e aceita amigos por WebRTC (js/p2p.js). */
 const LocalHub = (() => {
-  const KEY = "mars-localhub-v1", DEMO_ADMIN_PW = "demo-admin";
+  const KEY = "mars-localhub-v1", ITER = 150000;
   const hex = (b) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
-  async function sha(s) {
-    try { return hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s))); }
-    catch (e) { let h = 5381; for (const ch of s) h = ((h << 5) + h + ch.charCodeAt(0)) | 0; return "x" + (h >>> 0).toString(16); }
+  const unhex = (h) => new Uint8Array((h.match(/../g) || []).map((x) => parseInt(x, 16)));
+  async function pbkdf2(pw, saltHex, iter) {
+    const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveBits"]);
+    return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: unhex(saltHex), iterations: iter }, k, 256));
   }
-  const hash = async (pw) => { const s = MarsHub.rnd(8); return s + ":" + (await sha(s + pw)); };
-  const verify = async (pw, h) => { const [s, d] = String(h).split(":"); return !!s && (await sha(s + pw)) === d; };
+  const hash = async (pw) => { const s = MarsHub.rnd(16).replace(/[^0-9a-f]/g, "a").padEnd(32, "0").slice(0, 32); return `p1:${ITER}:${s}:` + (await pbkdf2(pw, s, ITER)); };
+  const verify = async (pw, h) => { const [v, it, s, d] = String(h).split(":"); if (v !== "p1" || !s) return false; return (await pbkdf2(pw, s, +it)) === d; };
   let store = {};
   try { store = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { /* ignore */ }
   const persist = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { /* ignore */ } };
   const hub = new MarsHub.Hub({ store, persist, hash, verify });
-  const NPCS = [["Ana_BR", "BR"], ["Kenji_JP", "JP"], ["Maria_MX", "MX"], ["Lucas_PT", "PT"], ["Sofia_AR", "AR"], ["Noah_US", "US"]];
-  const ready = (async () => {
-    await hub.ensureAdmins({ ADMVinnil: DEMO_ADMIN_PW, ADMKezle: DEMO_ADMIN_PW, ADMLefaar: DEMO_ADMIN_PW }, { ADMVinnil: "BR", ADMKezle: "BR", ADMLefaar: "BR" });
-    NPCS.forEach(([n, c]) => { const k = MarsRules.key(n); if (!hub.store.users[k]) { const u = hub.newUser(n, c, ""); u.npc = true; hub.store.users[k] = u; } });
-    const a = hub.store.users[MarsRules.key("Ana_BR")], v = hub.store.users[MarsRules.key("ADMVinnil")];
-    if (a && v && !a.friends.includes(MarsRules.key("ADMVinnil"))) { a.friends.push(MarsRules.key("ADMVinnil")); v.friends.push(MarsRules.key("Ana_BR")); }
-    hub.save();
-  })();
+  hub.setAdminHashes(window.MARS_ADMIN_HASHES || {});
+  const ready = Promise.resolve();
   return {
-    DEMO_ADMIN_PW, ready, hub,
+    ready, hub,
+    /** Conexão do próprio jogador (anfitrião) ao seu mundo. */
     connect(onmsg) {
       const c = hub.connect((m) => setTimeout(() => onmsg(m), 0));
-      return { send: (m) => { ready.then(() => hub.handle(c, JSON.parse(JSON.stringify(m)))); }, close: () => hub.disconnect(c) };
+      return { send: (m) => hub.handle(c, JSON.parse(JSON.stringify(m))), close: () => hub.disconnect(c) };
+    },
+    /** Conexão de um convidado remoto (WebRTC): send(m) entrega ao convidado; devolve handlers. */
+    attach(send) {
+      const c = hub.connect(send);
+      return { recv: (m) => hub.handle(c, m), close: () => hub.disconnect(c) };
     },
   };
 })();

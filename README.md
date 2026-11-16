@@ -15,8 +15,14 @@ npm start          # http://localhost:8080
 Na primeira execução o servidor cria as contas `ADMVinnil`, `ADMKezle` e `ADMLefaar` e grava as senhas geradas em
 `server/data/admin-credentials.txt`. Para definir as suas: `ADM_PASSWORDS="ADMVinnil=...,ADMKezle=...,ADMLefaar=..." npm start`.
 
-**Sem servidor (demonstração):** abra `index.html` por qualquer servidor estático (ex.: `python3 -m http.server`) — o jogo usa um
-servidor local no navegador (contas ADM de teste com senha `demo-admin`). Use `?local` na URL para forçar esse modo.
+**Sem servidor (WebRTC, ideal para a Vercel):** sirva a pasta como site estático (ex.: `python3 -m http.server`, Vercel, GitHub Pages).
+Cada jogador tem o **próprio mundo**: o navegador dele roda o servidor do jogo e mostra um **código** (ex.: `K7M2QX`) com botão de copiar.
+Amigos clicam em *Entrar no mundo de um amigo*, digitam o código e jogam juntos por **WebRTC** (conexão direta entre navegadores; o
+sinalizador gratuito do PeerJS só ajuda a se achar). As contas, o chat, os amigos e os grupos vivem no mundo do anfitrião, que precisa
+estar com o jogo aberto.
+
+**Contas ADM (3):** as senhas ficam só como hash em `js/config.js`. Para gerar/trocar: `node tools/set-admin-passwords.js`
+(ou `node tools/set-admin-passwords.js ADMKezle=nova-senha`).
 
 ## Controles
 | Ação | Como |

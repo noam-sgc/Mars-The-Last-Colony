@@ -157,10 +157,13 @@ function renderLobby() {
   const el = $("#lob"); if (!el.classList.contains("on")) return; const gs = LP.filter((q) => !(q.peer === NET.id) && q.presence && q.presence.g);
   if (!el.dataset.built) { el.dataset.built = 1; el.innerHTML = `<div class="top"><button id="lb">← Voltar</button><h2>Multiplayer</h2></div><div class="pill w" id="lacc"></div>
     <div class="pill w"><b>Modo da partida</b><div class="row" id="lmodes" style="margin-top:6px"></div><p class="mu" id="lmd" style="margin:6px 0 0"></p></div>
+    <div class="pill w" id="lworld"><span id="lwt"></span><div class="row" style="margin-top:6px"><input id="lcode" maxlength="8" placeholder="Código da sala" style="width:140px;text-transform:uppercase"><button id="lcj">Entrar na sala</button></div></div>
     <div class="top w"><button id="lq" class="pri">Entrar rápido</button><button id="lc">Criar sala</button><button id="lo">Jogar com bots</button><button id="lsoc">👥 Amigos & grupo</button></div><div id="lg" class="w"></div>`;
     $("#lb").onclick = () => menu(); $("#lq").onclick = () => { const g = LP.find((q) => !(q.peer === NET.id) && q.presence && q.presence.g && (+q.presence.n || 0) < 8 && !q.presence.st); joinGame(g ? g.presence.g : rc(), g ? g.presence.md : null); };
     $("#lc").onclick = () => joinGame(rc()); $("#lo").onclick = () => localMatch(); $("#lsoc").onclick = () => social();
     const md = $("#lmodes"); Object.keys(MODES).forEach((k) => { const b = document.createElement("button"); b.dataset.k = k; b.textContent = MODES[k].ic + " " + MODES[k].n; b.onclick = () => { MPmode = k; renderLobby(); }; md.appendChild(b); }); }
+  $("#lwt").innerHTML = NET.mode == "local" && P2P.ready ? `Código do seu mundo (passe para amigos entrarem): <b style="letter-spacing:.2em">${esc(P2P.code)}</b> <button id="lcw" style="padding:2px 8px">📋 Copiar</button> · ${P2P.guests} conectado(s)` : NET.mode == "p2p" ? `Mundo <b>${esc(NET.world)}</b>` : "";
+  if ($("#lcw")) $("#lcw").onclick = () => copyText(P2P.code, "Código do mundo"); $("#lcj").onclick = () => { const c = $("#lcode").value.trim(); if (c) joinGame(c); };
   $("#lacc").innerHTML = ACC.user ? `Jogando como ${lobbyPlayer()} · Créditos: <b>${P.cr}</b>${MP.party ? "" : ""}` : "Entre numa conta para jogar online. Você ainda pode jogar contra bots.";
   [...$("#lmodes").children].forEach((b) => (b.className = b.dataset.k == MPmode ? "sel" : "")); $("#lmd").textContent = MODES[MPmode].d;
   const l = $("#lg"); l.innerHTML = `<b>Partidas ao vivo (${gs.length})</b>`; if (!gs.length) l.innerHTML += `<p class="mu">Nenhuma partida ao vivo agora. Crie uma sala: bots completam a equipe se ninguém entrar.</p>`;
@@ -195,7 +198,7 @@ function renderWait() {
       $("#ws").onclick = () => { MP.manual = true; startMP(); }; if ($("#wg")) $("#wg").onclick = async () => { const r = await NET.ask({ t: "party", op: "go", code: MP.code }); toast(r.ok ? "Convite enviado ao grupo" : esc(r.err || "Erro")); }; }
     if (md == "team") { const tw = $("#wteams"); TEAMS.forEach((t, i) => { const b = document.createElement("button"); b.textContent = t.n; b.style.borderColor = t.css; b.dataset.i = i; b.onclick = () => { MP.tm = i; sync(); renderWait(); }; tw.appendChild(b); }); }
   }
-  $("#wt").textContent = "Sala " + MP.code + " · " + MODES[md].ic + " " + MODES[md].n;
+  $("#wt").innerHTML = `Sala <b style="letter-spacing:.15em">${esc(MP.code)}</b> · ${MODES[md].ic} ${MODES[md].n} ${MP.room ? `<button id="wcc" style="padding:2px 8px">📋 Copiar código</button>` : ""}`; if ($("#wcc")) $("#wcc").onclick = () => copyText(MP.code, "Código da sala");
   const auto = !MP.manual && MP.code != "LOCAL" && MP.room;
   $("#wp").innerHTML = `<div>${hostme ? "Você é o anfitrião" : "Anfitrião: " + esc(host.presence.u)}</div><div>${auto ? (left > 0 ? "Procurando mais jogadores… " + Math.ceil(left) + " s" : "Iniciando…") + " Se a sala não encher, bots completam até 4 participantes." : "Início manual: ajuste os bots e clique em Iniciar agora."}</div>`;
   if (md == "team") $("#wteams").querySelectorAll("button").forEach((b) => (b.className = +b.dataset.i == MP.tm ? "sel" : ""));
