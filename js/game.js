@@ -143,7 +143,7 @@ function end(w, rw) {
   const done = G.mode == "solo" ? PH[G.ph].ms.filter((m) => G.msd[m.id]).length + "/" + PH[G.ph].ms.length : "";
   $("#rp").innerHTML = w ? `Média dos tanques: ${G.avg}%. Você ganhou <b>${rw}</b> moedas${EV.mult > 1 ? ` (evento x${EV.mult} aplicado!)` : ""}; quanto mais cheios os tanques, maior o prêmio.<br>Pesquisa: +${10 + 3 * G.ph} RP · Missões bônus: ${done}.` : "A colônia não sustentou os tanques. Construa as peças de cada classe, arrume os edifícios por dentro ou compre upgrades.";
   const b = $("#rb"); b.innerHTML = ""; const add = (t, f) => { const x = document.createElement("button"); x.textContent = t; x.onclick = () => { $("#res").classList.remove("on"); f(); }; b.appendChild(x); };
-  if (w && G.ph < PH.length - 1) add("Próxima fase", () => { const q = PH[G.ph + 1]; start(q.nav ? "nav" : "solo", G.ph + 1); }); else if (w) add("Ver final", () => fin(SV.fb)); else if (S.coins < 20) add("Ver final", () => fin(SV.fr)); else add("Tentar de novo", () => start(PH[G.ph].nav ? "nav" : "solo", G.ph));
+  if (w && G.ph + 1 < PH.length && G.ph + 1 !== ALIEN_START) add("Próxima fase", () => { const q = PH[G.ph + 1]; start(q.nav ? "nav" : "solo", G.ph + 1); }); else if (w) { add("Ver final", () => fin(SV.fb)); if (G.ph + 1 === ALIEN_START) add("👽 Campanha alienígena", () => start("solo", ALIEN_START)); } else if (S.coins < 20) add("Ver final", () => fin(SV.fr)); else add("Tentar de novo", () => start(PH[G.ph].nav ? "nav" : "solo", G.ph));
   add("Loja", () => { menu(); shop(true); }); add("Catálogo", () => { clear(); cat(); }); $("#res").classList.add("on");
 }
 function tick(dt) {
