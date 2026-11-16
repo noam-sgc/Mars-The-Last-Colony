@@ -1,11 +1,10 @@
 {
   "name": "mars-the-last-colony",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "Mars: The Last Colony — jogo de colônias em Marte (solo, sandbox e multiplayer)",
+  "description": "Mars: The Last Colony — jogo de colônias em Marte (solo, sandbox e multiplayer peer-to-peer por WebRTC)",
   "scripts": {
-    "setup": "npm --prefix server install",
-    "start": "node server/server.js",
+    "start": "node tools/serve.js",
     "test": "node --test tests/hub.test.js"
   },
   "license": "UNLICENSED"

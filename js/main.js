@@ -45,7 +45,6 @@ function loop(n) {
 // ---------- inicialização ----------
 (async function boot() {
   loadLocal(); EV.refresh(); setInterval(() => { EV.refresh(); }, 60000); requestAnimationFrame(loop);
-  if (await NET.connectServer()) return resumeOrAuth();
   let lastW = null; try { lastW = localStorage.getItem("mars-last"); } catch (e) { /* ignore */ }
   if (lastW === "self") return enterSelf();
   if (lastW && /^[A-Z0-9]{4,12}$/.test(lastW)) { try { await NET.joinWorld(lastW); return resumeOrAuth(); } catch (e) { return worldScreen("Não foi possível reconectar ao mundo " + lastW + ": " + e.message); } }

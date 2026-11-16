@@ -44,7 +44,6 @@ function copyText(t, label) {
   function fb() { const i = document.createElement("input"); i.value = t; document.body.appendChild(i); i.select(); try { document.execCommand("copy"); ok(); } catch (e) { toast("Selecione e copie: " + esc(t)); } i.remove(); }
 }
 function worldLine() {
-  if (NET.mode == "server") return "🔒 Servidor conectado. Senhas guardadas com hash scrypt.";
   if (NET.mode == "p2p") return `🌐 Conectado ao mundo <b>${esc(NET.world)}</b> (WebRTC). Sua conta fica neste mundo.`;
   return `🌍 Seu mundo${P2P.ready ? ` · código <b>${esc(P2P.code)}</b>` : ""}. Contas ficam salvas neste navegador.`;
 }
