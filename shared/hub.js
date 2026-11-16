@@ -50,7 +50,7 @@
       this.leaveParty(c, true);
       [...c.rooms].forEach((r) => this.leaveRoom(c, r));
       this.conns.delete(c.id);
-      if (c.user) this.pushSocial(c.user, true);
+      if (c.user) { this.pushSocial(c.user, true); this.bcast({ t: "roster" }); }
     }
     online(k) { for (const c of this.conns.values()) if (c.user === k) return c; return null; }
     isOnline(k) { const u = this.store.users[k]; return !!(u && (u.npc || this.online(k))); }
@@ -94,7 +94,7 @@
           case "ping": return ok({ now: this.now() });
           case "users": {
             need(me, "Entre primeiro");
-            return ok({ users: Object.keys(this.store.users).map((k) => Object.assign(this.pub(k), { fr: me.friends.includes(k) ? 2 : me.reqOut.includes(k) ? 1 : me.reqIn.includes(k) ? 3 : 0 })).sort((a, b) => (b.on - a.on) || a.u.localeCompare(b.u)) });
+            return ok({ anon: [...this.conns.values()].filter((q) => !q.user).length, users: Object.keys(this.store.users).map((k) => Object.assign(this.pub(k), { fr: me.friends.includes(k) ? 2 : me.reqOut.includes(k) ? 1 : me.reqIn.includes(k) ? 3 : 0 })).sort((a, b) => (b.on - a.on) || a.u.localeCompare(b.u)) });
           }
           case "fr": need(me, "Entre primeiro"); return this.friendOp(c, me, m, ok, no);
           case "chat": need(me, "Entre primeiro"); return this.chat(c, me, m, ok, no);
@@ -161,7 +161,7 @@
       c.user = k; const u = this.store.users[k];
       this.joinRoom(c, "lobby");
       ok({ token, me: this.pub(k), prof: u.prof, social: this.social(k), events: this.store.events, catalog: this.store.catalog, party: this.partyOf(k) && this.partyPub(this.partyOf(k)), hist: this.store.global.slice(-40) });
-      this.pushSocial(k, true);
+      this.pushSocial(k, true); this.bcast({ t: "roster" });
     }
     sanitizeProf(u, d) {
       d = d && typeof d === "object" ? d : {};

@@ -166,6 +166,7 @@ function ward() {
 
 // ---------- social: amigos, diretório e grupos ----------
 function setSocial(s) { if (!s) return; SOC.friends = s.friends || []; SOC.reqIn = s.reqIn || []; SOC.reqOut = s.reqOut || []; if ($("#soc").classList.contains("on")) renderSocial(); }
+NET.on("roster", () => { if ($("#soc").classList.contains("on")) refreshUsers(); });
 NET.on("social", (m) => { const had = SOC.reqIn.length; setSocial(m); if (SOC.reqIn.length > had) toast("👥 Novo pedido de amizade!"); });
 NET.on("party", (m) => { SOC.party = m.party; if ($("#soc").classList.contains("on")) renderSocial(); if ($("#lob").classList.contains("on")) renderLobby(); chatTabs(); });
 NET.on("party.inv", (m) => { openDlgHTML(`<div class="dlgh"><div class="av">👥</div><div><b>Convite de grupo</b><div class="mu">${esc(m.from)} convidou você para um grupo</div></div></div><div class="opts"><button id="pia" class="pri">Aceitar</button><button id="pir" class="gh">Recusar</button></div>`); $("#pia").onclick = async () => { $("#dlg").classList.remove("on"); const r = await NET.ask({ t: "party", op: "acc", id: m.id }); toast(r.ok ? "Você entrou no grupo!" : esc(r.err || "Erro")); }; $("#pir").onclick = () => $("#dlg").classList.remove("on"); });
@@ -176,9 +177,9 @@ NET.on("cat", (m) => { applyCatalog(m.catalog); if (G.run && G.mode != "nav") pa
 function openDlgHTML(h) { $("#dlgb").innerHTML = h; $("#dlg").classList.add("on"); }
 let socTab = "users", socT = 0;
 async function social(tab) {
-  if (!ACC.user) { toast("Entre numa conta para ver amigos e usuários"); return; } if (tab) socTab = tab; screen("soc"); $("#soc").dataset.q = $("#soc").dataset.q || ""; await refreshUsers(); clearInterval(socT); socT = setInterval(() => { if ($("#soc").classList.contains("on")) refreshUsers(); else clearInterval(socT); }, 6000);
+  if (!ACC.user) { toast("Entre numa conta para ver amigos e usuários"); return; } if (tab) socTab = tab; screen("soc"); $("#soc").dataset.q = $("#soc").dataset.q || ""; await refreshUsers(); clearInterval(socT); socT = setInterval(() => { if ($("#soc").classList.contains("on")) refreshUsers(); else clearInterval(socT); }, 4000);
 }
-async function refreshUsers() { const r = await NET.ask({ t: "users" }); if (r.ok) { SOC.users = r.users; renderSocial(); } }
+async function refreshUsers() { const r = await NET.ask({ t: "users" }); if (r.ok) { SOC.users = r.users; SOC.anon = r.anon || 0; renderSocial(); } }
 const frAsk = async (op, u) => { const r = await NET.ask({ t: "fr", op, u }); if (!r.ok) toast(esc(r.err || "Erro")); else { setSocial(r); refreshUsers(); } };
 function renderSocial() {
   const el = $("#soc"), q = (el.dataset.q || "").toLowerCase(), me = ACC.user, hit = (u) => !q || u.u.toLowerCase().includes(q) || (MarsRules.COUNTRIES.find((c) => c.c == u.cc) || { n: "" }).n.toLowerCase().includes(q);
@@ -188,6 +189,10 @@ function renderSocial() {
   let body = "";
   const sbox = `<input id="sq" placeholder="🔎 Filtrar por nome ou país…" value="${esc(el.dataset.q || "")}" style="width:100%;margin-bottom:6px">`;
   if (socTab == "friends") body = sbox + SOC.friends.filter(hit).map((u) => row(Object.assign({}, u, (SOC.users.find((x) => x.u == u.u) || {})), `<button data-dm="${esc(u.u)}">💬</button><button data-inv="${esc(u.u)}">Convidar</button><button class="gh" data-rm="${esc(u.u)}">✕</button>`)).join("") || `<p class="mu">${q ? "Nenhum amigo encontrado." : "Você ainda não tem amigos. Abra “Todos os usuários” para adicionar. ✔ Amigos de administradores ganham o selo de verificado."}</p>`;
+  if (socTab == "friends") {
+    const near = SOC.users.filter((u) => u.u != me && u.on && u.fr != 2 && hit(u));
+    body += `<div class="tag" style="margin:10px 0 2px">🟢 No mundo agora (ainda não são amigos)${SOC.anon ? " · " + SOC.anon + " visitante(s) sem login" : ""}</div>` + (near.map((u) => row(u, u.fr == 1 ? `<button disabled>Pendente</button>` : u.fr == 3 ? `<button class="pri" data-acc="${esc(u.u)}">Aceitar</button>` : `<button data-add="${esc(u.u)}">＋ Adicionar</button><button data-dm="${esc(u.u)}">💬</button>`)).join("") || `<p class="mu">Ninguém mais conectado.</p>`);
+  }
   else if (socTab == "users") body = sbox + SOC.users.filter((u) => u.u != me && hit(u)).map((u) => row(u, u.fr == 2 ? `<button data-dm="${esc(u.u)}">💬</button><button data-inv="${esc(u.u)}">Convidar</button>` : u.fr == 1 ? `<button disabled>Pendente</button>` : u.fr == 3 ? `<button class="pri" data-acc="${esc(u.u)}">Aceitar</button>` : `<button data-add="${esc(u.u)}">＋ Adicionar</button><button data-dm="${esc(u.u)}">💬</button>`)).join("") || `<p class="mu">Nenhum usuário encontrado.</p>`;
   else if (socTab == "req") body = `<b>Recebidos</b>` + (SOC.reqIn.map((u) => row(u, `<button class="pri" data-acc="${esc(u.u)}">Aceitar</button><button class="gh" data-rej="${esc(u.u)}">Recusar</button>`)).join("") || `<p class="mu">Nenhum pedido.</p>`) + `<b>Enviados</b>` + (SOC.reqOut.map((u) => row(u, `<button class="gh" data-can="${esc(u.u)}">Cancelar</button>`)).join("") || `<p class="mu">Nenhum.</p>`);
   else { const p = SOC.party; body = p ? `<p>Grupo <b>${esc(p.id)}</b> · líder: <b>${esc(p.leader)}</b></p>` + p.members.map((u) => row(u, p.leader == me && u.u != me ? `<button class="gh" data-kick="${esc(u.u)}">Expulsar</button>` : u.u == p.leader ? "👑" : "")).join("") + `<div class="row" style="margin-top:8px"><button data-pchat>💬 Chat do grupo</button><button class="gh" data-pleave>Sair do grupo</button></div><p class="mu">O líder pode chamar o grupo para sua sala em Multiplayer → sala de espera. Membros do mesmo grupo jogam na mesma equipe.</p>` : `<p class="mu">Você não está em um grupo. Convide amigos para criar um.</p><button data-pmake class="pri">Criar grupo</button>`; }
