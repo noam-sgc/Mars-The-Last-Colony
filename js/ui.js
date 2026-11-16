@@ -86,14 +86,15 @@ function menu() {
   <div class="ubar"><div class="pill">${ACC.user ? `${MarsRules.flag(ACC.cc)} <b>${esc(ACC.user)}</b>${vfBadge(ACC.role, ACC.vf)}${roleChip(ACC.role)} <button class="gh" id="mlo" style="padding:2px 8px">Sair</button>` : `👤 Convidado <button class="gh" id="mlo" style="padding:2px 8px">Entrar</button>`}</div>
   <div class="pill" style="text-align:center">🪙 <b>${Math.floor(S.coins)}</b> · ✨ <b>${P.cr}</b> · 🏆 <b>${P.pp}</b> PP · 🔬 <b>${P.rp}</b> RP</div></div>${ev}
   <div class="pill" id="mworld" style="text-align:center">${worldLine()} ${NET.mode == "local" && P2P.ready ? `<button id="mwc" style="padding:2px 8px">📋 Copiar código</button>` : ""} <button class="gh" id="msw" style="padding:2px 8px">Trocar de mundo</button></div>
-  <div class="mb"><button class="big pri" data-m="solo">Modo Solo · Campanha<small>${PH.length} fases · saga alienígena Ultimate</small></button>
+  <div class="mb"><button class="big pri" data-m="solo">Modo Solo · Campanha<small>30 fases + nova campanha alienígena (15 fases)</small></button>
   <button data-m="sand">Sandbox<small>Construção livre</small></button><button data-m="mp">Multiplayer<small>Coop · Equipes · Todos contra todos</small></button>
   <button data-m="ward">Guarda-roupa<small>Trajes, eventos e mais</small></button><button data-m="shop">Loja de upgrades</button>
   <button data-m="soc">👥 Amigos & grupo<small>${SOC.reqIn.length ? SOC.reqIn.length + " pedido(s)" : "Online agora, sem precisar de código"}</small></button><button data-m="lbd">Leaderboard</button>
-  <button data-m="evt" class="big">📅 Eventos & moedas em dobro</button>
+  <button data-m="quiz" class="big" style="border-color:#6a9cff">🛰 Quiz NASA<small>${QUIZ.length} perguntas · ${QZ.PER_Q} 🪙 por acerto inédito + bônus diário</small></button>
+  <button data-m="facts">📡 Fatos NASA<small>Leia e ganhe PP e moedas</small></button><button data-m="evt">📅 Eventos & moedas em dobro</button>
   ${isAdminAcc() ? `<button data-m="adm" class="big" style="border-color:#6a4cff">🛡 Ferramentas ADM${isArtistAcc() ? " · Estúdio de criação" : ""}</button>` : ""}</div><div id="msg"></div>`;
   screen("menu"); sc.fog.density = .006;
-  m.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => { const k = b.dataset.m; if (k == "solo") cat(); else if (k == "sand") start("sand"); else if (k == "mp") lobby(); else if (k == "ward") ward(); else if (k == "shop") shop(true); else if (k == "soc") social(); else if (k == "lbd") board(); else if (k == "evt") eventsPanel(); else if (k == "adm") adminTools(); }));
+  m.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => { const k = b.dataset.m; if (k == "solo") cat(); else if (k == "sand") start("sand"); else if (k == "mp") lobby(); else if (k == "ward") ward(); else if (k == "shop") shop(true); else if (k == "soc") social(); else if (k == "lbd") board(); else if (k == "evt") eventsPanel(); else if (k == "quiz") quizHome(); else if (k == "facts") factsHome(); else if (k == "adm") adminTools(); }));
   $("#mlo").onclick = () => (ACC.user ? logout() : authScreen()); $("#msw").onclick = () => switchWorld(); if ($("#mwc")) $("#mwc").onclick = () => copyText(P2P.code, "Código do mundo");
 }
 
@@ -101,11 +102,12 @@ function menu() {
 function cat() {
   screen("cat"); const g = $("#grid"); g.innerHTML = ""; g.style.display = "block"; $("#catinfo").textContent = `${Object.keys(S.done).length}/${PH.length} concluídas`;
   let w = null; const sep = (t) => { const d = document.createElement("div"); d.className = "sep"; d.textContent = t; g.appendChild(d); w = document.createElement("div"); w.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:10px"; g.appendChild(w); };
+  const qc = document.createElement("div"); qc.className = "card"; qc.style.cssText = "max-width:420px;margin:0 0 12px;border-color:#6a9cff"; qc.innerHTML = `<div style="padding:12px"><b>🛰 Quiz NASA · muitas moedas</b><p>${QUIZ.length} perguntas com fatos da NASA: ${QZ.PER_Q} 🪙 por acerto inédito e bônus de até ${QZ.BONUS80 + QZ.BONUS100} 🪙 por rodada.</p></div>`; qc.onclick = quizHome; g.appendChild(qc);
   PH.forEach((p, i) => {
-    if (i == 0) sep("Campanha da colônia · fases 1–30"); if (i == ALIEN_START) sep("👽 Invasão alienígena pacífica · Ultimate · fases 31–45");
-    const lk = i > 0 && !S.done[i - 1], c = document.createElement("div"); c.className = "card" + (lk ? " lk" : "") + (p.alien ? " al" : "");
+    if (i == 0) sep("Campanha da colônia · fases 1–30"); if (i == ALIEN_START) sep("👽 Nova campanha · Invasão alienígena pacífica · Ultimate · fases 31–45 (começa liberada, independente da campanha principal)");
+    const lk = i > 0 && i !== ALIEN_START && !S.done[i - 1], c = document.createElement("div"); c.className = "card" + (lk ? " lk" : "") + (p.alien ? " al" : "");
     c.innerHTML = `<img src="${p.img}" alt=""><div><b>Fase ${String(i + 1).padStart(2, "0")} · ${esc(p.n)}</b><p>${esc(p.d)}</p><p>${S.done[i] ? "✔ Concluída · " : lk ? "🔒 Bloqueada · " : ""}Recompensa: ${p.r} 🪙${p.nav ? "" : " · ⏱ " + Math.round(p.t / 6) / 10 + " min"}${p.ms.length ? " · 🎯 " + p.ms.length + " missões" : ""}</p></div>`;
-    if (!lk) c.onclick = () => start(p.nav ? "nav" : "solo", i); w.appendChild(c);
+    if (!lk) c.onclick = () => factBeforePhase(() => start(p.nav ? "nav" : "solo", i)); w.appendChild(c);
   });
 }
 function fin(s) { $("#fi").src = s; $("#fin").classList.add("on"); }

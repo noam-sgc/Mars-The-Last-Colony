@@ -43,6 +43,12 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 - **Fases mais longas** (180 s + 10 s/fase; fases alienígenas +60 s) e **missões bônus** (2 por fase, 3 na saga alienígena):
   conversar com colonos, arrumar edifícios, entrar em edifícios, construir peças, manter moral, contato alienígena.
 
+### 2.4b Conteúdo educativo (NASA)
+- **Quiz NASA** (`js/nasa.js` + `js/learn.js`): 58 perguntas com explicação. Acerto inédito = **40 🪙** (+1 PP); repetido = 4 🪙; bônus de rodada (80%+ → 300 🪙 + 10 PP; 100% → +600 🪙 + 20 PP) **1 vez por dia**. Moedas passam por `earn()` (evento x2/x5).
+- **Fatos NASA**: 43 cartões. **Só ganha (25 🪙 + 2 PP) quem lê até o fim** (botão libera após o tempo de leitura); **pular não dá nada** e o fato volta depois. Um fato inédito é oferecido antes de abrir uma fase (no máx. 1 a cada 3 min).
+- Todo o conteúdo é baseado em fatos divulgados pela NASA (missões, Marte, Sistema Solar). Ao editar, confira nas fontes (nasa.gov / science.nasa.gov / jpl.nasa.gov).
+- **Campanha alienígena (fases 31–45) é uma campanha à parte**: a fase 31 já começa liberada e vencer a fase 30 não leva automaticamente a ela.
+
 ### 2.5 Jogabilidade 3D
 - **WASD** move o astronauta; **arrastar a tela** gira a câmera (roda do mouse = zoom). Joystick virtual em telas de toque.
 - **Interação com colonos** (NPCs): clicar ou `E` perto → conversar (+moral), pedir relatório, presentear.

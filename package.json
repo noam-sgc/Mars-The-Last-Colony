@@ -5,7 +5,7 @@
   "description": "Mars: The Last Colony — jogo de colônias em Marte (solo, sandbox e multiplayer peer-to-peer por WebRTC)",
   "scripts": {
     "start": "node tools/serve.js",
-    "test": "node --test tests/hub.test.js"
+    "test": "node --test tests/"
   },
   "license": "UNLICENSED"
 }
