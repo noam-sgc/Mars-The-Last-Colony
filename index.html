@@ -30,13 +30,14 @@
 <div id="chat" class="panel"></div>
 <button id="chb" class="fab" title="Chat">💬<b id="chn"></b></button>
 <div id="toasts"></div>
-<div id="mus"><button id="musb" title="Trilha sonora (M)">🔊</button><input id="musv" type="range" min="0" max="1" step=".05" value=".5" title="Volume"></div>
+<button id="setbtn" title="Configurações (som, música e cliques)"><span class="ic">⚙</span><span class="tx">Configurações</span></button>
 
 <!-- ===== modais ===== -->
 <div class="mod" id="shop"><div class="box"><div class="up"><b>Loja de upgrades</b><span>🪙 <b id="sc">0</b> · 🔬 <b id="sr">0</b> RP</span></div><div id="sl"></div><button id="sx" style="margin-top:10px">Fechar</button></div></div>
 <div class="mod" id="res"><div class="box"><h2 id="rt"></h2><p id="rp"></p><div id="rb" class="row"></div></div></div>
 <div class="mod" id="fin"><div class="box" style="text-align:center"><img id="fi" alt="" style="width:100%;border-radius:8px"><button id="fb" style="margin-top:10px">Voltar ao catálogo</button></div></div>
 <div class="mod" id="dlg"><div class="box"><div id="dlgb"></div></div></div>
+<div class="mod" id="setm"><div class="box"><div id="setb"></div></div></div>
 <div class="mod" id="adm"><div class="box wide"><div id="admb"></div></div></div>
 
 <script src="vendor/three.min.js"></script>
@@ -61,5 +62,6 @@
 <script src="js/learn.js"></script>
 <script src="js/studio.js"></script>
 <script src="js/music.js"></script>
+<script src="js/settings.js"></script>
 <script src="js/main.js"></script>
 </body></html>
