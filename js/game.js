@@ -24,7 +24,7 @@ function setWeather() {
 function start(mode, ph) {
   if (mode == "nav") return navStart(ph);
   navOff(); clear(); closeInterior(true);
-  G = { run: true, placed: [], mode, ph, tool: "solar", mats: 1e9, paused: false, time: 0, hold: 0, rate: {}, tk: { water: 30, food: 30, oxy: 30, fuel: 30, morale: 30, eff: 30 }, msd: {}, st: { talk: 0, tidy: 0, enter: new Set(), contact: 0 }, lastTalk: {}, useRP: false };
+  MAINT.off = false; G = { run: true, placed: [], mode, ph, tool: "solar", mats: 1e9, paused: false, time: 0, hold: 0, rate: {}, tk: { water: 30, food: 30, oxy: 30, fuel: 30, morale: 30, eff: 30 }, msd: {}, st: { talk: 0, tidy: 0, enter: new Set(), contact: 0 }, lastTalk: {}, useRP: false };
   if (mode == "solo") G.time = PH[ph].t + B("time");
   buildHud(); screen("hud");
   $("#ht").style.display = mode == "solo" ? "" : "none"; $("#hr").style.display = mode == "solo" ? "" : "none"; $("#hs").style.display = mode == "mp" ? "none" : "";
@@ -169,22 +169,29 @@ function win() {
 function end(w, rw) {
   G.run = false; closeDlg(); $("#rt").textContent = w ? G.rank : G.why;
   const done = G.mode == "solo" ? PH[G.ph].ms.filter((m) => G.msd[m.id]).length + "/" + PH[G.ph].ms.length : "";
-  $("#rp").innerHTML = w ? `Média dos tanques: ${G.avg}%. Você ganhou <b>${rw}</b> moedas${EV.mult > 1 ? ` (evento x${EV.mult} aplicado!)` : ""}; quanto mais cheios os tanques, maior o prêmio.<br>Pesquisa: +${10 + 3 * G.ph} RP · Missões bônus: ${done}.` : "A colônia não sustentou os tanques. Construa as peças de cada classe, arrume os edifícios por dentro ou compre upgrades.";
+  $("#rp").innerHTML = w ? `Média dos tanques: ${G.avg}%. Você ganhou <b>${rw}</b> moedas${EV.mult > 1 ? ` (evento x${EV.mult} aplicado!)` : ""}; quanto mais cheios os tanques, maior o prêmio.<br>Pesquisa: +${10 + 3 * G.ph} RP · Missões bônus: ${done}.${G.mspent ? ` Manutenção dos upgrades paga: ${Math.round(G.mspent)} 🪙.` : ""}` : "A colônia não sustentou os tanques. Construa as peças de cada classe, arrume os edifícios por dentro ou compre upgrades.";
   const b = $("#rb"); b.innerHTML = ""; const add = (t, f) => { const x = document.createElement("button"); x.textContent = t; x.onclick = () => { $("#res").classList.remove("on"); f(); }; b.appendChild(x); };
   if (w && G.ph + 1 < PH.length && G.ph + 1 !== ALIEN_START) add("Próxima fase", () => { const q = PH[G.ph + 1]; start(q.nav ? "nav" : "solo", G.ph + 1); }); else if (w) { add("Ver final", () => fin(SV.fb)); if (G.ph + 1 === ALIEN_START) add("👽 Campanha alienígena", () => start("solo", ALIEN_START)); } else if (S.coins < 20) add("Ver final", () => fin(SV.fr)); else add("Tentar de novo", () => start(PH[G.ph].nav ? "nav" : "solo", G.ph));
   add("Loja", () => { menu(); shop(true); }); add("Catálogo", () => { clear(); cat(); }); $("#res").classList.add("on");
 }
+/** Cobra a manutenção dos upgrades. Sem moedas, os upgrades ficam suspensos até haver saldo para ~6 s de manutenção. */
+function maintain(dt) {
+  const r = maintRate(); G.mrate = r; if (r <= 0) { MAINT.off = false; return; }
+  if (MAINT.off) { if (S.coins >= r * 6) { MAINT.off = false; toast("🔧 Manutenção retomada: upgrades ativos de novo"); } return; }
+  const need = r * dt; if (S.coins >= need) { S.coins -= need; G.mspent = (G.mspent || 0) + need; } else { G.mspent = (G.mspent || 0) + S.coins; S.coins = 0; MAINT.off = true; toast("🔧 Sem moedas para a manutenção: upgrades suspensos até você juntar moedas", 4500); }
+  G.msave = (G.msave || 0) + dt; if (G.msave > 5) { G.msave = 0; save(); }
+}
 function tick(dt) {
   if (G.mode == "nav") { navTick(dt); return; }
   tank(dt); if (G.mode == "mp") mpTick(dt); if (G.mode != "solo") return;
-  earn((1 + B("inc")) * dt); G.time -= dt; missions(dt);
+  earn((1 + B("inc")) * dt); maintain(dt); G.time -= dt; missions(dt);
   if (G.tk.oxy <= 0 || G.tk.water <= 0) { G.why = "Colapso: " + (G.tk.oxy <= 0 ? "sem oxigênio" : "sem água"); end(false); }
   else if (goals()) { G.hold += dt; if (G.hold >= 5) win(); } else G.hold = 0;
   if (G.run && G.time <= 0) { G.why = "Tempo esgotado"; end(false); }
 }
 function hud() {
   if (G.mode == "nav") { navHud(); setAct(""); return; }
-  $("#hc").textContent = Math.floor(S.coins); $("#hrv").textContent = P.rp; if (G.mode == "solo") $("#ht").textContent = "⏱ " + Math.max(0, Math.ceil(G.time)) + " s";
+  $("#hc").textContent = Math.floor(S.coins); $("#hrv").textContent = P.rp; { const m = $("#mt"), r = G.mode == "solo" ? maintRate() : 0; m.style.display = r > 0 ? "" : "none"; if (r > 0) { m.innerHTML = MAINT.off ? "🔧 <b style=\"color:var(--bad)\">upgrades suspensos</b>" : `🔧 −${(r * 60).toFixed(1)} 🪙/min`; } } if (G.mode == "solo") $("#ht").textContent = "⏱ " + Math.max(0, Math.ceil(G.time)) + " s";
   $("#tk").innerHTML = K.map((k) => `<div class="tb"><span>${KN[k]}</span><u><i style="width:${G.tk[k]}%;background:${TC[k]}"></i></u><em>${(G.rate[k] || 0) >= 0 ? "▲" : "▼"}</em><b style="width:36px;text-align:right">${Math.floor(G.tk[k])}%</b></div>`).join("");
   if (G.mode == "solo" && !G.paused) goals();
   const h = $("#hint"), c = nearestColonist(), b = nearestBuilding();

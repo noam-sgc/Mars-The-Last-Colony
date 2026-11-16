@@ -132,6 +132,7 @@ const UP = [
 const SPB = { human: { disc: .1, rw: .1 }, alien: { pm: { eff: .15, morale: .1 }, cr: { oxy: .15 } } };
 const SPB_TXT = { human: "−10% no custo das peças · +10% de moedas por fase", alien: "+15% Eficiência · +10% Moral · −15% consumo de O₂" };
 const SPN = { human: "🧑‍🚀 Humano", alien: "👽 Alienígena" };
+// Todo upgrade tem manutenção baixa (upM em state.js); o bônus da espécie é grátis.
 // Itens da loja exclusivos de cada espécie (só funcionam enquanto você estiver nela).
 UP.push(
   { id: "hs1", sp: "human", k: "Hardware", n: "Cúpulas de engenheiros colonos", d: "+25% de Comida produzida", c: 450, pm: { food: .25 } },
