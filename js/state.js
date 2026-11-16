@@ -50,7 +50,8 @@ function applyCatalog(c) {
   Object.keys(TY).forEach((k) => { if (!BUILTIN.includes(k)) delete TY[k]; });
   CAT.part.forEach((p) => { TY[p.id] = { n: p.n, c: p.c, k: p.k, p: p.p, custom: p }; });
 }
-const B = (k) => allUP().filter((u) => S.own.includes(u.id)).reduce((a, u) => a + (u[k] || 0), 0);
-const B2 = (f, k) => allUP().filter((u) => S.own.includes(u.id)).reduce((a, u) => a + ((u[f] || {})[k] || 0), 0);
+const spOk = (u) => !u.sp || u.sp === P.sp;   // itens de espécie só valem na espécie certa
+const B = (k) => allUP().filter((u) => S.own.includes(u.id) && spOk(u)).reduce((a, u) => a + (u[k] || 0), 0) + ((SPB[P.sp] || {})[k] || 0);
+const B2 = (f, k) => allUP().filter((u) => S.own.includes(u.id) && spOk(u)).reduce((a, u) => a + ((u[f] || {})[k] || 0), 0) + ((((SPB[P.sp] || {})[f]) || {})[k] || 0);
 const cost = (t) => Math.ceil(TY[t].c * (1 - Math.min(.4, B("disc"))));
-const canUseItem = (it) => MarsRules.canUse(it, ACC.role);
+const canUseItem = (it) => MarsRules.canUse(it, ACC.role) && (!it.sp || it.sp === P.sp);
