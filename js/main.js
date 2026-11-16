@@ -16,14 +16,13 @@ cv.addEventListener("pointermove", (e) => {
 });
 cv.addEventListener("pointerup", (e) => { if (N) { N.nx = 0; N.ny = 0; } if (dr && dr.m < 6 && G.run && G.mode != "nav" && !DLG) { if (IN) interiorClick(e); else click(e); } dr = null; });
 cv.addEventListener("wheel", (e) => { if (IN) IN.dist = clamp(IN.dist * (1 + Math.sign(e.deltaY) * .1), 7, 24); else dist = clamp(dist * (1 + Math.sign(e.deltaY) * .1), 8, 90); }, { passive: true });
-INP.onEsc = () => { if (DLG) closeDlg(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
+INP.onEsc = () => { if ($("#setm").classList.contains("on")) closeSettings(); else if (DLG) closeDlg(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
 $("#dlg").addEventListener("pointerdown", (e) => { if (e.target.id == "dlg" && DLG) closeDlg(); });
 
 function musicMood() {
   if (IN) return "interior"; if (!G.run) return "menu"; if (G.mode == "nav") return "nav";
   const ph = G.mode == "solo" ? PH[G.ph] : null; return ph && ph.alien ? "alien" : ph && ph.storm ? "storm" : "colony";
 }
-$("#musb").onclick = () => Music.toggle(); $("#musv").oninput = (e) => Music.setVol(+e.target.value);
 setInterval(() => Music.setMood(musicMood()), 500);
 let last = performance.now(), fogT = 0;
 function loop(n) {

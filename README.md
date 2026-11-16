@@ -26,7 +26,7 @@ PeerJS só ajuda a se achar; os dados do jogo não passam por ele. As contas, sa
 | Conversar / entrar em edifício | **E** perto, ou toque no colono / use 🖐 Interagir no edifício |
 | Sair do edifício / fechar diálogo | **Esc** |
 | Naves (fases 1–2) | WASD ou arrastar; **Espaço** = impulso |
-| Música | botão 🔊 ou tecla **M** |
+| Música e sons | botão **⚙ Configurações** (canto superior direito) ou tecla **M** para silenciar |
 
 ## Testes
 ```bash

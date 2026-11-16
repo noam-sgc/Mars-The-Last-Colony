@@ -55,7 +55,8 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 - **Entrar em edifícios** (`E` perto, ou ferramenta 🖐 Interagir): **pausa o tempo** (Solo/Sandbox; no Multi o tempo segue),
   abre **outra simulação 3D** (interior) onde se **organiza** itens bagunçados nas prateleiras. A *ordem* do edifício (0–100%)
   altera a produção (x0,75 a x1,25) e decai devagar com o tempo.
-- **Trilha sonora** procedural (Web Audio, `js/music.js`): 6 climas (menu, colônia, interior, pilotagem, tempestade, alienígena); botão 🔊, volume e tecla **M**. Sem arquivos de áudio.
+- **Trilha sonora** (`js/music.js`): 2 músicas gravadas (`assets/audio/`: *Marte Tranquila* e *Marte Animada*) + 8 faixas geradas em tempo real com nomes inventados (Poeira de Jezero, Colônia ao Amanhecer, Sob a Cúpula, Travessia Vermelha, Tempestade de Ferro, Canção dos Visitantes, Noites de Valles, Aurora Polar). Modo **Automática** troca a faixa conforme o momento do jogo.
+- **Configurações** (`js/settings.js`): botão grande e fixo no canto superior direito, presente em todas as telas (a barra do HUD reserva espaço para ele). Permite ligar/desligar e mudar o volume (intensidade) da música, escolher a faixa, e configurar o **som de clique** (liga/desliga, volume, 4 estilos). Preferências em `localStorage`.
 - Visual melhorado: sombras, tonemapping, céu em degradê, crateras, peças com animações, astronauta com capacete/mochila/brilho.
 - **Guarda-roupa** com pré-visualização 3D, abas (trajes, calças, relógios, capacetes, mochilas, eventos, admin).
 
