@@ -1,6 +1,6 @@
 /* Estado do jogador: moedas (S), perfil/cosméticos (P), conta (ACC), eventos (EV), catálogo global (CAT). */
 let S = { coins: 500, own: [], done: {}, color: "#d8d0c4", v: 3 };
-let P = { name: "", cr: 0, pp: 0, rp: 0, w: 0, day: "", own: DEF_OWN.slice(), eq: Object.assign({}, DEF_EQ), evs: {}, v: 3 };
+let P = { name: "", cr: 0, pp: 0, rp: 0, w: 0, day: "", own: DEF_OWN.slice(), eq: Object.assign({}, DEF_EQ), evs: {}, fr: { f: [], in: [], out: [], cc: {} }, v: 3 };
 const ACC = { user: null, role: "guest", cc: "", vf: false, token: null };
 let CAT = { cos: [], part: [], up: [] };
 const isAdminAcc = () => ACC.role === "admin" || ACC.role === "artist";
@@ -11,6 +11,7 @@ function normalize() {
   S.v = 3; P.v = 3; S.own = S.own || []; S.done = S.done || {}; P.evs = P.evs || {};
   DEF_OWN.forEach((id) => { if (!P.own.includes(id)) P.own.push(id); });
   P.eq = Object.assign({}, DEF_EQ, P.eq || {});
+  const f = P.fr = P.fr || {}; ["f", "in", "out"].forEach((k) => { f[k] = Array.isArray(f[k]) ? f[k] : []; }); f.cc = f.cc && typeof f.cc === "object" ? f.cc : {};
 }
 function loadLocal() {
   try { Object.assign(S, JSON.parse(localStorage.getItem(skey()) || "{}")); } catch (e) { /* ignore */ }

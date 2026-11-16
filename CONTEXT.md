@@ -32,7 +32,7 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 
 ### 2.3 Social e multiplayer
 - **Chat** dentro do Modo Multi (canais: Global, Sala, Grupo e mensagens diretas).
-- **Amigos**: mostra **todos os usuários existentes no servidor** (com busca, online, país, selo); pedido → aceite.
+- **Amigos** (globais, **sem precisar do código do mundo**): lista todos os usuários online (diretório global por WebRTC, `js/global.js`) e os do mundo atual, com busca, país e selo; pedido → aceite; mensagens diretas. Amigos ficam salvos no perfil (`P.fr`) e os pedidos pendentes são reenviados quando o alvo fica online.
 - **Grupos** (até 8): líder convida, expulsa e chama o grupo para a sala; membros do grupo ficam na mesma equipe.
 - Modo Multi dividido em: **Cooperativo**, **Equipes** (2 equipes) e **Todos contra todos**.
 - **Sem limite de bots** (o número é livre; para manter a fluidez cada bot constrói no máximo `clamp(400/N, 1, 14)` peças).
@@ -63,6 +63,7 @@ js/                   cliente (scripts clássicos, ordem em index.html)
   state.js            S (moedas), P (perfil), ACC (conta), EV (eventos), CAT (catálogo global), earn()
   net.js              rede: modo local (anfitrião) ou p2p (convidado), mesmo protocolo
   localhub.js         "mundo" local: o mesmo Hub dentro do navegador (dados em localStorage)
+  global.js           diretório global + amigos + DM (registro eleito entre os jogadores, via PeerJS)
   p2p.js              WebRTC (PeerJS): anfitrião aceita convidados por código; convidado conecta ao anfitrião
   world.js            renderer, terreno, peças (mk), astronauta (av), colonos
   input.js            WASD/setas, E, Esc, joystick
@@ -90,6 +91,8 @@ vendor/three.min.js   Three.js r128 local (sem CDN)
   (código de 6 caracteres, copiável). O mesmo protocolo (`shared/hub.js`) corre pelo canal de dados WebRTC (`js/p2p.js`, `js/net.js`).
   Contas, amigos, grupos, chat, eventos e catálogo vivem no mundo do anfitrião (não há servidor global).
   Contas ADM: criadas pelo fluxo normal; o primeiro a registrar o nome o possui (em cada mundo).
+
+- **Diretório global**: id fixo no sinalizador PeerJS; o primeiro jogador logado vira o *registro* (lista online, repassa mensagens); se sair, outro assume sozinho. Identidade no diretório é declarada pelo cliente (não há autoridade central).
 
 ## 3.1 Publicação
 Veja `docs/DEPLOY.md` (site estático na Vercel; sem servidor de jogo).
