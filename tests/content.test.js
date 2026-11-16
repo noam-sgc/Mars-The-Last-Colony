@@ -1,5 +1,9 @@
 const test = require("node:test"), assert = require("node:assert"), fs = require("fs"), path = require("path");
-const { FACTS, QUIZ } = new Function(fs.readFileSync(path.join(__dirname, "..", "js", "nasa.js"), "utf8") + ";return {FACTS,QUIZ}")();
+const { FACTS, QUIZ, FONTE } = new Function(fs.readFileSync(path.join(__dirname, "..", "js", "espaco.js"), "utf8") + ";return {FACTS,QUIZ,FONTE}")();
+test("fonte aparece só como referência: nenhum texto de pergunta/fato cita a agência", () => {
+  const body = JSON.stringify([FACTS, QUIZ]); assert.ok(!/NASA/i.test(body));
+  assert.match(FONTE, /NASA/);
+});
 test("quiz: perguntas bem formadas, sem repetição", () => {
   assert.ok(QUIZ.length >= 50);
   QUIZ.forEach((q, i) => { assert.equal(q[1].length, 4, "opções #" + i); assert.ok(q[2] >= 0 && q[2] < 4); assert.equal(new Set(q[1]).size, 4, "opções repetidas #" + i); assert.ok(q[3].length > 5); });
