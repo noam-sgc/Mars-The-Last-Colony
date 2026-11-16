@@ -40,7 +40,16 @@ function openInterior(p) {
   const pg = av(myEq()); pg.position.set(0, 0, RD - 1); isc.add(pg);
   const cols = []; const nc = 1 + (G.placed.length > 4 ? 1 : 0) + (p.t == "emb" || (G.mode == "solo" && PH[G.ph].alien) ? 1 : 0);
   for (let i = 0; i < nc; i++) { const al = i == nc - 1 && (p.t == "emb" || (G.mode == "solo" && PH[G.ph].alien)), g = mkColonist(77 + i * 31 + p.x, al); g.position.set(-6 + i * 6, 0, 4); isc.add(g); cols.push({ g, x: g.position.x, z: g.position.z, tx: g.position.x, tz: 4, wait: 1, alien: al, info: g.userData.info, mood: 70 }); }
-  IN = { solidBoxes, p, sc: isc, cam: icam, pg, x: 0, z: RD - 1, ry: Math.PI, yaw: 0, pit: .5, dist: 10, items, cols, door, v: 0, done: !messy, ring: [] };
+  // minimissão do edifício: achados (moedas, reservas de tanque e o bônus da fase) escondidos na sala
+  const key = G.ph == null ? "s" : G.ph, now = performance.now(), L = p.loot;
+  if (!L || now - L.at > 180000 || (L.list.every((x) => x.got) && now - L.at > 90000)) {
+    const list = [], free = (x, z) => Math.hypot(x, z + 2) > 5 && !solidBoxes.some((b) => Math.abs(x - b.x) < b.w / 2 + 1.1 && Math.abs(z - b.z) < b.d / 2 + 1.1) && !list.some((q) => Math.hypot(q.x - x, q.z - z) < 2.2);
+    const specs = lootKinds(TY[p.t].k).slice(0, 4); if (p.pb !== key) specs.push({ kind: "phase" });
+    specs.forEach((s) => { for (let t = 0; t < 60; t++) { const x = (Math.random() * 2 - 1) * (RW - 2.5), z = -RD + 3.2 + Math.random() * (2 * RD - 5); if (free(x, z)) { list.push({ kind: s.kind, k: s.k, x, z, got: 0 }); break; } } });
+    p.loot = { at: now, list };
+  }
+  const finds = p.loot.list.filter((q) => !q.got).map((q) => { const m = mkLoot(q.kind, q.k, false); m.userData.y0 = 0; m.position.set(q.x, 0, q.z); isc.add(m); return { q, m }; });
+  IN = { solidBoxes, finds, p, sc: isc, cam: icam, pg, x: 0, z: RD - 1, ry: Math.PI, yaw: 0, pit: .5, dist: 10, items, cols, door, v: 0, done: !messy, ring: [] };
   if (G.mode != "mp") G.paused = true; G.st.enter.add(p.t + ":" + p.x + "," + p.z);
   $("#hud").classList.remove("on"); $("#inhud").classList.add("on"); $("#hint").style.display = "none"; sync();
   toast(`🏭 ${esc(ty.n)}: arrume os itens marcados em vermelho nas prateleiras${G.mode == "mp" ? " (o tempo do multiplayer segue)" : " (tempo pausado)"}`, 4200);
@@ -83,7 +92,9 @@ function interiorUpdate(dt, t) {
     else if (!it.tidy) { it.o.userData.ring.material.opacity = .5 + .4 * Math.sin(t * 4); } });
   I.cols.forEach((c) => { const p = c.g.position; c.wait -= dt; let mv = 0; if (c.wait <= 0 && DLG !== c) { const dx = c.tx - p.x, dz = c.tz - p.z, d = Math.hypot(dx, dz); if (d < .5) { c.wait = 2 + Math.random() * 4; c.tx = (Math.random() * 2 - 1) * (RW - 3); c.tz = Math.random() * (RD - 2) - 1; if (Math.hypot(c.tx, c.tz + 2) < 5) c.tz = 6; } else { p.x += dx / d * 2 * dt; p.z += dz / d * 2 * dt; c.g.rotation.y = Math.atan2(dx, dz); mv = 1; } } { const o = { x: p.x, z: p.z }; pb(o, .5); p.x = o.x; p.z = o.z; if (Math.hypot(p.x, p.z + 2) < 3.4) { const a = Math.atan2(p.z + 2, p.x); p.x = Math.cos(a) * 3.4; p.z = -2 + Math.sin(a) * 3.4; } } p.y = c.alien ? .35 + .15 * Math.sin(t * 3) : 0; walkAnim(c.g, t, mv); });
   const left = I.items.filter((i) => !i.tidy).length, near = interiorNearItem(), nc = I.cols.find((c) => Math.hypot(c.g.position.x - I.x, c.g.position.z - I.z) < 4.2);
-  $("#ini").innerHTML = `${TY[co.t].n} · Ordem <b>${Math.round(co.ord * 100)}%</b> · itens bagunçados: <b>${left}</b> · produção x${(.75 + .5 * co.ord).toFixed(2)}`;
+  I.finds.forEach((f, n) => { animLoot(f.m, t, n); if (!f.got && Math.hypot(f.q.x - I.x, f.q.z - I.z) < 1.7) { f.got = 1; f.q.got = 1; I.sc.remove(f.m); if (f.q.kind === "phase") co.pb = G.ph == null ? "s" : G.ph; lootGrant(f.q.kind, f.q.k); if (co.loot.list.every((x) => x.got)) { const b = Math.round(earn(40 + (G.ph || 0) * 4)); toast(`🎁 Minimissão do edifício cumprida! +${b} 🪙`, 3500); save(); } } });
+  const lt = co.loot.list.length, lg = co.loot.list.filter((x) => x.got).length;
+  $("#ini").innerHTML = `${TY[co.t].n} · 🎁 achados <b>${lg}/${lt}</b> · Ordem <b>${Math.round(co.ord * 100)}%</b> · itens bagunçados: <b>${left}</b> · produção x${(.75 + .5 * co.ord).toFixed(2)}`;
   const hn = $("#inh"); const msg = near ? "E / toque · arrumar item" : nc ? `E / toque · falar com ${nc.info.name}` : I.z > RD + .8 && Math.abs(I.x) < 3.5 ? "E · sair pela porta" : ""; setHint(hn, msg); setAct(TOUCH ? (near ? "Arrumar" : nc ? "Conversar" : msg.includes("sair") ? "Sair" : "") : "");
   const ty = 2.2, cx = I.x, cz = I.z; I.cam.position.set(cx + I.dist * Math.cos(I.pit) * Math.sin(I.yaw), ty + I.dist * Math.sin(I.pit), cz + I.dist * Math.cos(I.pit) * Math.cos(I.yaw)); I.cam.position.x = clamp(I.cam.position.x, -RW - .5, RW + .5); I.cam.position.z = clamp(I.cam.position.z, -RD - .5, RD + 3.8); I.cam.position.y = clamp(I.cam.position.y, .8, 8.6); I.cam.lookAt(cx, ty, cz);
 }

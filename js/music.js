@@ -116,6 +116,7 @@ const Music = (() => {
     select(id) { sel = id === "auto" || TRACKS.some((t) => t.id === id) ? id : "auto"; start(); if (!on) { on = true; } apply(); sync(); },
     toggle() { start(); on = !on; apply(); }, setVol(v) { vol = clamp(+v, 0, 1); if (vol > 0) on = true; start(); apply(); },
     setSfx(v) { sfxOn = !!v; apply(); }, setSfxVol(v) { sfxVol = clamp(+v, 0, 1); apply(); }, setSfxStyle(s) { if (CLICKS[s]) { sfxStyle = s; apply(); } },
+    pick() { if (!ctx || !sfxOn || ctx.state !== "running") return; const t = ctx.currentTime; [784, 988, 1319].forEach((f, i) => { const o = ctx.createOscillator(), e = ctx.createGain(); o.type = "triangle"; o.frequency.value = f; e.gain.setValueAtTime(0, t + i * .07); e.gain.linearRampToValueAtTime(.4, t + i * .07 + .01); e.gain.exponentialRampToValueAtTime(.0001, t + i * .07 + .25); o.connect(e); e.connect(sfxOut); o.start(t + i * .07); o.stop(t + i * .07 + .3); }); },
     click, trackName() { const t = TRACKS.find((x) => x.id === cur); return t ? t.name : ""; },
   };
   return api;

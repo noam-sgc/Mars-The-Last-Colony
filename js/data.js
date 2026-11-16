@@ -95,6 +95,7 @@ function genMissions(i, alien) {
     rover: { id: "rover", txt: "Construa rovers", n: 1 + (j >> 4), rw },
   }[ty]);
   out.push(mk(MS_POOL[i % 6])); out.push(mk(MS_POOL[(i + 3) % 6]));
+  out.push({ id: "loot", txt: "Colete achados (edifícios e rovers)", n: 3 + (j >> 3), rw });
   if (alien) out.push({ id: "contact", txt: "Converse com emissários alienígenas", n: 2 + ((i - ALIEN_START) >> 3), rw: rw + 20 });
   return out;
 }

@@ -150,6 +150,17 @@ function walkAnim(g, t, speed) { const u = g.userData; if (!u.legs) return; cons
 const SKINS = { verde: { c: "#8affd8", g: "#22cc99", n: "Verde-lunar" }, violeta: { c: "#c9a4ff", g: "#8a55ff", n: "Violeta" }, azul: { c: "#8ec9ff", g: "#3a8dff", n: "Azul-gelo" }, laranja: { c: "#ffc08a", g: "#ff8a2a", n: "Âmbar" }, cinza: { c: "#cfd8dc", g: "#8aa0a8", n: "Cinza-prata" } };
 /** Aparência do jogador local (cosméticos + espécie). */
 const myEq = () => Object.assign({}, P.eq, { sp: P.sp === "alien" ? "alien" : "human", sk: P.skin || "verde" });
+/** Achado colecionável: coin (bolsa de moedas), tank (cilindro com a cor do tanque) ou phase (estrela dourada do bônus da fase). tall = com coluna de luz (visível de longe). */
+function mkLoot(kind, k, tall) {
+  const g = new THREE.Group(), glowM = (c, i) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: i == null ? .9 : i, roughness: .35, metalness: .4 });
+  if (kind === "coin") { const d = new THREE.Mesh(new THREE.CylinderGeometry(.5, .5, .16, 18), glowM(0xffcf3d, .8)); d.rotation.x = Math.PI / 2; d.position.y = 1.1; g.add(d); const r = new THREE.Mesh(new THREE.TorusGeometry(.6, .05, 6, 20), glowM(0xfff1a8, 1.2)); r.position.y = 1.1; g.add(r); }
+  else if (kind === "tank") { const c = new THREE.Color(TC[k] || "#66ddff"), m = glowM(c, .7), b = new THREE.Mesh(new THREE.CylinderGeometry(.38, .38, .9, 14), m); b.position.y = 1.1; g.add(b); const cap = new THREE.Mesh(new THREE.SphereGeometry(.38, 12, 8, 0, 6.283, 0, 1.57), m); cap.position.y = 1.55; g.add(cap); const rg = new THREE.Mesh(new THREE.TorusGeometry(.45, .04, 6, 18), glowM(0xffffff, .8)); rg.rotation.x = Math.PI / 2; rg.position.y = 1.1; g.add(rg); }
+  else { const s = new THREE.Mesh(new THREE.OctahedronGeometry(.7, 0), glowM(0xffe14a, 1.1)); s.position.y = 1.4; s.scale.y = 1.35; g.add(s); const rg = new THREE.Mesh(new THREE.TorusGeometry(.95, .06, 6, 24), glowM(0xfff1a8, 1.2)); rg.rotation.x = Math.PI / 2; rg.position.y = 1.4; g.add(rg); }
+  if (tall) { const col = kind === "phase" ? 0xffe14a : kind === "tank" ? new THREE.Color(TC[k] || "#66ddff").getHex() : 0xffcf3d; const p = new THREE.Mesh(new THREE.CylinderGeometry(.25, .8, 16, 12, 1, true), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .22, side: THREE.DoubleSide, depthWrite: false })); p.position.y = 8; g.add(p); }
+  const pl = new THREE.PointLight(kind === "phase" ? 0xffe14a : kind === "tank" ? new THREE.Color(TC[k] || "#66ddff").getHex() : 0xffcf3d, .7, 7); pl.position.y = 1.4; g.add(pl);
+  g.userData.kind = kind; return g;
+}
+const animLoot = (m, t, i) => { const c = m.children[0]; m.position.y = (m.userData.y0 || 0) + Math.sin(t * 2.2 + i) * .18; m.rotation.y = t * 1.6 + i; };
 // colonos (NPCs) e emissários alienígenas
 const CNAMES = "Marta,Ivo,Lena,Tavi,Joaquim,Nadia,Omar,Bia,Hiro,Clara,Dante,Yara,Otto,Luz,Ravi,Mei,Tomás,Zélia,Ícaro,Noor".split(",");
 const CJOBS = ["engenheira", "geólogo", "agricultora", "médico", "técnica de O₂", "piloto", "cientista", "cozinheiro", "mecânica", "professora"];
