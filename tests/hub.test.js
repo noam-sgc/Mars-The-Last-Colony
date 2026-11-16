@@ -9,7 +9,7 @@ function client(hub) {
 }
 test("papéis: só 3 admins e 2 desenhistas", () => {
   assert.deepEqual(R.ADMINS, ["ADMVinnil", "ADMKezle", "ADMLefaar"]);
-  assert.ok(R.isAdmin("admvinnil") && R.isAdmin("ADMLefaar") && R.isArtist("ADMVinnil") && R.isArtist("ADMKezle") && !R.isArtist("ADMLefaar"));
+  assert.ok(R.isAdmin("admvinnil") && R.isAdmin("ADMLefaar") && !R.isArtist("ADMVinnil") && R.isArtist("ADMKezle") && R.isArtist("ADMLefaar"));
   assert.equal(R.roleOf("Joao"), "user");
 });
 test("eventos: x5 em 1/fev, 11/abr, 12/jun; x2 em feriados e fins de semana", () => {
@@ -42,14 +42,14 @@ test("admin: mensagem global e eventos; usuário comum é recusado", async () =>
   assert.ok((await adm.ask({ t: "adm.ev.add", ev: { name: "Evento ADM", start: Date.now() - 1000, end: Date.now() + 1e6, mult: 3 } })).ok);
   assert.ok(u.log.some((m) => m.t === "events" && m.events.length === 1));
 });
-test("catálogo: só ADMVinnil/ADMKezle publicam; ADMLefaar (admin) não", async () => {
+test("catálogo: só ADMKezle/ADMLefaar publicam; ADMVinnil (admin) não", async () => {
   const h = mk(); await h.ensureAdmins({ ADMVinnil: "a1a1a1", ADMKezle: "b2b2b2", ADMLefaar: "c3c3c3" });
   const v = client(h), k = client(h), u = client(h), l = client(h);
   await v.ask({ t: "login", u: "ADMVinnil", p: "a1a1a1" }); await k.ask({ t: "login", u: "ADMKezle", p: "b2b2b2" }); await l.ask({ t: "login", u: "ADMLefaar", p: "c3c3c3" }); await u.ask({ t: "reg", u: "Zeca", p: "secret1", c: "BR" });
   const item = { n: "Traje Aurora", l: "s", c: 300, col: "#33ccff" };
-  assert.equal((await l.ask({ t: "cat.pub", kind: "cos", item })).ok, false);
-  assert.ok((await l.ask({ t: "adm.msg", text: "admin sem estúdio" })).ok);
-  assert.ok((await v.ask({ t: "cat.pub", kind: "cos", item })).ok);
+  assert.equal((await v.ask({ t: "cat.pub", kind: "cos", item })).ok, false);
+  assert.ok((await v.ask({ t: "adm.msg", text: "admin sem estúdio" })).ok);
+  assert.ok((await l.ask({ t: "cat.pub", kind: "cos", item })).ok);
   assert.equal((await u.ask({ t: "cat.pub", kind: "cos", item })).ok, false);
   const r = await k.ask({ t: "cat.pub", kind: "cos", item }); assert.ok(r.ok);
   assert.ok((await k.ask({ t: "cat.pub", kind: "part", item: { n: "Torre", shape: "tower", k: "oxy" } })).ok);
@@ -90,7 +90,7 @@ test("modo sem servidor: contas ADM vêm de hashes de configuração e só entra
   const h = mk(); h.setAdminHashes({ ADMVinnil: "hvinnil", ADMKezle: "hkezle", ADMLefaar: "hlefaar" });
   const a = client(h); assert.equal((await a.ask({ t: "login", u: "ADMKezle", p: "errada" })).ok, false);
   const r = await a.ask({ t: "login", u: "ADMKezle", p: "kezle" }); assert.ok(r.ok && r.me.role === "artist");
-  assert.equal((await client(h).ask({ t: "login", u: "ADMLefaar", p: "lefaar" })).me.role, "admin");
+  assert.equal((await client(h).ask({ t: "login", u: "ADMVinnil", p: "vinnil" })).me.role, "admin");
   h.setAdminHashes({ ADMKezle: "hnova" }); assert.equal((await client(h).ask({ t: "login", u: "ADMKezle", p: "kezle" })).ok, false);
   assert.ok((await client(h).ask({ t: "login", u: "ADMKezle", p: "nova" })).ok);
 });

@@ -3,6 +3,9 @@
 > Arquivo de contexto para quem (pessoa ou IA) for continuar o projeto. Resume **o que o jogo é, as regras
 > decididas pelo dono do projeto, a arquitetura e o que ainda está em aberto**. Atualize-o a cada mudança de regra.
 
+## 0. Decisão de arquitetura
+**Multiplayer peer-to-peer: todo canal de comunicação usa WebRTC** (jogo, chat, amigos, grupos, presença). Não há servidor de jogo nem WebSocket.
+
 ## 1. O jogo
 Jogo web 3D (Three.js r128, sem build) sobre colônias em Marte. Três modos: **Solo/Campanha**, **Sandbox** e **Multiplayer**.
 Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + joystick virtual).
@@ -21,8 +24,8 @@ Idioma da interface: português (pt-BR). Funciona em desktop e celular (toque + 
 ### 2.2 Contas, papéis e verificação
 - Autenticação com **usuário + senha + país**. Convidado pode jogar Solo/Sandbox/bots, mas sem chat/amigos/multi online.
 - **Admins (3):** `ADMVinnil`, `ADMKezle`, `ADMLefaar` → acesso às *admin tools*: **mensagens globais** e **organização de eventos**.
-- **Desenhistas (2):** apenas `ADMVinnil` e `ADMKezle` → *Estúdio*: criar e **publicar globalmente** cosméticos, **peças** e **upgrades**.
-  (`ADMLefaar` é admin, mas **não** é desenhista.)
+- **Desenhistas (2):** apenas `ADMKezle` e `ADMLefaar` → *Estúdio*: criar e **publicar** cosméticos, **peças** e **upgrades** (valem para todos no mundo).
+  (`ADMVinnil` é admin, mas **não** é desenhista.)
 - Nomes reservados: ninguém mais pode registrar esses nomes nem qualquer nome iniciado em `ADM`.
 - **Selo de verificação (✔)**: administradores (selo dourado) e **amigos de administradores** (selo azul).
 - Trajes **para admins** (`adm_*`) só podem ser equipados por admins/desenhistas (validado no cliente **e** no servidor).
@@ -58,7 +61,7 @@ css/style.css         estilos
 js/                   cliente (scripts clássicos, ordem em index.html)
   data.js             peças, fases (45), missões, upgrades, cosméticos
   state.js            S (moedas), P (perfil), ACC (conta), EV (eventos), CAT (catálogo global), earn()
-  net.js              conexão: WebSocket do servidor; se indisponível usa o servidor local
+  net.js              rede: modo local (anfitrião) ou p2p (convidado), mesmo protocolo
   localhub.js         "mundo" local: o mesmo Hub dentro do navegador (dados em localStorage)
   p2p.js              WebRTC (PeerJS): anfitrião aceita convidados por código; convidado conecta ao anfitrião
   world.js            renderer, terreno, peças (mk), astronauta (av), colonos
@@ -72,34 +75,30 @@ js/                   cliente (scripts clássicos, ordem em index.html)
   music.js            trilha sonora procedural
   main.js             laço principal, ponteiro, HUD, boot
 shared/rules.js       papéis, países, eventos (cliente e servidor)
-shared/hub.js         lógica do servidor (contas, amigos, chat, grupos, salas, eventos, catálogo, ranking)
-server/server.js      HTTP estático + WebSocket (/ws) em volta do Hub, persistência em JSON
+shared/hub.js         lógica do "mundo" (contas, amigos, chat, grupos, salas, eventos, catálogo, ranking)
+tools/                serve.js (estático p/ dev), set-admin-passwords.js, build-preview.js
 tests/hub.test.js     testes do Hub e das regras (node --test)
 assets/img/           imagens extraídas do antigo index.html monolítico
 vendor/three.min.js   Three.js r128 local (sem CDN)
 ```
 
-- **Protocolo**: JSON por WebSocket; pedidos com `rid` recebem `{t:"res",rid,ok,...}`; o resto são *pushes*
+- **Protocolo**: JSON por canal de dados WebRTC (PeerJS); pedidos com `rid` recebem `{t:"res",rid,ok,...}`; o resto são *pushes*
   (`peers`, `chat`, `social`, `party`, `party.inv`, `party.go`, `gmsg`, `events`, `cat`).
 - **Multiplayer** usa presença por sala (`g-CÓDIGO`): cada cliente publica suas peças; o anfitrião (entrada mais antiga)
   simula os bots. Cada cliente simula localmente os tanques dos outros times/jogadores a partir das peças publicadas.
 - **Sem servidor (padrão na Vercel)**: o navegador de quem cria o mundo roda o `Hub` e aceita convidados por **WebRTC**
-  (código de 6 caracteres, copiável). O protocolo é o mesmo do WebSocket; só o transporte muda (`js/p2p.js`, `js/net.js`).
+  (código de 6 caracteres, copiável). O mesmo protocolo (`shared/hub.js`) corre pelo canal de dados WebRTC (`js/p2p.js`, `js/net.js`).
   Contas, amigos, grupos, chat, eventos e catálogo vivem no mundo do anfitrião (não há servidor global).
   Contas ADM: só hashes PBKDF2 em `js/config.js` (`tools/set-admin-passwords.js`).
 
 ## 3.1 Publicação
-Veja `docs/DEPLOY.md` (Vercel estático + WebRTC; ou Dockerfile e `render.yaml` para servidor; variáveis `PORT`, `DATA_DIR`, `ADM_PASSWORDS`). O cliente reconecta sozinho ao WebSocket.
+Veja `docs/DEPLOY.md` (site estático na Vercel; sem servidor de jogo).
 
-## 4. Segurança (o que vale e o que não)
-- Servidor: senhas com **scrypt**, papéis checados **no servidor** (`adm.*`, `cat.*`), sanitização de textos/cores/números,
-  limite de taxa no chat, nomes ADM reservados. Senhas dos admins vêm de `ADM_PASSWORDS` ou são geradas em
-  `server/data/admin-credentials.txt` (fora do git).
-- Modo WebRTC: não há segredo no cliente além dos hashes ADM; um anfitrião com cliente modificado controla o próprio mundo (não afeta outros mundos).
-- **Limitação conhecida**: o progresso (moedas/créditos) é enviado pelo cliente; um cliente adulterado pode trapacear.
-  Para torneios sérios, mover a economia para o servidor.
+## 4. Segurança
+- Contas ADM: só hashes PBKDF2 (150 mil iterações) em `js/config.js`; papéis checados no Hub do mundo (`adm.*`, `cat.*`); textos/cores/números sanitizados; limite de taxa no chat; nomes ADM reservados.
+- Um anfitrião com cliente modificado controla o próprio mundo (não afeta outros mundos). O progresso (moedas/créditos) é do cliente.
 
 ## 5. Em aberto / ideias
 - Posições dos outros jogadores em tempo real no Multi (hoje ficam em círculo no centro).
-- Economia autoritativa no servidor; ranking por modo; reconexão automática do WebSocket.
+- Malha completa entre convidados (hoje estrela via anfitrião); TURN próprio; ranking por modo; migração de anfitrião.
 - Mais interiores únicos por edifício; mais eventos temáticos com mini-metas.

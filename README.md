@@ -1,27 +1,20 @@
 # Mars: The Last Colony
 
-Jogo 3D de colônias em Marte — **campanha solo (45 fases)**, **sandbox** e **multiplayer** (cooperativo, equipes e todos contra todos) com
-contas, amigos, grupos, chat, eventos com moedas em dobro e ferramentas de administração.
+Jogo 3D de colônias em Marte — **campanha solo (45 fases)**, **sandbox** e **multiplayer peer-to-peer por WebRTC** (cooperativo, equipes e
+todos contra todos) com contas, amigos, grupos, chat, eventos com moedas em dobro, trilha sonora e ferramentas de administração.
 
-> Contexto completo e regras do projeto: **[CONTEXT.md](CONTEXT.md)**
+> Contexto completo e regras do projeto: **[CONTEXT.md](CONTEXT.md)** · Publicação: **[docs/DEPLOY.md](docs/DEPLOY.md)**
 
 ## Jogar
-
-**Com servidor (multiplayer real, contas e chat entre pessoas):**
 ```bash
-npm run setup      # instala a dependência do servidor (ws)
-npm start          # http://localhost:8080
+npm start      # servidor estático em http://localhost:8080 (ou publique a pasta na Vercel/GitHub Pages)
 ```
-Na primeira execução o servidor cria as contas `ADMVinnil`, `ADMKezle` e `ADMLefaar` e grava as senhas geradas em
-`server/data/admin-credentials.txt`. Para definir as suas: `ADM_PASSWORDS="ADMVinnil=...,ADMKezle=...,ADMLefaar=..." npm start`.
+Não há servidor de jogo: **toda a comunicação (multiplayer, chat, amigos, grupos, presença) usa WebRTC**.
+Cada jogador tem o **próprio mundo**: o navegador dele roda a lógica do servidor e mostra um **código** (ex.: `K7M2QX`) com botão de copiar.
+Amigos escolhem *Entrar no mundo de um amigo*, digitam o código e jogam juntos por conexão direta entre navegadores. O sinalizador gratuito do
+PeerJS só ajuda a se achar; os dados do jogo não passam por ele. As contas e o chat vivem no mundo do anfitrião, que precisa estar com o jogo aberto.
 
-**Sem servidor (WebRTC, ideal para a Vercel):** sirva a pasta como site estático (ex.: `python3 -m http.server`, Vercel, GitHub Pages).
-Cada jogador tem o **próprio mundo**: o navegador dele roda o servidor do jogo e mostra um **código** (ex.: `K7M2QX`) com botão de copiar.
-Amigos clicam em *Entrar no mundo de um amigo*, digitam o código e jogam juntos por **WebRTC** (conexão direta entre navegadores; o
-sinalizador gratuito do PeerJS só ajuda a se achar). As contas, o chat, os amigos e os grupos vivem no mundo do anfitrião, que precisa
-estar com o jogo aberto.
-
-**Contas ADM (3):** as senhas ficam só como hash em `js/config.js`. Para gerar/trocar: `node tools/set-admin-passwords.js`
+**Contas ADM (3):** só existem como hash em `js/config.js`. Gere/troque as senhas com `node tools/set-admin-passwords.js`
 (ou `node tools/set-admin-passwords.js ADMKezle=nova-senha`).
 
 ## Controles
@@ -33,14 +26,9 @@ estar com o jogo aberto.
 | Conversar / entrar em edifício | **E** perto, ou toque no colono / use 🖐 Interagir no edifício |
 | Sair do edifício / fechar diálogo | **Esc** |
 | Naves (fases 1–2) | WASD ou arrastar; **Espaço** = impulso |
-
-Publicação em servidor de verdade (Docker/Render): **[docs/DEPLOY.md](docs/DEPLOY.md)**. A trilha sonora é gerada no navegador; use o botão 🔊 ou a tecla **M**.
+| Música | botão 🔊 ou tecla **M** |
 
 ## Testes
 ```bash
 npm test
 ```
-
-## Estrutura
-Veja a seção *Arquitetura* em [CONTEXT.md](CONTEXT.md). Em resumo: `index.html` + `css/` + `js/` (cliente), `shared/` (regras e lógica do
-servidor, usadas no cliente e no Node), `server/` (HTTP + WebSocket), `tests/`, `assets/`, `vendor/`.
