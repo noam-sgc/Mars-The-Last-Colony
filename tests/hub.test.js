@@ -88,3 +88,10 @@ test("perfil: itens de admin são removidos de usuários comuns", async () => {
   const b = client(h), r = await b.ask({ t: "login", u: "Ana", p: "secret1" });
   assert.deepEqual(r.prof.p.own, ["s0"]); assert.equal(r.prof.p.eq.s, "s0"); assert.equal(r.prof.p.cr, 10);
 });
+
+test("estúdio: cosméticos de todas as camadas (inclui capacete e mochila) são aceitos", async () => {
+  const h = mk(); await h.ensureAdmins({ ADMVinnil: "a1a1a1", ADMKezle: "b2b2b2", ADMLefaar: "c3c3c3" });
+  const k = client(h); await k.ask({ t: "login", u: "ADMKezle", p: "b2b2b2" });
+  for (const l of ["s", "p", "w", "h", "b", "qualquer"]) { const r = await k.ask({ t: "cat.pub", kind: "cos", item: { n: "Item " + l, l, c: 100, col: "#33ccff" } }); assert.ok(r.ok, "camada " + l); }
+  assert.deepEqual(h.store.catalog.cos.map((c) => c.l), ["s", "p", "w", "h", "b", "s"]);
+});
