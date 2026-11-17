@@ -21,7 +21,7 @@ const pend = (e) => { PT.delete(e.pointerId); if (PT.size < 2) pinch = 0; };
 cv.addEventListener("pointercancel", pend);
 cv.addEventListener("pointerup", (e) => { pend(e); if (N) { N.nx = 0; N.ny = 0; } if (dr && dr.m < 6 && G.run && G.mode != "nav" && !DLG) { if (IN) interiorClick(e); else click(e); } dr = null; });
 cv.addEventListener("wheel", (e) => { zoomBy(1 + Math.sign(e.deltaY) * .1); }, { passive: true });
-INP.onEsc = () => { if ($("#setm").classList.contains("on")) closeSettings(); else if (DLG) closeDlg(); else if (DR) exitRover(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
+INP.onEsc = () => { if ($("#setm").classList.contains("on")) closeSettings(); else if (CPU.st.open) CPU.close(); else if (DLG) closeDlg(); else if (DR) exitRover(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
 $("#dlg").addEventListener("pointerdown", (e) => { if (e.target.id == "dlg" && DLG) closeDlg(); });
 
 function musicMood() {

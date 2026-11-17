@@ -162,3 +162,16 @@ html.rm *,html.rm *::before{animation:none!important;transition:none!important}
 
 #hud .mid,#inhud .mid{position:absolute;left:0;right:0;bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:3}
 @media (pointer:coarse){#hud .mid,#inhud .mid{bottom:calc(150px + env(safe-area-inset-bottom,0px))}}
+
+/* ===== computador de bordo ===== */
+#cpubtn{position:absolute;top:calc(70px + env(safe-area-inset-top,0px));right:8px;z-index:12;padding:8px 12px;border-radius:12px;background:var(--pn2);border:2px solid #4fe3ff;font-size:18px;box-shadow:0 4px 14px #000a}#cpubtn small{font-size:11px;color:var(--mu)}
+.cpu{left:50%;right:auto;top:70px;bottom:auto;transform:translateX(-50%);width:min(470px,calc(100vw - 20px));height:auto;max-height:60vh;overflow:auto;padding:12px 14px;border-color:#4fe3ff;box-shadow:0 0 22px #4fe3ff44;z-index:11;display:none;flex-direction:column}
+.cpu.on{display:flex}
+.cpu-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;color:#4fe3ff}
+.cpu-lab{font-size:10px;letter-spacing:.14em;color:#4fe3ff}
+.cpu-main{display:flex;gap:10px;align-items:flex-start;margin:4px 0;font-size:calc(16px*var(--ts,1));line-height:1.4;font-weight:600}.cpu-ic{font-size:28px;line-height:1}
+.cpu-t{margin:4px 0;color:#4fe3ff;font-size:14px}
+.cpu-s{font-size:calc(13px*var(--ts,1));padding:3px 0;color:var(--mu);border-top:1px dashed var(--bd)}
+#pk{top:130px!important}
+@media (max-width:640px){#cpubtn{padding:6px 10px}.cpu{top:64px}}
+@media (pointer:fine) and (min-width:700px){.cpu{top:auto;bottom:108px;max-height:42vh}}
