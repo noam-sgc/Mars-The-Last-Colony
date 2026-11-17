@@ -175,3 +175,6 @@ html.rm *,html.rm *::before{animation:none!important;transition:none!important}
 #pk{top:130px!important}
 @media (max-width:640px){#cpubtn{padding:6px 10px}.cpu{top:64px}}
 @media (pointer:fine) and (min-width:700px){.cpu{top:auto;bottom:108px;max-height:42vh}}
+
+#cpuline{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:6;max-width:min(560px,calc(100vw - 20px));align-items:center;gap:8px;text-align:left;font-size:calc(13px*var(--ts,1));line-height:1.35;padding:7px 12px;border-radius:12px;background:var(--pn2);border:1px solid #4fe3ff;box-shadow:0 0 12px #4fe3ff33}
+@media (pointer:coarse){#cpuline{bottom:calc(206px + env(safe-area-inset-bottom,0px))}}

@@ -133,5 +133,15 @@ const CPU = (() => {
   function close() { st.open = false; $("#cpu").classList.remove("on"); clearInterval(st.timer); wpG.visible = false; }
   const toggle = () => (st.open ? close() : open());
   addEventListener("keydown", (e) => { if (typing() || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === "h" || e.key === "H") toggle(); });
-  return { open, close, toggle, steps, render, st };
+  // ---- texto fixo na tela (opcional, em Configurações) e fala automática ----
+  let lastSpoken = "", spokeAt = 0;
+  function line() {
+    const el = $("#cpuline"), A = A11Y.get(), inGame = $("#hud").classList.contains("on") || $("#inhud").classList.contains("on");
+    if (!A.help || !inGame || st.open) { el.style.display = "none"; return; }
+    const top = steps()[0]; st.last = top.text; const txt = top.text.length > 120 ? top.text.slice(0, 117) + "…" : top.text;
+    el.style.display = "flex"; el.innerHTML = `<span class="cpu-ic" style="font-size:20px">${top.icon}</span><span>${esc(txt)}</span>`;
+    if (A.vz && top.text !== lastSpoken && performance.now() - spokeAt > 8000) { lastSpoken = top.text; spokeAt = performance.now(); speak(); }
+  }
+  setInterval(line, 600); $("#cpuline").onclick = open;
+  return { open, close, toggle, steps, render, line, st };
 })();
