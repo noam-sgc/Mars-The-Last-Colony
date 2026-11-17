@@ -2,7 +2,7 @@
    reduzir animações, vibração ao tocar, ARIA e alvos de toque maiores. */
 const TOUCH = matchMedia("(pointer:coarse)").matches;
 const A11Y = (() => {
-  const d = { ts: 1, hc: false, rm: false, vib: TOUCH };
+  const d = { ts: 1, hc: false, rm: false, vib: TOUCH, help: false, vz: false };
   let v = Object.assign({}, d); try { Object.assign(v, JSON.parse(localStorage.getItem("mars-a11y") || "{}")); } catch (e) { /* ignore */ }
   const api = {
     get: () => v,

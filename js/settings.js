@@ -24,6 +24,10 @@ window.settingsRefresh = function () {
   <p class="mu" id="tlstate" style="margin:4px 0">${!TILT.supported ? "Este aparelho/navegador não tem sensor de movimento." : TILT.has ? "✔ Sensor de movimento detectado." : "Sensor ainda não detectado (use um celular; no iPhone toque em “Sim” para permitir)."}</p>
   <div class="srow"><span class="mu">Direção</span><div class="tb" style="flex:1;max-width:260px"><u><i id="tlx" style="width:50%;margin-left:25%;background:var(--ac)"></i></u></div></div>
   <div class="srow"><span class="mu">Acelerador</span><div class="tb" style="flex:1;max-width:260px"><u><i id="tly" style="width:50%;margin-left:25%;background:var(--ok)"></i></u></div></div>
+  <h3 style="margin:14px 0 2px">🖥 Computador de bordo (Ajuda · H)</h3>
+  <div class="srow"><span>Escrever o próximo passo na tela <small class="mu">(fixo, sem abrir o painel)</small></span><button id="hlp" class="tgl ${A.help ? "sel" : ""}">${A.help ? "Sim" : "Não"}</button></div>
+  <div class="srow"><span>Falar o próximo passo em voz alta</span><button id="hvz" class="tgl ${A.vz ? "sel" : ""}">${A.vz ? "Sim" : "Não"}</button></div>
+  <p class="mu" style="margin:2px 0">Sempre dá para abrir o painel completo com a tecla <b>H</b> (ou tocando no texto ou no botão 🖥).</p>
   <h3 style="margin:14px 0 2px">♿ Acessibilidade e celular</h3>
   <div class="srow"><span>Tamanho do texto</span><select id="ats">${[[1, "Normal"], [1.15, "Grande"], [1.3, "Muito grande"]].map(([v, n]) => `<option value="${v}" ${A.ts == v ? "selected" : ""}>${n}</option>`).join("")}</select></div>
   <div class="srow"><span>Alto contraste</span><button id="ahc" class="tgl ${A.hc ? "sel" : ""}">${A.hc ? "Sim" : "Não"}</button></div>
@@ -40,6 +44,7 @@ window.settingsRefresh = function () {
   $("#tlinv").onclick = () => { TILT.set("invY", !T.invY); settingsRefresh(); }; $("#tlcal").onclick = () => { TILT.calibrate(); toast("Posição neutra calibrada"); };
   $("#tlsens").oninput = (e) => { TILT.set("sens", +e.target.value); e.target.nextElementSibling.textContent = e.target.value + "°"; };
   window.__tiltLive = () => { const x = $("#tlx"), y = $("#tly"); if (!x || !y) return; const f = (el, v) => { el.style.width = Math.abs(v) * 25 + "%"; el.style.marginLeft = (v < 0 ? 50 - Math.abs(v) * 25 : 50) + "%"; }; f(x, T.tx); f(y, -T.ty); };
+  $("#hlp").onclick = () => { A11Y.set("help", !A.help); CPU.line(); settingsRefresh(); }; $("#hvz").onclick = () => { A11Y.set("vz", !A.vz); settingsRefresh(); };
   $("#ats").onchange = (e) => { A11Y.set("ts", +e.target.value); settingsRefresh(); }; $("#ahc").onclick = () => { A11Y.set("hc", !A.hc); settingsRefresh(); }; $("#arm").onclick = () => { A11Y.set("rm", !A.rm); settingsRefresh(); }; $("#avb").onclick = () => { A11Y.set("vib", !A.vib); if (!A.vib && navigator.vibrate) navigator.vibrate(30); settingsRefresh(); };
   $("#ashow").onclick = () => { document.querySelectorAll("[data-min]").forEach((x) => x.classList.remove("min")); ["#hint", "#inh"].forEach((s) => delete $(s).dataset.gone); toast("Textos restaurados"); };
   b.querySelectorAll("[data-t]").forEach((x) => (x.onclick = () => { M.select(x.dataset.t); }));
