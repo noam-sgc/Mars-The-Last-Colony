@@ -21,7 +21,7 @@ const pend = (e) => { PT.delete(e.pointerId); if (PT.size < 2) pinch = 0; };
 cv.addEventListener("pointercancel", pend);
 cv.addEventListener("pointerup", (e) => { pend(e); if (N) { N.nx = 0; N.ny = 0; } if (dr && dr.m < 6 && G.run && G.mode != "nav" && !DLG) { if (IN) interiorClick(e); else click(e); } dr = null; });
 cv.addEventListener("wheel", (e) => { zoomBy(1 + Math.sign(e.deltaY) * .1); }, { passive: true });
-INP.onEsc = () => { if ($("#setm").classList.contains("on")) closeSettings(); else if (CPU.st.open) CPU.close(); else if (DLG) closeDlg(); else if (DR) exitRover(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
+INP.onEsc = () => { if ($("#cat").classList.contains("on")) menu(); else if ($("#ulv").classList.contains("on")) ulvBack(); else if ($("#setm").classList.contains("on")) closeSettings(); else if (CPU.st.open) CPU.close(); else if (DLG) closeDlg(); else if (DR) exitRover(); else if (IN) exitInterior(); else if ($("#adm").classList.contains("on")) closeModal(); };
 $("#dlg").addEventListener("pointerdown", (e) => { if (e.target.id == "dlg" && DLG) closeDlg(); });
 
 function musicMood() {
@@ -29,9 +29,11 @@ function musicMood() {
   const ph = G.mode == "solo" ? PH[G.ph] : null; return ph && ph.alien ? "alien" : ph && ph.storm ? "storm" : "colony";
 }
 setInterval(() => Music.setMood(musicMood()), 500);
+const ULVON = () => $("#ulv").classList.contains("on");
 let last = performance.now(), fogT = 0;
 function loop(n) {
-  const dt = Math.min(.1, (n - last) / 1000), t = n / 1000; last = n; if (G.run && !G.paused) { tick(dt); hud(); }
+  const dt = Math.min(.1, (n - last) / 1000), t = n / 1000; last = n; if (ULVON()) { requestAnimationFrame(loop); return; }   // jornada Ultra Learn Voyage: o 3D principal fica em pausa
+  if (G.run && !G.paused) { tick(dt); hud(); }
   if (IN) { interiorUpdate(dt, t); R.render(IN.sc, IN.cam); requestAnimationFrame(loop); return; }
   const colony = G.mode != "nav";
   if (G.run && colony) {
