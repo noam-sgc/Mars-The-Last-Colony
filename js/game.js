@@ -9,7 +9,7 @@ const peerG = {};
 let COL = [];
 
 function toast(msg, ms) { const d = document.createElement("div"); d.className = "toast"; d.innerHTML = msg; $("#toasts").appendChild(d); setTimeout(() => d.remove(), ms || 3200); }
-function screen(id) { ["auth", "menu", "cat", "hud", "lob", "wait", "ward", "lbd", "soc"].forEach((s) => $("#" + s).classList.toggle("on", s == id)); $("#chb").classList.toggle("on", !!ACC.user && id != "auth" && id != "ward"); if (id != "hud") $("#hint").style.display = "none"; }
+function screen(id) { ["auth", "menu", "cat", "hud", "lob", "wait", "ward", "lbd", "soc", "ulv"].forEach((s) => $("#" + s).classList.toggle("on", s == id)); $("#chb").classList.toggle("on", !!ACC.user && id != "auth" && id != "ward"); if (id != "hud") $("#hint").style.display = "none"; }
 function clear() {
   DR = null; RL = null; while (lootG.children.length) lootG.remove(lootG.children[0]); lootG.visible = false; G.placed.forEach((p) => sc.remove(p.m)); G.placed = [];
   for (const k in peerG) { sc.remove(peerG[k].g); delete peerG[k]; }

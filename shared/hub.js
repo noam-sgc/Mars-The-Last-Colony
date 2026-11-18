@@ -193,9 +193,10 @@
       const eq = {}; ["s", "p", "w", "h", "b"].forEach((l) => { const id = p.eq && p.eq[l]; eq[l] = typeof id === "string" && allowed(id) && own.includes(id) ? id : l + "0"; });
       const nm = (a) => (Array.isArray(a) ? a.filter((x) => R.validName(x)).slice(0, 300) : []), fr0 = p.fr || {}, frs = { f: nm(fr0.f), in: nm(fr0.in), out: nm(fr0.out) };
       const sp = p.sp === "alien" ? "alien" : "human", skin = ["verde", "violeta", "azul", "laranja", "cinza"].includes(p.skin) ? p.skin : "verde", spChosen = !!p.spChosen;
+      const u0 = p.ulv || {}, ulv = { best: (Array.isArray(u0.best) ? u0.best : []).slice(0, 10).map((x) => (Number.isFinite(x) ? Math.max(0, Math.min(100, Math.round(x))) : null)), finished: num(u0.finished, 0, 1e4, 0), rank: clean(u0.rank, 30) };
       const facts = (Array.isArray(p.facts) ? p.facts : []).filter((x) => Number.isInteger(x) && x >= 0 && x < 500).slice(0, 500), q0 = p.quiz || {}, quiz = { ok: (Array.isArray(q0.ok) ? q0.ok : []).filter((x) => Number.isInteger(x) && x >= 0 && x < 500).slice(0, 500), day: clean(q0.day, 10) };
       const evs = {}; Object.keys(p.evs || {}).slice(0, 100).forEach((id) => { const e = p.evs[id] || {}; if (/^ev_[\w-]{1,40}$/.test(id)) evs[id] = { id, l: "s", c: 0, ev: clean(e.ev, 40), n: clean(e.n, 60), col: color(e.col, "#ff6a2b"), glow: color(e.glow, "#ff6a2b") }; });
-      return { p: { cr: num(p.cr, 0, 1e9, 0), pp: num(p.pp, 0, 1e9, 0), rp: num(p.rp, 0, 1e9, 0), w: num(p.w, 0, 1e6, 0), own, eq, evs, fr: frs, facts, quiz, sp, skin, spChosen, day: clean(p.day, 10) },
+      return { p: { cr: num(p.cr, 0, 1e9, 0), pp: num(p.pp, 0, 1e9, 0), rp: num(p.rp, 0, 1e9, 0), w: num(p.w, 0, 1e6, 0), own, eq, evs, fr: frs, facts, quiz, ulv, sp, skin, spChosen, day: clean(p.day, 10) },
         s: { coins: num(s.coins, 0, 1e12, 500), own: (Array.isArray(s.own) ? s.own : []).filter((x) => typeof x === "string").slice(0, 200), done: s.done && typeof s.done === "object" ? s.done : {}, color: color(s.color, "#d8d0c4") } };
     }
 

@@ -90,7 +90,8 @@ function menu() {
   <div class="ubar"><div class="pill">${ACC.user ? `${MarsRules.flag(ACC.cc)} <b>${esc(ACC.user)}</b>${vfBadge(ACC.role, ACC.vf)}${roleChip(ACC.role)} <button class="gh" id="mlo" style="padding:2px 8px">Sair</button>` : `👤 Convidado <button class="gh" id="mlo" style="padding:2px 8px">Entrar</button>`}</div>
   <div class="pill" id="mspc" style="cursor:pointer" title="Trocar de espécie (grátis)">${SPN[P.sp]}</div><div class="pill" style="text-align:center">🪙 <b>${Math.floor(S.coins)}</b> · ✨ <b>${P.cr}</b> · 🏆 <b>${P.pp}</b> PP · 🔬 <b>${P.rp}</b> RP</div></div>${ev}
   <div class="pill" id="mworld" style="text-align:center">${worldLine()} ${NET.mode == "local" && P2P.ready ? `<button id="mwc" style="padding:2px 8px">📋 Copiar código</button>` : ""} <button class="gh" id="msw" style="padding:2px 8px">Trocar de mundo</button></div>
-  <div class="mb"><button class="big pri" data-m="solo">Modo Solo · Campanha<small>30 fases + nova campanha alienígena (15 fases)</small></button>
+  <div class="mb"><button class="big" data-m="ulv" style="border-color:#4fe3ff">🚀 Ultra Learn Voyage<small>Missão real a Marte: ciência e gestão de recursos · 10 capítulos com quizzes temáticos</small></button>
+  <button class="big pri" data-m="solo">Modo Solo · Campanha<small>30 fases + nova campanha alienígena (15 fases)</small></button>
   <button data-m="sand">Sandbox<small>Construção livre</small></button><button data-m="mp">Multiplayer<small>Coop · Equipes · Todos contra todos</small></button>
   <button data-m="ward">Guarda-roupa<small>Trajes, eventos e mais</small></button><button data-m="shop">Loja de upgrades</button>
   <button data-m="soc">👥 Amigos & grupo<small>${SOC.reqIn.length ? SOC.reqIn.length + " pedido(s)" : "Online agora, sem precisar de código"}</small></button><button data-m="lbd">Leaderboard</button>
@@ -98,7 +99,7 @@ function menu() {
   <button data-m="facts">📡 Fatos Espaciais<small>Leia e ganhe PP e moedas</small></button><button data-m="evt">📅 Eventos & moedas em dobro</button>
   ${isAdminAcc() ? `<button data-m="adm" class="big" style="border-color:#6a4cff">🛡 Ferramentas ADM${isArtistAcc() ? " · Estúdio de criação" : ""}</button>` : ""}</div><div id="msg"></div>`;
   screen("menu"); sc.fog.density = .006;
-  m.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => { const k = b.dataset.m; if (k == "solo") cat(); else if (k == "sand") start("sand"); else if (k == "mp") lobby(); else if (k == "ward") ward(); else if (k == "shop") shop(true); else if (k == "soc") social(); else if (k == "lbd") board(); else if (k == "evt") eventsPanel(); else if (k == "quiz") quizHome(); else if (k == "facts") factsHome(); else if (k == "adm") adminTools(); }));
+  m.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => { const k = b.dataset.m; if (k == "solo") cat(); else if (k == "sand") start("sand"); else if (k == "mp") lobby(); else if (k == "ward") ward(); else if (k == "shop") shop(true); else if (k == "soc") social(); else if (k == "lbd") board(); else if (k == "evt") eventsPanel(); else if (k == "ulv") ulvHome(); else if (k == "quiz") quizHome(); else if (k == "facts") factsHome(); else if (k == "adm") adminTools(); }));
   $("#mspc").onclick = () => ward(); askSpecies(); $("#mlo").onclick = () => (ACC.user ? logout() : authScreen()); $("#msw").onclick = () => switchWorld(); if ($("#mwc")) $("#mwc").onclick = () => copyText(P2P.code, "Código do mundo");
 }
 
@@ -114,6 +115,7 @@ function cat() {
     if (!lk) c.onclick = () => factBeforePhase(() => start(p.nav ? "nav" : "solo", i)); w.appendChild(c);
   });
 }
+$("#cb").onclick = () => menu();   // fechar o catálogo
 function fin(s) { $("#fi").src = s; $("#fin").classList.add("on"); }
 $("#fb").onclick = () => { $("#fin").classList.remove("on"); clear(); cat(); };
 function shop(on) {

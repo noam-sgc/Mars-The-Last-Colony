@@ -178,3 +178,11 @@ html.rm *,html.rm *::before{animation:none!important;transition:none!important}
 
 #cpuline{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:6;max-width:min(560px,calc(100vw - 20px));align-items:center;gap:8px;text-align:left;font-size:calc(13px*var(--ts,1));line-height:1.35;padding:7px 12px;border-radius:12px;background:var(--pn2);border:1px solid #4fe3ff;box-shadow:0 0 12px #4fe3ff33}
 @media (pointer:coarse){#cpuline{bottom:calc(206px + env(safe-area-inset-bottom,0px))}}
+
+/* ===== Ultra Learn Voyage ===== */
+#ulvcv{position:absolute;inset:0;width:100%;height:100%;display:none;z-index:0}
+#ulv{background:transparent!important;z-index:1;justify-content:flex-start}
+.ulv .ulb{border-color:#4fe3ff55;background:rgba(6,16,26,.82)}.ulv .ulb p{line-height:1.55;margin:6px 0;font-size:calc(14px*var(--ts,1))}
+.ugs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 12px;width:min(900px,100%);margin:6px 0;padding:8px 10px;border:1px solid #4fe3ff44;border-radius:10px;background:rgba(6,16,26,.8)}
+.ug{display:grid;grid-template-columns:1fr 70px 38px;gap:6px;align-items:center;font-size:11px}.ug u{height:6px;background:#0007;border-radius:3px;overflow:hidden;text-decoration:none}.ug i{display:block;height:100%}.ug b{text-align:right}
+.ulv .w{width:min(900px,100%)}

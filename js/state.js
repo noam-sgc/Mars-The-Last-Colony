@@ -10,7 +10,7 @@ const skey = () => "mlc" + (ACC.user ? ":" + ACC.user : ""), pkey = () => "mlp" 
 function normalize() {
   S.v = 3; P.v = 3; S.own = S.own || []; S.done = S.done || {}; P.evs = P.evs || {};
   DEF_OWN.forEach((id) => { if (!P.own.includes(id)) P.own.push(id); });
-  P.eq = Object.assign({}, DEF_EQ, P.eq || {}); P.sp = P.sp === "alien" ? "alien" : "human"; P.skin = SKINS[P.skin] ? P.skin : "verde"; P.facts = Array.isArray(P.facts) ? P.facts : []; P.quiz = P.quiz && Array.isArray(P.quiz.ok) ? P.quiz : { ok: [], day: "" };
+  P.eq = Object.assign({}, DEF_EQ, P.eq || {}); P.sp = P.sp === "alien" ? "alien" : "human"; P.skin = SKINS[P.skin] ? P.skin : "verde"; P.ulv = P.ulv && Array.isArray(P.ulv.best) ? P.ulv : { best: [], run: null, finished: 0 }; P.facts = Array.isArray(P.facts) ? P.facts : []; P.quiz = P.quiz && Array.isArray(P.quiz.ok) ? P.quiz : { ok: [], day: "" };
   const f = P.fr = P.fr || {}; ["f", "in", "out"].forEach((k) => { f[k] = Array.isArray(f[k]) ? f[k] : []; }); f.cc = f.cc && typeof f.cc === "object" ? f.cc : {};
 }
 function loadLocal() {

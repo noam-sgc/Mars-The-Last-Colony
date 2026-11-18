@@ -12,3 +12,14 @@ test("quiz: perguntas bem formadas, sem repetição", () => {
 test("fatos: título e texto presentes, sem repetição", () => {
   assert.ok(FACTS.length >= 40); FACTS.forEach((f) => assert.ok(f[0] && f[1].length > 40)); assert.equal(new Set(FACTS.map((f) => f[0])).size, FACTS.length);
 });
+
+test("Ultra Learn Voyage: 10 capítulos com briefing, 4 perguntas bem formadas, controles e evento com decisão correta", () => {
+  const ULV = new Function("esc", fs.readFileSync(path.join(__dirname, "..", "js", "ulv-data.js"), "utf8") + ";return ULV")();
+  assert.equal(ULV.length, 10);
+  ULV.forEach((c) => {
+    assert.ok(c.brief.length >= 4 && c.controls.length >= 2 && typeof c.run === "function");
+    assert.equal(c.quiz.length, 4); c.quiz.forEach((q) => { assert.equal(q[1].length, 4); assert.ok(q[2] >= 0 && q[2] < 4); assert.ok(q[3].length > 10); });
+    assert.ok(c.event.opts.some((o) => o[1] >= 10) && c.event.opts.length === 3);
+    assert.ok(!/NASA/i.test(JSON.stringify([c.brief, c.quiz, c.event, c.title])), "agência só como fonte");
+  });
+});
