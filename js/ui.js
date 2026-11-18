@@ -18,23 +18,24 @@ function authScreen(tab) {
     ${tab == "reg" ? `<label class="f">País<select id="ac">${ctry("BR")}</select></label>` : ""}
     <div class="err" id="ae"></div><button class="pri" id="ago">${tab == "reg" ? "Criar conta e jogar" : "Entrar"}</button>
     <button class="gh" id="agu">Jogar agora como convidado (solo, sandbox e bots; sem chat e amigos)</button>
-    <small class="mu">${worldLine()}</small><button class="gh" id="asw">← Trocar de mundo / entrar com código</button></div>`;
+    <small class="mu" id="async">${syncLine()}</small><small class="mu">${worldLine()}</small><button class="gh" id="asw">← Trocar de mundo / entrar com código</button></div>`;
   $("#auth").querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => authScreen(b.dataset.t)));
   const go = async () => {
     const u = $("#au").value.trim(), p = $("#ap").value; $("#ae").textContent = ""; $("#ago").disabled = true;
-    const go1 = $("#ago"), r = await NET.ask(tab == "reg" ? { t: "reg", u, p, c: $("#ac").value } : { t: "login", u, p }); go1.disabled = false;
-    if (!r.ok) { $("#ae").textContent = r.err || "Falha"; return; } applyAuth(r);
+    const go1 = $("#ago"); if (!BUL.synced) { $("#ae").textContent = "🌐 Sincronizando contas com o mural global…"; const ok = await BUL.whenSynced(4000); $("#ae").textContent = ok ? "" : "⚠ Sem conexão com o mural global: usando só as contas deste aparelho."; }
+    const r = await NET.ask(tab == "reg" ? { t: "reg", u, p, c: $("#ac").value } : { t: "login", u, p }); go1.disabled = false;
+    if (!r.ok) { $("#ae").textContent = (r.err || "Falha") + (tab != "reg" && /incorretos/.test(r.err || "") && !BUL.hasAcct(u) ? (BUL.synced ? " Esse usuário não existe no mural global: crie a conta em “Criar conta”." : " Ainda sem conexão com o mural global: se criou a conta em outro aparelho, aguarde conectar e tente de novo.") : ""); return; } applyAuth(r);
   };
   $("#ago").onclick = go; $("#ap").onkeydown = (e) => { if (e.key == "Enter") go(); }; $("#asw").onclick = () => switchWorld(); $("#agu").onclick = () => { ACC.user = null; ACC.role = "guest"; loadLocal(); dailyBonus(); menu(); };
 }
 function applyAuth(r) {
   ACC.user = r.me.u; ACC.role = r.me.role; ACC.cc = r.me.cc; ACC.vf = r.me.vf; ACC.token = r.token; try { localStorage.setItem(NET.tokKey(), r.token); } catch (e) { /* ignore */ }
   loadLocal(); if (r.prof && r.prof.p) { Object.assign(P, r.prof.p); Object.assign(S, r.prof.s || {}); normalize(); } else { pushProf(); }
-  P.name = ACC.user; applyCatalog(r.catalog); EV.custom = r.events || []; EV.refresh(); setSocial(r.social); SOC.party = r.party || null; (r.hist || []).forEach((m) => chatPush(m, true));
-  dailyBonus(); saveP(); GS.stop(); GS.start(); deriveSocial(); menu(); toast(`Bem-vindo, ${esc(ACC.user)}! ${r.me.vf ? "✔" : ""}`);
+  P.name = ACC.user; applyCatalog(r.catalog); EV.hub = r.events || []; EV.refresh(); setSocial(r.social); SOC.party = r.party || null; (r.hist || []).forEach((m) => chatPush(m, true));
+  dailyBonus(); saveP(); GS.start(); GS.hello(); GS.flushOut(); deriveSocial(); menu(); toast(`Bem-vindo, ${esc(ACC.user)}! ${r.me.vf ? "✔" : ""}`);
 }
 function dailyBonus() { const d = new Date().toISOString().slice(0, 10); if (P.day != d) { P.day = d; P.cr += 20; toast("🎁 Bônus diário: +20 créditos"); } saveP(); }
-function logout() { GS.stop(); NET.send({ t: "logout", token: ACC.token }); try { localStorage.removeItem(NET.tokKey()); } catch (e) { /* ignore */ } ACC.user = null; ACC.role = "guest"; ACC.vf = false; SOC.friends = []; SOC.party = null; chatReset(); S = { coins: 500, own: [], done: {}, color: "#d8d0c4", v: 3 }; P = { name: "", cr: 0, pp: 0, rp: 0, w: 0, day: "", own: DEF_OWN.slice(), eq: Object.assign({}, DEF_EQ), evs: {}, v: 3 }; authScreen(); }
+function logout() { NET.send({ t: "logout", token: ACC.token }); try { localStorage.removeItem(NET.tokKey()); } catch (e) { /* ignore */ } ACC.user = null; ACC.role = "guest"; ACC.vf = false; GS.hello(); SOC.friends = []; SOC.party = null; chatReset(); S = { coins: 500, own: [], done: {}, color: "#d8d0c4", v: 3 }; P = { name: "", cr: 0, pp: 0, rp: 0, w: 0, day: "", own: DEF_OWN.slice(), eq: Object.assign({}, DEF_EQ), evs: {}, v: 3 }; authScreen(); }
 NET.on("closed", () => { if (NET.mode === "p2p") { toast("⚠ O anfitrião saiu do mundo. Volte a entrar com o código.", 6000); setTimeout(() => switchWorld(), 1500); } else toast("⚠ Conexão perdida. Tentando reconectar…", 4000); });
 
 // ---------- mundos (sem servidor: o navegador do anfitrião é o servidor; amigos entram por WebRTC) ----------
@@ -43,11 +44,13 @@ function copyText(t, label) {
   try { navigator.clipboard.writeText(t).then(ok, () => fb()); } catch (e) { fb(); }
   function fb() { const i = document.createElement("input"); i.value = t; document.body.appendChild(i); i.select(); try { document.execCommand("copy"); ok(); } catch (e) { toast("Selecione e copie: " + esc(t)); } i.remove(); }
 }
+function syncLine() { return BUL.synced ? "🌐 Contas, eventos e avisos sincronizados com o mural global." : "⏳ Conectando ao mural global (contas de outros aparelhos)…"; }
+setInterval(() => { const e = document.getElementById("async"); if (e) e.textContent = syncLine(); }, 800);
 function worldLine() {
   if (NET.mode == "p2p") return `🌐 Conectado ao mundo <b>${esc(NET.world)}</b> (WebRTC). Sua conta fica neste mundo.`;
   return `🌍 Seu mundo${P2P.ready ? ` · código <b>${esc(P2P.code)}</b>` : ""}. Contas ficam salvas neste navegador.`;
 }
-function switchWorld() { GS.stop(); NET.disconnect(); ACC.user = null; ACC.role = "guest"; ACC.vf = false; SOC.friends = []; SOC.reqIn = []; SOC.reqOut = []; SOC.party = null; chatReset(); mpStop(); try { localStorage.removeItem("mars-last"); } catch (e) { /* ignore */ } worldScreen(); }
+function switchWorld() { NET.disconnect(); ACC.user = null; ACC.role = "guest"; ACC.vf = false; GS.hello(); SOC.friends = []; SOC.reqIn = []; SOC.reqOut = []; SOC.party = null; chatReset(); mpStop(); try { localStorage.removeItem("mars-last"); } catch (e) { /* ignore */ } worldScreen(); }
 async function enterSelf() { NET.startLocal(); try { localStorage.setItem("mars-last", "self"); } catch (e) { /* ignore */ } await resumeOrAuth(); }
 async function resumeOrAuth() {
   let tok = null; try { tok = localStorage.getItem(NET.tokKey()); } catch (e) { /* ignore */ }
@@ -187,8 +190,9 @@ NET.on("roster", () => { if ($("#soc").classList.contains("on")) refreshUsers();
 NET.on("party", (m) => { SOC.party = m.party; if ($("#soc").classList.contains("on")) renderSocial(); if ($("#lob").classList.contains("on")) renderLobby(); chatTabs(); });
 NET.on("party.inv", (m) => { openDlgHTML(`<div class="dlgh"><div class="av">👥</div><div><b>Convite de grupo</b><div class="mu">${esc(m.from)} convidou você para um grupo</div></div></div><div class="opts"><button id="pia" class="pri">Aceitar</button><button id="pir" class="gh">Recusar</button></div>`); $("#pia").onclick = async () => { $("#dlg").classList.remove("on"); const r = await NET.ask({ t: "party", op: "acc", id: m.id }); toast(r.ok ? "Você entrou no grupo!" : esc(r.err || "Erro")); }; $("#pir").onclick = () => $("#dlg").classList.remove("on"); });
 NET.on("party.go", (m) => { toast(`🎮 O líder do grupo entrou na sala ${esc(m.code)}…`); joinGame(m.code); });
-NET.on("gmsg", (m) => { const d = document.createElement("div"); d.className = "mq"; d.innerHTML = `📢 <b>${esc(m.from)}</b> ${vfBadge("admin")}: ${esc(m.text)}`; document.body.appendChild(d); d.onclick = () => d.remove(); setTimeout(() => d.remove(), 12000); });
-NET.on("events", (m) => { EV.custom = m.events || []; EV.refresh(); });
+function showGmsg(m) { const d = document.createElement("div"); d.className = "mq"; d.innerHTML = `📢 <b>${esc(m.from)}</b> ${vfBadge("admin")}: ${esc(m.text)}`; document.body.appendChild(d); d.onclick = () => d.remove(); setTimeout(() => d.remove(), 12000); }
+NET.on("gmsg", (m) => showGmsg(m));
+NET.on("events", (m) => { EV.hub = m.events || []; EV.refresh(); });
 NET.on("cat", (m) => { applyCatalog(m.catalog); if (G.run && G.mode != "nav") pal(); });
 function openDlgHTML(h) { $("#dlgb").innerHTML = h; $("#dlg").classList.add("on"); }
 let socTab = "users", socT = 0;
@@ -212,7 +216,7 @@ function deriveSocial() {
 function socRefresh() { deriveSocial(); if ($("#soc").classList.contains("on")) renderSocial(); }
 async function refreshUsers() { const r = await NET.ask({ t: "users" }); if (r.ok) { SOC.hub = r.users; SOC.anon = r.anon || 0; } deriveSocial(); renderSocial(); }
 const frAsk = async (op, u) => { ({ add: () => GS.add(u), acc: () => GS.accept(u), rej: () => GS.reject(u), cancel: () => GS.cancel(u), rm: () => GS.remove(u) })[op](); socRefresh(); if (!GS.ready) toast("⚠ Diretório global ainda conectando; o pedido será enviado quando o amigo ficar online."); };
-function joinOtherWorld(code) { toast("Entrando no mundo " + esc(code) + "…"); GS.stop(); NET.disconnect(); ACC.user = null; ACC.role = "guest"; ACC.vf = false; SOC.party = null; chatReset(); mpStop(); NET.joinWorld(code).then(() => { try { localStorage.setItem("mars-last", code); } catch (e) { /* ignore */ } resumeOrAuth(); }).catch((e) => { toast("Não foi possível entrar: " + esc(e.message)); enterSelf(); }); }
+function joinOtherWorld(code) { toast("Entrando no mundo " + esc(code) + "…"); NET.disconnect(); ACC.user = null; ACC.role = "guest"; ACC.vf = false; GS.hello(); SOC.party = null; chatReset(); mpStop(); NET.joinWorld(code).then(() => { try { localStorage.setItem("mars-last", code); } catch (e) { /* ignore */ } resumeOrAuth(); }).catch((e) => { toast("Não foi possível entrar: " + esc(e.message)); enterSelf(); }); }
 function renderSocial() {
   const el = $("#soc"), q = (el.dataset.q || "").toLowerCase(), me = ACC.user, hit = (u) => !q || u.u.toLowerCase().includes(q) || (MarsRules.COUNTRIES.find((c) => c.c == u.cc) || { n: "" }).n.toLowerCase().includes(q);
   const tabs = [["friends", `Amigos (${SOC.friends.length})`], ["users", `Todos os usuários (${SOC.users.length})`], ["req", `Pedidos${SOC.reqIn.length ? " (" + SOC.reqIn.length + ")" : ""}`], ["party", `Grupo${SOC.party ? " (" + SOC.party.members.length + ")" : ""}`]];
@@ -221,8 +225,10 @@ function renderSocial() {
   const row = (u, btns) => `<div class="pl"><span class="nm"><i class="on-dot ${u.on ? "on" : ""}"></i>${userHTML(u)}</span><span class="row">${btns}</span></div>`;
   const rel = (u) => { const x = SOC.users.find((y) => y.u == u.u); return x ? x.fr : SOC.friends.some((f) => f.u == u.u) ? 2 : 0; };
   let body = "";
-  const sbox = `<input id="sq" placeholder="🔎 Filtrar por nome ou país…" value="${esc(el.dataset.q || "")}" style="width:100%;margin-bottom:6px">`;
+  const addBox = `<div class="row" style="margin:6px 0"><input id="fnm" maxlength="16" placeholder="Adicionar pelo nome de usuário (mesmo offline)" style="flex:1;min-width:0"><button id="fadd" class="pri">＋ Pedir amizade</button></div><small class="mu">A outra pessoa não precisa estar online: o pedido fica guardado e ela responde quando ligar o jogo.</small>`;
+  const sbox = addBox + `<input id="sq" placeholder="🔎 Filtrar por nome ou país…" value="${esc(el.dataset.q || "")}" style="width:100%;margin-bottom:6px">`;
   if (socTab == "friends") body = sbox + SOC.friends.filter(hit).map((u) => row(Object.assign({}, u, (SOC.users.find((x) => x.u == u.u) || {})), `${acts(u)}<button class="gh" data-rm="${esc(u.u)}">✕</button>`)).join("") || `<p class="mu">${q ? "Nenhum amigo encontrado." : "Você ainda não tem amigos. Abra “Todos os usuários” para adicionar. ✔ Amigos de administradores ganham o selo de verificado."}</p>`;
+  if (socTab == "friends" && SOC.reqOut.length) body += `<div class="tag" style="margin:10px 0 2px">⏳ Aguardando resposta (${SOC.reqOut.length})</div>` + SOC.reqOut.map((x) => row(x, `<small class="mu">entregue quando ficar online</small><button class="gh" data-can="${esc(x.u)}">Cancelar</button>`)).join("");
   if (socTab == "friends") {
     const near = SOC.users.filter((u) => u.u != me && u.on && u.fr != 2 && hit(u));
     body += `<div class="tag" style="margin:10px 0 2px">🟢 Online agora (ainda não são amigos)${SOC.anon ? " · " + SOC.anon + " visitante(s) sem login neste mundo" : ""}</div>` + (near.map((u) => row(u, u.fr == 1 ? `<button disabled>Pendente</button>` : u.fr == 3 ? `<button class="pri" data-acc="${esc(u.u)}">Aceitar</button>` : `<button data-add="${esc(u.u)}">＋ Adicionar</button><button data-dm="${esc(u.u)}">💬</button>`)).join("") || `<p class="mu">Ninguém mais conectado.</p>`);
@@ -233,6 +239,7 @@ function renderSocial() {
   el.innerHTML = `<div class="top"><button id="sb">← Voltar</button><h2>👥 Amigos & grupo</h2></div><div class="tabs w">${tabs.map(([k, t]) => `<button data-st="${k}" class="${k == socTab ? "sel" : ""}">${t}</button>`).join("")}</div><div class="w pill">${body}</div>`;
   $("#sb").onclick = () => { clearInterval(socT); menu(); }; el.querySelectorAll("[data-st]").forEach((b) => (b.onclick = () => { socTab = b.dataset.st; renderSocial(); }));
   const on = (a, f) => el.querySelectorAll(`[data-${a}]`).forEach((b) => (b.onclick = () => f(b.dataset[a]))); const sq = $("#sq"); if (sq) { sq.oninput = () => { el.dataset.q = sq.value; const p = sq.selectionStart; renderSocial(); const n = $("#sq"); n.focus(); n.setSelectionRange(p, p); }; }
+  const fadd = $("#fadd"); if (fadd) fadd.onclick = () => { const n = ($("#fnm").value || "").trim(); if (!MarsRules.validName(n)) return toast("Nome inválido (3 a 16 letras, números, _ ou -)"); if (MarsRules.key(n) === MarsRules.key(ACC.user)) return toast("Esse é você 🙂"); if (inSet(P.fr.f, n)) return toast("Vocês já são amigos"); if (inSet(P.fr.out, n)) return toast("Pedido já enviado"); frAsk("add", n); $("#fnm").value = ""; toast(`📬 Pedido para <b>${esc(n)}</b> guardado: ele responde quando ligar o jogo.`, 4200); };
   on("add", (u) => frAsk("add", u)); on("acc", (u) => frAsk("acc", u)); on("rej", (u) => frAsk("rej", u)); on("can", (u) => frAsk("cancel", u)); on("rm", (u) => frAsk("rm", u));
   on("jw", (c) => joinOtherWorld(c)); on("dm", (u) => openDM(u)); on("inv", async (u) => { const r = await NET.ask({ t: "party", op: "inv", u }); toast(r.ok ? "Convite enviado" : esc(r.err || "Erro")); });
   on("kick", async (u) => { await NET.ask({ t: "party", op: "kick", u }); }); on("pleave", async () => { await NET.ask({ t: "party", op: "leave" }); }); on("pmake", async () => { await NET.ask({ t: "party", op: "make" }); }); const pc = el.querySelector("[data-pchat]"); if (pc) pc.onclick = () => { openChat("party"); };

@@ -28,8 +28,9 @@ const saveP = () => { try { localStorage.setItem(pkey(), JSON.stringify(P)); } c
 
 // ---------- eventos ----------
 const EV = {
-  custom: [], active: [], mult: 1,
+  hub: [], glob: [], custom: [], active: [], mult: 1,
   refresh() {
+    const seen = new Set(); this.custom = this.hub.concat(this.glob).filter((e) => e && !seen.has(e.id) && seen.add(e.id));
     this.active = MarsRules.activeEvents(new Date(), this.custom);
     this.mult = this.active.reduce((a, e) => Math.max(a, e.mult), 1);
     this.active.forEach((e) => { if (P.evs[e.suit.id]) Object.assign(P.evs[e.suit.id], { n: e.suit.n }); });
@@ -45,8 +46,12 @@ const EV = {
 function earn(n) { const v = n * EV.mult; S.coins += v; return v; }
 
 // ---------- peças/upgrades/cosméticos publicados pelos desenhistas ----------
-function applyCatalog(c) {
-  CAT = { cos: (c && c.cos) || [], part: (c && c.part) || [], up: (c && c.up) || [] };
+let HUBCAT = { cos: [], part: [], up: [] };
+/** Catálogo = itens do mundo conectado + itens publicados globalmente (mural). */
+function applyCatalog(c) { HUBCAT = { cos: (c && c.cos) || [], part: (c && c.part) || [], up: (c && c.up) || [] }; refreshCatalog(); }
+function refreshCatalog() {
+  const merge = (k) => { const seen = new Set(); return (HUBCAT[k] || []).concat(typeof BUL !== "undefined" ? BUL.liveData(k) : []).filter((x) => x && !seen.has(x.id) && seen.add(x.id)); };
+  CAT = { cos: merge("cos"), part: merge("part"), up: merge("up") };
   Object.keys(TY).forEach((k) => { if (!BUILTIN.includes(k)) delete TY[k]; });
   CAT.part.forEach((p) => { TY[p.id] = { n: p.n, c: p.c, k: p.k, p: p.p, custom: p }; });
 }

@@ -114,6 +114,9 @@ vendor/three.min.js   Three.js r128 local (sem CDN)
   Contas, amigos, grupos, chat, eventos e catálogo vivem no mundo do anfitrião (não há servidor global).
   Contas ADM: criadas pelo fluxo normal; o primeiro a registrar o nome o possui (em cada mundo).
 
+- **Mural global replicado** (`shared/bulletin.js`, `js/bulletin.js`, `js/global.js`): **contas**, **eventos**, **itens do Estúdio** e **avisos** dos admins viram itens de um mural que cada navegador guarda (localStorage) e todos sincronizam pelo canal WebRTC global (até visitantes sem login). Assim **eventos e avisos chegam para todo mundo**, e **uma conta criada num aparelho existe nos outros** (login em qualquer lugar; o nome só pode ser criado uma vez — vence a conta mais antiga). Dados só existem enquanto algum navegador os guarda; não há banco central.
+- **Amigos offline**: dá para pedir amizade **pelo nome**, mesmo com a pessoa offline; o pedido fica pendente (⏳) e é entregue quando ela ligar o jogo (o registro guarda a correspondência e também reentrega se a conexão cair antes da confirmação). A resposta volta do mesmo jeito.
+- **Reset de contas (v5)**: na primeira abertura desta versão, cada navegador apaga contas locais, sessões e progresso por conta (eventos/catálogo do mundo permanecem).
 - **Diretório global**: id fixo no sinalizador PeerJS; o primeiro jogador logado vira o *registro* (lista online, repassa mensagens); se sair, outro assume sozinho. Identidade no diretório é declarada pelo cliente (não há autoridade central).
 
 ## 3.1 Publicação

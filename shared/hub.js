@@ -21,6 +21,25 @@
       this.conns = new Map(); this.rooms = new Map(); this.parties = new Map(); this.lastChat = new Map();
       this.now = opts.now || (() => Date.now());
     }
+    /** Publica um item no mural global (se houver ponte). */
+    emitG(it) { try { this.o.onGlobal && this.o.onGlobal(it); } catch (e) { /* ignore */ } }
+    /** Recebe um item do mural global (contas, eventos, catálogo) e aplica neste mundo. Retorna true se algo mudou. */
+    ingest(it) {
+      const s = this.store; let ch = false;
+      if (it.k === "acct") {
+        const cur = s.users[it.id], d = it.d;
+        if (!cur || (!cur.npc && cur.pass !== d.pass && d.created < (cur.created || Infinity))) { s.users[it.id] = Object.assign(this.newUser(d.name, d.cc, d.pass), { created: d.created }); ch = true; }
+      } else if (it.k === "ev") {
+        const i = s.events.findIndex((e) => e.id === it.id);
+        if (it.del) { if (i >= 0) { s.events.splice(i, 1); ch = true; } } else { const e = Object.assign({ id: it.id, by: it.by }, it.d); if (i < 0) { s.events.push(e); ch = true; } else if (JSON.stringify(s.events[i]) !== JSON.stringify(e)) { s.events[i] = e; ch = true; } }
+        if (ch) { s.events = s.events.slice(-60); this.bcast({ t: "events", events: s.events }); }
+      } else if (it.k === "cos" || it.k === "part" || it.k === "up") {
+        const l = s.catalog[it.k], i = l.findIndex((x) => x.id === it.id);
+        if (it.del) { if (i >= 0) { l.splice(i, 1); ch = true; } } else if (i < 0) { l.push(it.d); if (l.length > 150) l.shift(); ch = true; } else if (JSON.stringify(l[i]) !== JSON.stringify(it.d)) { l[i] = it.d; ch = true; }
+        if (ch) this.bcast({ t: "cat", catalog: s.catalog });
+      }
+      if (ch) this.save(); return ch;
+    }
     save() { try { this.o.persist && this.o.persist(this.store); } catch (e) { /* ignore */ } }
 
     /** Cria contas administrativas reservadas, se faltarem. creds: {nome: senha}. Retorna as criadas. */
@@ -113,7 +132,7 @@
             need(me && R.isAdmin(me.name), "Apenas administradores");
             const text = clean(m.text, 240); need(text, "Mensagem vazia");
             const msg = { t: "gmsg", from: me.name, text, ts: this.now() };
-            this.bcast(msg); this.pushChat("global", { u: "📢 " + me.name, role: "admin", vf: true, cc: me.country }, text, true);
+            this.bcast(msg); this.pushChat("global", { u: "📢 " + me.name, role: "admin", vf: true, cc: me.country }, text, true); this.emitG({ k: "msg", id: "m" + rnd(8), by: me.name, ts: msg.ts, d: { text } });
             return ok();
           }
           case "adm.ev.add": {
@@ -121,17 +140,17 @@
             const e = m.ev || {}, start = num(e.start, 0, 4e12, 0), end = num(e.end, 0, 4e12, 0);
             need(clean(e.name, 40) && end > start, "Dados do evento inválidos");
             this.store.events.push({ id: "c" + rnd(6), name: clean(e.name, 40), icon: clean(e.icon, 4) || "🎉", col: color(e.col, "#ff6a2b"), mult: num(e.mult, 1, 10, 2), start, end, by: me.name });
-            this.store.events = this.store.events.slice(-60); this.save(); this.bcast({ t: "events", events: this.store.events }); return ok();
+            this.store.events = this.store.events.slice(-60); this.save(); this.bcast({ t: "events", events: this.store.events }); const ev = this.store.events[this.store.events.length - 1]; this.emitG({ k: "ev", id: ev.id, by: me.name, ts: this.now(), d: ev }); return ok();
           }
           case "adm.ev.del": {
             need(me && R.isAdmin(me.name), "Apenas administradores");
-            this.store.events = this.store.events.filter((e) => e.id !== m.id); this.save(); this.bcast({ t: "events", events: this.store.events }); return ok();
+            this.store.events = this.store.events.filter((e) => e.id !== m.id); this.save(); this.bcast({ t: "events", events: this.store.events }); this.emitG({ k: "ev", id: String(m.id), by: me.name, ts: this.now(), del: true }); return ok();
           }
           case "cat.pub": need(me && R.isArtist(me.name), "Apenas desenhistas"); return this.publish(me, m, ok, no);
           case "cat.del": {
             need(me && R.isArtist(me.name), "Apenas desenhistas");
             const l = this.store.catalog[m.kind]; need(l, "Tipo inválido");
-            this.store.catalog[m.kind] = l.filter((x) => x.id !== m.id); this.save(); this.bcast({ t: "cat", catalog: this.store.catalog }); return ok();
+            this.store.catalog[m.kind] = l.filter((x) => x.id !== m.id); this.save(); this.bcast({ t: "cat", catalog: this.store.catalog }); this.emitG({ k: m.kind, id: String(m.id), by: me.name, ts: this.now(), del: true }); return ok();
           }
           default: return no("Mensagem desconhecida");
         }
@@ -148,7 +167,8 @@
       if (!R.validCountry(m.c)) return no("Escolha um país");
       if (this.store.users[k]) return no(R.isAdmin(name) ? "Este nome reservado já foi registrado por outra pessoa" : "Usuário já existe");
       this.store.users[k] = this.newUser(name, m.c, await this.o.hash(String(m.p)));
-      this.save(); const token = rnd(32); this.store.sessions[token] = k; this.save();
+      this.save(); const u0 = this.store.users[k]; this.emitG({ k: "acct", id: k, ts: u0.created, d: { name, cc: m.c, pass: u0.pass, created: u0.created } });
+      const token = rnd(32); this.store.sessions[token] = k; this.save();
       return this.enter(c, k, token, ok);
     }
     async login(c, m, ok, no) {
@@ -314,7 +334,7 @@
         out = { id: "u_u_" + rnd(6), k: it.k === "Software" ? "Software" : "Hardware", n: name, d: clean(it.d, 90) || "Upgrade da comunidade", c: num(it.c, 50, 5000, 300), pm, cr, time: num(it.time, 0, 120, 0), rw: num(it.rw, 0, 0.5, 0), by: me.name };
       } else return no("Tipo inválido");
       const l = this.store.catalog[kind]; l.push(out); if (l.length > 150) l.shift();
-      this.save(); this.bcast({ t: "cat", catalog: this.store.catalog }); c_ok(ok, out);
+      this.save(); this.bcast({ t: "cat", catalog: this.store.catalog }); this.emitG({ k: kind, id: out.id, by: me.name, ts: this.now(), d: out }); c_ok(ok, out);
     }
   }
   function c_ok(ok, out) { ok({ item: out }); }

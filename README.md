@@ -13,6 +13,7 @@ Não há servidor de jogo: **toda a comunicação (multiplayer, chat, amigos, gr
 Cada jogador tem o **próprio mundo**: o navegador dele roda a lógica do servidor e mostra um **código** (ex.: `K7M2QX`) com botão de copiar.
 Amigos escolhem *Entrar no mundo de um amigo*, digitam o código e jogam juntos por conexão direta entre navegadores. O sinalizador gratuito do
 PeerJS só ajuda a se achar; os dados do jogo não passam por ele. As contas, salas e o chat do mundo vivem no mundo do anfitrião, que precisa estar com o jogo aberto.
+**Contas, eventos e avisos são globais** (mural replicado entre os jogadores por WebRTC): uma conta criada num aparelho vale nos outros e eventos/avisos dos admins chegam a todos. **Dá para pedir amizade pelo nome mesmo com a pessoa offline**: ela responde quando ligar o jogo.
 **Amigos não precisam do código do mundo:** todo jogador logado aparece no diretório global (WebRTC), dá para adicionar, conversar por mensagem direta e ver quando estão online.
 
 **Contas ADM (3):** os nomes `ADMVinnil`, `ADMKezle` e `ADMLefaar` são reservados: **quem os criar primeiro** (em *Criar conta*, com a própria senha) fica com o nome e com os poderes de admin/desenhista. Crie as três no seu mundo.

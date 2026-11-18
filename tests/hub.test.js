@@ -95,3 +95,32 @@ test("estúdio: cosméticos de todas as camadas (inclui capacete e mochila) são
   for (const l of ["s", "p", "w", "h", "b", "qualquer"]) { const r = await k.ask({ t: "cat.pub", kind: "cos", item: { n: "Item " + l, l, c: 100, col: "#33ccff" } }); assert.ok(r.ok, "camada " + l); }
   assert.deepEqual(h.store.catalog.cos.map((c) => c.l), ["s", "p", "w", "h", "b", "s"]);
 });
+
+test("mural global: contas (a mais antiga vence), eventos só de admin, itens só de desenhista, mesclagem converge", () => {
+  const B = require("../shared/bulletin.js"), a = B.newStore(), b = B.newStore();
+  const acct = (n, created, pass) => ({ k: "acct", id: n.toLowerCase(), ts: created, d: { name: n, cc: "BR", pass: "p1:1000:aa:" + pass, created } });
+  assert.ok(B.merge(a, acct("ADMKezle", 200, "bb")));
+  assert.ok(B.merge(a, acct("ADMKezle", 100, "aa")), "conta mais antiga assume o nome");
+  assert.ok(!B.merge(a, acct("ADMKezle", 300, "cc")), "mais nova é ignorada");
+  assert.equal(a.acct.admkezle.d.pass, "p1:1000:aa:aa");
+  assert.ok(!B.merge(a, acct("x", 1, "aa")), "nome inválido");
+  const ev = (by, mult) => ({ k: "ev", id: "e1", by, ts: 10, d: { name: "Maratona", start: 1, end: 9, mult } });
+  assert.ok(!B.merge(a, ev("Joao", 5)), "evento de não-admin recusado"); assert.ok(B.merge(a, ev("ADMVinnil", 5)));
+  assert.ok(!B.merge(a, { k: "cos", id: "u_c_1", by: "ADMVinnil", ts: 1, d: { id: "u_c_1", n: "X" } }), "ADMVinnil não é desenhista");
+  assert.ok(B.merge(a, { k: "cos", id: "u_c_1", by: "ADMLefaar", ts: 1, d: { id: "u_c_1", n: "X" } }));
+  assert.ok(B.merge(a, { k: "ev", id: "e1", by: "ADMVinnil", ts: 20, del: true }), "tombstone mais novo remove"); assert.equal(B.live(a, "ev").length, 0);
+  B.all(a).forEach((it) => B.merge(b, it)); assert.deepEqual(JSON.stringify(B.all(a).sort((x, y) => x.id < y.id ? -1 : 1)), JSON.stringify(B.all(b).sort((x, y) => x.id < y.id ? -1 : 1)));
+  assert.ok(B.batches(Array.from({ length: 50 }, (_, i) => acct("User" + i, i, "aa")), 1500).length > 1);
+});
+
+test("hub: ações globais emitem itens para o mural e ingest aplica itens recebidos", async () => {
+  const out = [], h = new Hub({ store: {}, hash, verify, onGlobal: (it) => out.push(it) }); await h.ensureAdmins({ ADMVinnil: "a1a1a1", ADMKezle: "b2b2b2", ADMLefaar: "c3c3c3" });
+  const v = client(h), k = client(h), u = client(h); await v.ask({ t: "login", u: "ADMVinnil", p: "a1a1a1" }); await k.ask({ t: "login", u: "ADMKezle", p: "b2b2b2" });
+  await v.ask({ t: "adm.msg", text: "Olá mundo" }); await v.ask({ t: "adm.ev.add", ev: { name: "Maratona", start: 1, end: 9e12, mult: 3 } }); await k.ask({ t: "cat.pub", kind: "cos", item: { n: "Traje", l: "s", c: 50, col: "#fff000" } });
+  assert.deepEqual(out.map((x) => x.k), ["msg", "ev", "cos"]);
+  const r = await u.ask({ t: "reg", u: "Nova1", p: "secret1", c: "BR" }); assert.ok(r.ok); assert.equal(out.pop().k, "acct");
+  // outro mundo recebe os mesmos itens
+  const h2 = new Hub({ store: {}, hash, verify }), c2 = client(h2); out.forEach((it) => h2.ingest(it)); h2.ingest({ k: "acct", id: "nova1", ts: 5, d: { name: "Nova1", cc: "BR", pass: "hx", created: 5 } });
+  assert.equal(h2.store.events.length, 1); assert.equal(h2.store.catalog.cos.length, 1); assert.ok(h2.store.users.nova1);
+  assert.ok(h2.ingest({ k: "ev", id: out[1].id, by: "ADMVinnil", ts: 99, del: true })); assert.equal(h2.store.events.length, 0);
+});
