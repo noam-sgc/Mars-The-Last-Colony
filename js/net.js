@@ -6,7 +6,7 @@ const NET = {
   emit(m) { (this.h[m.t] || []).forEach((f) => { try { f(m); } catch (e) { console.error(e); } }); },
   incoming(m) {
     if (m.t === "res") { const p = this.pend[m.rid]; if (p) { clearTimeout(p.to); delete this.pend[m.rid]; p.r(m); } return; }
-    if (m.t === "hi") { this.id = m.id; EV.custom = m.events || []; applyCatalog(m.catalog); EV.refresh(); }
+    if (m.t === "hi") { this.id = m.id; EV.hub = m.events || []; applyCatalog(m.catalog); EV.refresh(); }
     this.emit(m);
   },
   send(m) {
