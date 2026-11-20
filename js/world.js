@@ -1,5 +1,7 @@
 /* Mundo 3D: renderer, céu, terreno com crateras, peças, astronauta e colonos. */
 const cv = $("#c"), R = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+// Se o navegador descartar o contexto 3D (muitos contextos, GPU ocupada), permite restaurar em vez de ficar com tela branca.
+cv.addEventListener("webglcontextlost", (e) => { e.preventDefault(); const t = document.getElementById("toasts"); if (t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = "⚠ Gráfico 3D reiniciando…"; t.appendChild(d); setTimeout(() => d.remove(), 3000); } });
 R.setPixelRatio(Math.min(devicePixelRatio, 2));
 R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = .9; R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap;
 const sc = new THREE.Scene(); sc.background = new THREE.Color(0x2a1208); sc.fog = new THREE.FogExp2(0x9a4526, .006);

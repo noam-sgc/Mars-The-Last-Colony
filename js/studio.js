@@ -1,7 +1,7 @@
 /* Visualizador 3D em miniatura + Ferramentas de administração e estúdio de criação. */
 class MiniView {
   constructor(box, w, h) {
-    window.studioStop && studioStop(); this.box = box; this.r = new THREE.WebGLRenderer({ antialias: true, alpha: true }); this.r.setPixelRatio(Math.min(devicePixelRatio, 2)); this.r.setSize(w, h); this.r.shadowMap.enabled = true; box.innerHTML = ""; box.appendChild(this.r.domElement);
+    window.studioStop && studioStop(); this.box = box; this.r = MiniView.R || (MiniView.R = new THREE.WebGLRenderer({ antialias: true, alpha: true })); this.r.setPixelRatio(Math.min(devicePixelRatio, 2)); this.r.setSize(w, h); this.r.shadowMap.enabled = true; box.innerHTML = ""; box.appendChild(this.r.domElement);
     this.s = new THREE.Scene(); this.s.add(new THREE.HemisphereLight(0xfff0e0, 0x402010, .9)); const d = new THREE.DirectionalLight(0xffffff, 1.2); d.position.set(4, 8, 6); d.castShadow = true; this.s.add(d); const rim = new THREE.DirectionalLight(0x88aaff, .6); rim.position.set(-5, 3, -6); this.s.add(rim);
     this.c = new THREE.PerspectiveCamera(40, w / h, .1, 100); this.c.position.set(0, 2.8, 9.6); this.c.lookAt(0, 1.9, 0); this.spin = true; this.ry = .6; this.grp = new THREE.Group(); this.s.add(this.grp);
     const ped = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, .25, 32), new THREE.MeshStandardMaterial({ color: 0x2a1a14, metalness: .6, roughness: .4 })); ped.position.y = -.12; ped.receiveShadow = true; this.s.add(ped);
@@ -10,7 +10,7 @@ class MiniView {
     this.alive = true; this.t0 = performance.now(); const loop = () => { if (!this.alive) return; if (!box.isConnected) return this.destroy(); const t = (performance.now() - this.t0) / 1000; if (this.spin) this.ry += .012; this.grp.rotation.y = this.ry; this.grp.children.forEach((o) => { o.userData.anim && o.userData.anim.forEach((f) => f(t)); if (o.userData.legs) walkAnim(o, t, 0); }); this.r.render(this.s, this.c); this.raf = requestAnimationFrame(loop); }; loop(); window.studioCur = this;
   }
   setObj(o, y, fit) { while (this.grp.children.length) this.grp.remove(this.grp.children[0]); if (!o) return; this.grp.add(o); if (fit) { const b = new THREE.Box3().setFromObject(o), sz = b.getSize(new THREE.Vector3()), k = Math.min(1, 4.2 / Math.max(sz.y, .1), 4 / Math.max(sz.x, sz.z, .1)); o.scale.multiplyScalar(k); } o.position.set(0, y || 0, 0); }
-  destroy() { this.alive = false; cancelAnimationFrame(this.raf); try { this.r.dispose(); this.r.domElement.remove(); } catch (e) { /* ignore */ } if (window.studioCur === this) window.studioCur = null; }
+  destroy() { this.alive = false; cancelAnimationFrame(this.raf); try { this.r.domElement.remove(); } catch (e) { /* ignore */ } if (window.studioCur === this) window.studioCur = null; }
 }
 function studioStop() { if (window.studioCur) window.studioCur.destroy(); TMPCX.length = 0; delete TY.__tmp; }
 
