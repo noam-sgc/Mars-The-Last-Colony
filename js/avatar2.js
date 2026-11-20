@@ -97,24 +97,34 @@ function asBuild(s) {
   // pernas
   for (const side of [-1, 1]) {
     const hip = new THREE.Group(); hip.position.set(.19 * side, 1.06, 0); root.add(hip);
-    asP(hip, asCA(.13, .28), pantsMat, 0, -.22, 0); asP(hip, asSP(.145, 16, 12), dark, 0, -.44, .02, { s: [1, .8, 1] });
-    asP(hip, asCA(.115, .26), pantsMat, 0, -.64, 0); asP(hip, asRB(.26, .2, .38, .06), accent, 0, -.95, .05); asP(hip, asBX(.28, .06, .4), dark, 0, -1.03, .05);
+    if (s.pantSh == 2) { hip.scale.x = hip.scale.z = .85; }
+    asP(hip, asCA(.13, .28), pantsMat, 0, -.22, 0); asP(hip, asSP(.145, 16, 12), s.pantPt == 2 ? asM(s.pantC2) : dark, 0, -.44, .02, { s: [1, .8, 1] });
+    if (s.pantSh == 1) asP(hip, asCY(.115, .18, .44, 18), pantsMat, 0, -.66, 0); else asP(hip, asCA(.115, .26), s.pantSh == 3 ? asM(s.pantC2) : pantsMat, 0, -.64, 0);
+    if (s.pantPt == 1) asP(hip, asBX(.035, .78, .06), asM(s.pantC2), .125 * side, -.43, 0); asP(hip, asRB(.26, .2, .38, .06), accent, 0, -.95, .05); asP(hip, asBX(.28, .06, .4), dark, 0, -1.03, .05);
     if (side === -1) rig.legL = hip; else rig.legR = hip;
   }
   // tronco
   const torso = new THREE.Group(); torso.position.y = 1.5; root.add(torso); rig.torso = torso;
-  asP(torso, asRB(.72 * s.bk, .82, .46, .14), white, 0, 0, 0, { recv: true });
+  if (s.pf) asP(torso, torsoGeo(s.pf, .72 * s.bk, -.41, .41), white, 0, 0, 0, { recv: true, s: [1, 1, .66] });   // silhueta desenhada no Estúdio
+  else asP(torso, asRB(.72 * s.bk, .82, .46, .14), white, 0, 0, 0, { recv: true });
+  const P2 = asM(s.c2 || "#ffffff", { r: .5, e: s.glow || 0x000000, ei: s.glow ? .3 : 1 });
+  if (s.suitSh == 3) { asP(torso, asRB(.78 * s.bk, .5, .52, .08), asM(new THREE.Color(s.accent).multiplyScalar(.55), { r: .7 }), 0, .02, 0); [-1, 1].forEach((q) => asP(torso, asRB(.17, .15, .08, .03), P2, .18 * q, -.12, .27)); }   // colete tático
+  switch (s.suitPt) {
+    case 1: asP(torso, asBX(.74 * s.bk, .11, .48), P2, 0, .22, 0); break;
+    case 6: asP(torso, new THREE.CircleGeometry(.07, 20), asM(s.glow || s.c2, { e: s.glow || s.c2, ei: 1.2 }), -.2, -.05, .25, { cast: false }); break;
+    case 7: [-.09, .09].forEach((x) => asP(torso, asBX(.04, .72, .02), P2, x, 0, .245, { cast: false })); break;
+  }
   if (!s.suitTx) { asP(torso, asRB(.5, .42, .1, .05), accent, 0, .1, .21); asP(torso, asBX(.05, .6, .02), gray, 0, -.02, .245);
     asP(torso, asBX(.09, .5, .03), accentDk, -.29, .12, .24, { rz: .06 }); asP(torso, asBX(.09, .5, .03), accentDk, .29, .12, .24, { rz: -.06 }); }
-  asP(torso, asTO(.19, .05, Math.PI * 2, 12, 28), accent, 0, .44, 0, { rx: Math.PI / 2 }); asP(torso, asBX(.74 * s.bk, .09, .48), gray, 0, -.36, 0);
-  asP(torso, asSP(.17, 18, 12), accent, -.42 * s.bk, .32, 0, { s: [1.15, .8, 1.1] }); asP(torso, asSP(.17, 18, 12), accent, .42 * s.bk, .32, 0, { s: [1.15, .8, 1.1] });
+  asP(torso, asTO(.19, .05, Math.PI * 2, 12, 28), s.suitPt == 4 ? P2 : accent, 0, .44, 0, { rx: Math.PI / 2 }); asP(torso, asBX(.74 * s.bk, .09, .48), s.suitPt == 3 ? P2 : gray, 0, -.36, 0);
+  [-1, 1].forEach((q) => asP(torso, asSP(.17, 18, 12), s.suitPt == 2 ? P2 : accent, .42 * s.bk * q, .32, 0, { s: s.suitPt == 2 ? [1.45, 1, 1.4] : [1.15, .8, 1.1] }));
   if (s.flag) asP(torso, asPL(.2, .13), new THREE.MeshStandardMaterial({ map: flagTex(s.flag), roughness: .6 }), -.14, .18, .268, { rx: -.04, cast: false });
   if (s.nome != null) asP(torso, asPL(.24, .068), new THREE.MeshStandardMaterial({ map: asNameTex(s.nome), roughness: .6 }), .12, .18, .268, { rx: -.04, cast: false });
   asP(torso, new THREE.CircleGeometry(.045, 20), asM(0x0a2233, { e: 0x39c5ff, ei: 1.4 }), .12, .04, .268, { cast: false });
   // braços
   const arm = (side) => { const sh = new THREE.Group(); sh.position.set(.45 * side * s.bk, .3, 0); sh.rotation.z = .08 * side; torso.add(sh);
     asP(sh, asCA(.105, .24), white, 0, -.2, 0); asP(sh, asTO(.115, .025, Math.PI * 2, 10, 22), accent, 0, -.14, 0, { rx: Math.PI / 2 });
-    const el = new THREE.Group(); el.position.y = -.38; sh.add(el); asP(el, asCA(.095, .2), white, 0, -.16, 0); asP(el, asCY(.11, .11, .07, 16), accent, 0, -.3, 0);
+    const el = new THREE.Group(); el.position.y = -.38; sh.add(el); if (s.suitPt == 5) [-.32, .02].forEach((yy) => asP(sh, asTO(.112, .025, Math.PI * 2, 8, 20), P2, 0, yy, 0, { rx: Math.PI / 2 })); asP(el, asCA(.095, .2), white, 0, -.16, 0); asP(el, asCY(.11, .11, .07, 16), accent, 0, -.3, 0);
     const glove = asP(el, asSP(.115, 16, 12), s.alien ? skin : dark, 0, -.4, 0, { s: [1, 1.15, 1] }); return { sh, el, glove }; };
   rig.armL = arm(-1); rig.armR = arm(1);
   // pescoço e cabeça
@@ -148,7 +158,13 @@ function asBuild(s) {
   // mochila
   if (s.pack != null) {
     const pack = new THREE.Group(); pack.position.set(0, .05, -.38); pack.scale.setScalar(s.packSz || 1); torso.add(pack);
-    asP(pack, asRB(.52, .66, .26, .08), packMat, 0, 0, 0, { recv: true }); asP(pack, asRB(.4, .14, .2, .05), packDk, 0, .36, .02);
+    if (s.packSh == 4) pack.scale.multiplyScalar(1.25);
+    if (s.packSh == 1) asP(pack, asSP(.36, 20, 14), packMat, 0, 0, -.02, { s: [1, 1.05, .6] });
+    else if (s.packSh == 2) [-.13, .13].forEach((x) => { asP(pack, asCY(.12, .12, .6, 16), packMat, x, 0, 0); asP(pack, asSP(.12, 14, 10), packDk, x, .3, 0); });
+    else asP(pack, asRB(.52, .66, .26, .08), packMat, 0, 0, 0, { recv: true });
+    asP(pack, asRB(.4, .14, .2, .05), packDk, 0, .36, .02);
+    if (s.packSh == 3) [-1, 1].forEach((q) => { const w = asP(pack, asBX(.04, .8, .5), asM(s.packC2, { e: s.packGlow || s.packC2, ei: .6, t: true, o: .85 }), .42 * q, .25, -.1); w.rotation.set(.2, 0, q * .5); });
+    if (s.packPt == 2) asP(pack, asSP(.05, 10, 8), asM(0xff3030, { e: 0xff2020, ei: 1.5 }), 0, -.26, -.14, { cast: false });
     asP(pack, asCY(.07, .07, .4, 14), white, -.3, -.02, 0); asP(pack, asCY(.07, .07, .4, 14), white, .3, -.02, 0); asP(pack, asSP(.07, 12, 8), gray, -.3, .19, 0); asP(pack, asSP(.07, 12, 8), gray, .3, .19, 0);
     asP(pack, asSP(.03, 8, 6), asM(0x0a2233, { e: s.packGlow || 0x66ffee, ei: 1.8 }), .15, .25, -.14, { cast: false }); asP(pack, asCY(.012, .012, .3, 6), gray, -.2, .45, 0);
     rig.antennaTip = asP(pack, asSP(.025, 8, 6), asM(0x330000, { e: 0xff3344, ei: 2 }), -.2, .61, 0, { cast: false });
@@ -170,7 +186,9 @@ function asState(e) {
   const lk = lookNorm(e.lk), alien = e.sp === "alien", suit = cxById(e.s || "s0"), pant = cxById(e.p || "p0"), helm = cxById(e.h || "h0"), pack = cxById(e.b || "b0");
   const hairIt = cxById(e.r), accIt = cxById(e.a), tool = cxById(e.t), watch = cxById(e.w), hasHair = hairIt.id && hairIt.id !== "r0";
   const white = (c) => !c || /^#(e[0-9a-f]|f[0-9a-f])(e[0-9a-f]|f[0-9a-f])(e[0-9a-f]|f[0-9a-f])$/i.test(c);
-  const accent = suit.ac || (white(suit.col) ? "#8b9bb4" : suit.col), base = suit.ac || white(suit.col) ? (suit.col || "#eef1f6") : "#eef1f6";
+  const sp = cxp(suit), pp = cxp(pant), bp = cxp(pack);
+  // cor principal = corpo do traje; acento = painéis (ou um tom mais escuro da cor principal)
+  const base = suit.col || "#eef1f6", accent = suit.ac || (white(base) ? "#8b9bb4" : shade(base, .7));
   const ap = cxp(accIt), hp = cxp(helm), acc = {}; LOOK.AX.forEach(([k], i) => { if (lk.ax & (1 << i)) acc[k] = true; }); if (tool.id && tool.id !== "t0") acc[AS.TOOL[cxp(tool).sh]] = true;
   if (accIt.id && accIt.id !== "a0") { if (ap.sh == 8) acc.oculos = true; else if (ap.sh == 9) acc.fones = true; }
   if (helm.id && hp.sh == 5) acc.fones = true;
@@ -180,8 +198,9 @@ function asState(e) {
     skin: alien ? sk.c : LOOK.TONES[lk.t], alienGlow: alien ? sk.g : null, alien: alien ? e : null, alienHelm: helm,
     hairCol: hasHair && hairIt.col ? hairIt.col : lk.hc, hair: AS.HAIR_OF[hasHair ? cxp(hairIt).sh : lk.hr] != null ? AS.HAIR_OF[hasHair ? cxp(hairIt).sh : lk.hr] : 3, drawnHair: hasHair && hairIt.hv ? hairIt : null,
     eyes: (LOOK.EYEC[lk.ec] || LOOK.EYEC[0]), barba: lk.br > 0, glasses: lk.gl, accent, base, glow: suit.glow || null,
-    pants: pant.col || "#e8ecf2", helm: helm.col || "#eef1f6", helmGlow: helm.glow || null, pack: alien && (!e.b || e.b === "b0") ? null : pack.col || "#9aa3ad", packGlow: pack.glow || null, packSz: cxp(pack).sz,
-    helmMode: shaped || lk.hg === 2 ? "sem" : lk.hg === 1 ? "vestido" : "mao", flag: alien ? "" : lk.nc, nome: e.nm != null ? e.nm : null, bk: alien ? 1 : [.9, 1, 1.12][lk.bd],
+    pants: pant.col || "#e8ecf2", helm: helm.col || "#eef1f6", helmGlow: helm.glow || null, pack: alien && (!e.b || e.b === "b0") ? null : pack.col || "#9aa3ad", packGlow: pack.glow || null, packSz: bp.sz,
+    helmMode: shaped || lk.hg === 2 ? "sem" : lk.hg === 1 ? "vestido" : "mao", flag: alien ? "" : lk.nc, nome: e.nm != null ? e.nm : null, bk: (alien ? 1 : [.9, 1, 1.12][lk.bd]) * ([1, .88, 1.15, 1][sp.sh] || 1), suitSh: sp.sh, suitPt: sp.pt, c2: sp.c2, pf: Array.isArray(suit.pf) && suit.pf.length === 6 ? suit.pf : null,
+    pantSh: pp.sh, pantPt: pp.pt, pantC2: pp.c2, packSh: bp.sh, packPt: bp.pt, packC2: bp.c2,
     acc, watch: watch.id && watch.id !== "w0" && watch.col ? watch : null, extraAcc: accIt.id && accIt.id !== "a0" && ap.sh < 8 ? accIt : null, extraHelm: shaped ? helm : null,
     suitTx: txOf(suit, "torso"), pantTx: txOf(pant, "leg"), packTx: txOf(pack, "pack"),
   };
