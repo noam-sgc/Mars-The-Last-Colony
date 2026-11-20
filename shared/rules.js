@@ -7,14 +7,12 @@
   "use strict";
 
   // ---------- papéis ----------
-  // Somente estes nomes são administradores (e desenhistas). ADMVinnil é um usuário comum (nome liberado, sem poderes).
-  const ADMINS = ["ADMKezle", "ADMLefaar"];
-  const ADM_NAME_OK = ["ADMVinnil"];   // nomes iniciados em ADM permitidos para usuários comuns
+  // Somente estes nomes são administradores; só ADMKezle e ADMLefaar são desenhistas (ADMVinnil é admin, sem estúdio).
+  const ADMINS = ["ADMVinnil", "ADMKezle", "ADMLefaar"];
   const ARTISTS = ["ADMKezle", "ADMLefaar"];
   const key = (n) => String(n || "").trim().toLowerCase();
   const isAdmin = (n) => ADMINS.some((a) => key(a) === key(n));
   const isArtist = (n) => ARTISTS.some((a) => key(a) === key(n));
-  const admNameOk = (n) => ADM_NAME_OK.some((a) => key(a) === key(n));
   const roleOf = (n) => (isArtist(n) ? "artist" : isAdmin(n) ? "admin" : "user");
   const NAME_RE = /^[\p{L}\p{N}_-]{3,16}$/u;
   const validName = (n) => NAME_RE.test(String(n || ""));
@@ -107,6 +105,6 @@
   /** O papel `role` pode usar um item restrito? */
   const canUse = (item, role) => !item.adm || role === "artist" || (item.adm === "admin" && role === "admin");
 
-  return { ADMINS, ARTISTS, ADM_NAME_OK, admNameOk, isAdmin, isArtist, roleOf, validName, key, COUNTRIES, validCountry, flag,
+  return { ADMINS, ARTISTS, isAdmin, isArtist, roleOf, validName, key, COUNTRIES, validCountry, flag,
     MULT_NORMAL, MULT_SPECIAL, SPECIAL, HOLIDAYS, WEEKLY, activeEvents, multiplier, upcoming, suitFor, ADMIN_COSMETICS, canUse };
 });
