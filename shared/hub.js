@@ -29,6 +29,8 @@
       if (it.k === "acct") {
         const cur = s.users[it.id], d = it.d;
         if (!cur || (!cur.npc && cur.pass !== d.pass && d.created < (cur.created || Infinity))) { s.users[it.id] = Object.assign(this.newUser(d.name, d.cc, d.pass), { created: d.created }); ch = true; }
+      } else if (it.k === "sav") {
+        const u = s.users[it.id]; if (u && !u.npc && !it.del && it.ts > (u.profTs || 0)) { u.prof = this.sanitizeProf(u, it.d); u.profTs = it.ts; ch = true; }
       } else if (it.k === "ev") {
         const i = s.events.findIndex((e) => e.id === it.id);
         if (it.del) { if (i >= 0) { s.events.splice(i, 1); ch = true; } } else { const e = Object.assign({ id: it.id, by: it.by }, it.d); if (i < 0) { s.events.push(e); ch = true; } else if (JSON.stringify(s.events[i]) !== JSON.stringify(e)) { s.events[i] = e; ch = true; } }
@@ -122,7 +124,7 @@
           case "leave": this.leaveRoom(c, clean(m.room, 24)); return ok();
           case "pres": need(me); return this.presence(c, me, m);
           case "party": need(me, "Entre primeiro"); return this.partyOp(c, me, m, ok, no);
-          case "prof": need(me); me.prof = this.sanitizeProf(me, m.data); this.save(); return ok();
+          case "prof": { need(me); me.prof = this.sanitizeProf(me, m.data); me.profTs = this.now(); this.save(); const ts = me.profTs; clearTimeout(me._st); me._st = setTimeout(() => this.emitG({ k: "sav", id: R.key(me.name), by: me.name, ts, d: me.prof }), 4000); return ok(); }
           case "lb": return ok({ rows: Object.values(this.store.lb).sort((a, b) => b.pp - a.pp).slice(0, 50) });
           case "win": {
             need(me); const k = c.user, o = this.store.lb[k] || { name: me.name, wins: 0, pp: 0, score: 0 };
@@ -190,13 +192,14 @@
       const all = [].concat(R.ADMIN_COSMETICS, this.store.catalog.cos);
       const allowed = (id) => { const it = all.find((x) => x.id === id); return !it || R.canUse(it, role); };
       const own = (Array.isArray(p.own) ? p.own : []).filter((x) => typeof x === "string" && x.length < 40 && allowed(x)).slice(0, 300);
-      const eq = {}; ["s", "p", "w", "h", "b"].forEach((l) => { const id = p.eq && p.eq[l]; eq[l] = typeof id === "string" && allowed(id) && own.includes(id) ? id : l + "0"; });
+      const eq = {}; ["s", "p", "w", "h", "b", "r", "a"].forEach((l) => { const id = p.eq && p.eq[l]; eq[l] = typeof id === "string" && allowed(id) && own.includes(id) ? id : l + "0"; });
       const nm = (a) => (Array.isArray(a) ? a.filter((x) => R.validName(x)).slice(0, 300) : []), fr0 = p.fr || {}, frs = { f: nm(fr0.f), in: nm(fr0.in), out: nm(fr0.out) };
+      const lo = p.look && typeof p.look === "object" ? p.look : {}, ri = (v, a, b, d) => (Number.isInteger(v) && v >= a && v <= b ? v : d), look = { t: ri(lo.t, 0, 7, 3), hr: ri(lo.hr, 0, 9, 3), hc: /^#[0-9a-fA-F]{6}$/.test(lo.hc) ? lo.hc : "#1a1210", ey: ri(lo.ey, 0, 2, 0), fc: ri(lo.fc, 0, 3, 0), gl: ri(lo.gl, 0, 3, 1), br: ri(lo.br, 0, 3, 0), bd: ri(lo.bd, 0, 2, 1), ht: ri(lo.ht, 0, 2, 1), hg: lo.hg ? 1 : 0 };
       const sp = p.sp === "alien" ? "alien" : "human", skin = ["verde", "violeta", "azul", "laranja", "cinza"].includes(p.skin) ? p.skin : "verde", spChosen = !!p.spChosen;
       const u0 = p.ulv || {}, ulv = { best: (Array.isArray(u0.best) ? u0.best : []).slice(0, 10).map((x) => (Number.isFinite(x) ? Math.max(0, Math.min(100, Math.round(x))) : null)), finished: num(u0.finished, 0, 1e4, 0), rank: clean(u0.rank, 30) };
       const facts = (Array.isArray(p.facts) ? p.facts : []).filter((x) => Number.isInteger(x) && x >= 0 && x < 500).slice(0, 500), q0 = p.quiz || {}, quiz = { ok: (Array.isArray(q0.ok) ? q0.ok : []).filter((x) => Number.isInteger(x) && x >= 0 && x < 500).slice(0, 500), day: clean(q0.day, 10) };
       const evs = {}; Object.keys(p.evs || {}).slice(0, 100).forEach((id) => { const e = p.evs[id] || {}; if (/^ev_[\w-]{1,40}$/.test(id)) evs[id] = { id, l: "s", c: 0, ev: clean(e.ev, 40), n: clean(e.n, 60), col: color(e.col, "#ff6a2b"), glow: color(e.glow, "#ff6a2b") }; });
-      return { p: { cr: num(p.cr, 0, 1e9, 0), pp: num(p.pp, 0, 1e9, 0), rp: num(p.rp, 0, 1e9, 0), w: num(p.w, 0, 1e6, 0), own, eq, evs, fr: frs, facts, quiz, ulv, sp, skin, spChosen, day: clean(p.day, 10) },
+      return { p: { cr: num(p.cr, 0, 1e9, 0), pp: num(p.pp, 0, 1e9, 0), rp: num(p.rp, 0, 1e9, 0), w: num(p.w, 0, 1e6, 0), own, eq, look, evs, fr: frs, facts, quiz, ulv, sp, skin, spChosen, day: clean(p.day, 10) },
         s: { coins: num(s.coins, 0, 1e12, 500), own: (Array.isArray(s.own) ? s.own : []).filter((x) => typeof x === "string").slice(0, 200), done: s.done && typeof s.done === "object" ? s.done : {}, color: color(s.color, "#d8d0c4") } };
     }
 
@@ -325,8 +328,8 @@
       const kind = m.kind, it = m.item || {}, name = clean(it.n, 40); if (!name) return no("Dê um nome");
       let out;
       if (kind === "cos") {
-        const layer = ["s", "p", "w", "h", "b"].includes(it.l) ? it.l : "s";   // traje, calça, relógio, capacete, mochila
-        out = { id: "u_c_" + rnd(6), l: layer, n: name, c: num(it.c, 0, 5000, 100), col: color(it.col, "#ff6a2b"), glow: it.glow ? color(it.glow, "#ffffff") : "", adm: ["admin", "artist"].includes(it.adm) ? it.adm : "", by: me.name };
+        const layer = ["s", "p", "w", "h", "b", "r", "a"].includes(it.l) ? it.l : "s";   // traje, calça, relógio, capacete, mochila, cabelo, acessório
+        out = { id: "u_c_" + rnd(6), l: layer, n: name, c: num(it.c, 0, 5000, 100), col: color(it.col, "#ff6a2b"), glow: it.glow ? color(it.glow, "#ffffff") : "", adm: ["admin", "artist"].includes(it.adm) ? it.adm : "", sh: num(it.sh, 0, 9, 0), pt: num(it.pt, 0, 9, 0), c2: color(it.c2, "#ffffff"), sz: num(it.sz, .7, 1.5, 1), by: me.name };
       } else if (kind === "part") {
         out = { id: "u_p_" + rnd(6), n: name, c: num(it.c, 5, 500, 50), k: ["eff", "water", "food", "oxy", "fuel", "morale"].includes(it.k) ? it.k : "eff", p: num(it.p, 0.2, 3, 1),
           shape: ["box", "cyl", "dome", "tower", "ring"].includes(it.shape) ? it.shape : "box", col: color(it.col, "#9aa7b8"), glow: color(it.glow, "#44ffcc"), h: num(it.h, 1, 8, 3), w: num(it.w, 1, 6, 3), by: me.name };
