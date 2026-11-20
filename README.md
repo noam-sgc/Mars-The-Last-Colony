@@ -16,7 +16,7 @@ PeerJS só ajuda a se achar; os dados do jogo não passam por ele. As contas, sa
 **Contas, eventos e avisos são globais** (mural replicado entre os jogadores por WebRTC): uma conta criada num aparelho vale nos outros e eventos/avisos dos admins chegam a todos. **Dá para pedir amizade pelo nome mesmo com a pessoa offline**: ela responde quando ligar o jogo.
 **Amigos não precisam do código do mundo:** todo jogador logado aparece no diretório global (WebRTC), dá para adicionar, conversar por mensagem direta e ver quando estão online.
 
-**Contas ADM (3):** os nomes `ADMVinnil`, `ADMKezle` e `ADMLefaar` são reservados: **quem os criar primeiro** (em *Criar conta*, com a própria senha) fica com o nome e com os poderes de admin/desenhista. Crie as três no seu mundo.
+**Contas ADM (4):** os nomes `ADMVinnil`, `ADMKezle`, `ADMLefaar` e `alisson` são reservados: **quem os criar primeiro** (em *Criar conta*, com a própria senha) fica com o nome e com os poderes de admin/desenhista. Crie as três no seu mundo.
 
 **Ultra Learn Voyage:** jornada educativa à parte (menu → 🚀) com 10 capítulos de uma missão real a Marte: gestão de recursos com números + quizzes temáticos.
 
