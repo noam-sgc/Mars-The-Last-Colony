@@ -122,10 +122,10 @@ const TEAM = [
   { id: "tm8", n: "Ingrid Berg", d: "Cientista", look: { t: 0, hr: 5, hc: "#e8d8a0", fc: 0, gl: 0, nc: "CA" }, eq: { s: "s18", p: "p14", h: "h10", b: "b17" } },
 ];
 const teamAll = () => TEAM.concat((typeof CAT !== "undefined" && CAT.chr) || []);
-const teamEq = (pr, withLook) => Object.assign({}, DEF_EQ, pr.eq || {}, { sp: pr.sp || "human", sk: "verde", lk: lookNorm(pr.look) });
+const teamEq = (pr, withLook) => Object.assign({}, DEF_EQ, pr.eq || {}, { sp: pr.sp || "human", sk: "verde", lk: lookNorm(pr.look), chr: MODELS.has(pr.id) ? pr.id : "" });
 /** Veste o personagem pré-montado: aparência completa + itens que você já tem (os demais ficam no padrão). */
 function applyPreset(pr) {
-  P.look = lookNorm(Object.assign({}, pr.look, { hg: 0 })); P.sp = pr.sp === "alien" ? "alien" : "human"; let miss = 0;
+  P.look = lookNorm(Object.assign({}, pr.look, { hg: 0 })); P.sp = pr.sp === "alien" ? "alien" : "human"; P.chr = MODELS.has(pr.id) ? pr.id : ""; let miss = 0;
   Object.keys(pr.eq || {}).forEach((l) => { const id = pr.eq[l], it = cxById(id); if (P.own.includes(id) && canUseItem(it)) P.eq[l] = id; else if (id) miss++; });
   saveP(); toast(`🧑‍🚀 ${esc(pr.n)} vestido!${miss ? " (" + miss + " item(ns) que você ainda não tem ficaram no padrão)" : ""}`);
 }
@@ -144,7 +144,7 @@ function lazyThumb(img, fn) { _q.push([img, fn]); if (!_qt) _qt = requestAnimati
 function lookPanel(pv) {
   const wi = $("#wi"), L = () => P.look || (P.look = lookNorm());
   const prev = () => pv.setObj(av(Object.assign({}, myEq(), WTRY || {})), 0);
-  const set = (o) => { Object.assign(L(), o); P.look = lookNorm(P.look); saveP(); prev(); draw(); };
+  const set = (o) => { P.chr = ""; Object.assign(L(), o); P.look = lookNorm(P.look); saveP(); prev(); draw(); };
   const opts = (key, names) => `<div class="row" style="flex-wrap:wrap">${names.map((n, i) => `<button class="${L()[key] == i ? "sel" : ""}" data-k="${key}" data-v="${i}">${n}</button>`).join("")}</div>`;
   const draw = () => {
     const l = L(), allC = MarsRules.COUNTRIES;

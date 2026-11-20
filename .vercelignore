@@ -4,3 +4,4 @@ tools/
 Dockerfile
 render.yaml
 node_modules/
+assets/models/fonte/
