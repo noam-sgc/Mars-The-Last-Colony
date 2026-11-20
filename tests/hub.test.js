@@ -7,9 +7,10 @@ function client(hub) {
   const c = hub.connect((m) => { if (m.t === "res" && pend[m.rid]) { pend[m.rid](m); delete pend[m.rid]; } else log.push(m); });
   return { c, log, ask: (m) => new Promise((r) => { m.rid = ++rid; pend[rid] = r; hub.handle(c, m); }) };
 }
-test("papéis: só 3 admins e 2 desenhistas", () => {
-  assert.deepEqual(R.ADMINS, ["ADMVinnil", "ADMKezle", "ADMLefaar"]);
-  assert.ok(R.isAdmin("admvinnil") && R.isAdmin("ADMLefaar") && !R.isArtist("ADMVinnil") && R.isArtist("ADMKezle") && R.isArtist("ADMLefaar"));
+test("papéis: 2 admins/desenhistas; ADMVinnil é usuário comum", () => {
+  assert.deepEqual(R.ADMINS, ["ADMKezle", "ADMLefaar"]);
+  assert.ok(!R.isAdmin("admvinnil") && R.isAdmin("ADMLefaar") && !R.isArtist("ADMVinnil") && R.isArtist("ADMKezle") && R.isArtist("ADMLefaar"));
+  assert.equal(R.roleOf("ADMVinnil"), "user"); assert.ok(R.admNameOk("admvinnil"));
   assert.equal(R.roleOf("Joao"), "user");
 });
 test("eventos: x5 em 1/fev, 11/abr, 12/jun; x2 em feriados e fins de semana", () => {
@@ -37,7 +38,7 @@ test("registro, login, nomes reservados e países", async () => {
 test("admin: mensagem global e eventos; usuário comum é recusado", async () => {
   const h = mk(); await h.ensureAdmins({ ADMVinnil: "pw-vinnil", ADMKezle: "pw-kezle", ADMLefaar: "pw-lefaar" });
   const u = client(h), adm = client(h);
-  await u.ask({ t: "reg", u: "Maria", p: "secret1", c: "BR" }); await adm.ask({ t: "login", u: "ADMVinnil", p: "pw-vinnil" });
+  await u.ask({ t: "reg", u: "Maria", p: "secret1", c: "BR" }); await adm.ask({ t: "login", u: "ADMLefaar", p: "pw-lefaar" });
   assert.equal((await u.ask({ t: "adm.msg", text: "oi" })).ok, false);
   assert.ok((await adm.ask({ t: "adm.msg", text: "Manutenção às 20h" })).ok);
   assert.ok(u.log.some((m) => m.t === "gmsg" && m.text.includes("Manutenção")));
@@ -45,13 +46,13 @@ test("admin: mensagem global e eventos; usuário comum é recusado", async () =>
   assert.ok((await adm.ask({ t: "adm.ev.add", ev: { name: "Evento ADM", start: Date.now() - 1000, end: Date.now() + 1e6, mult: 3 } })).ok);
   assert.ok(u.log.some((m) => m.t === "events" && m.events.length === 1));
 });
-test("catálogo: só ADMKezle/ADMLefaar publicam; ADMVinnil (admin) não", async () => {
+test("catálogo: só ADMKezle/ADMLefaar publicam; ADMVinnil (usuário comum) não", async () => {
   const h = mk(); await h.ensureAdmins({ ADMVinnil: "a1a1a1", ADMKezle: "b2b2b2", ADMLefaar: "c3c3c3" });
   const v = client(h), k = client(h), u = client(h), l = client(h);
-  await v.ask({ t: "login", u: "ADMVinnil", p: "a1a1a1" }); await k.ask({ t: "login", u: "ADMKezle", p: "b2b2b2" }); await l.ask({ t: "login", u: "ADMLefaar", p: "c3c3c3" }); await u.ask({ t: "reg", u: "Zeca", p: "secret1", c: "BR" });
+  assert.ok((await v.ask({ t: "reg", u: "ADMVinnil", p: "a1a1a1", c: "BR" })).ok, "ADMVinnil pode criar conta comum"); await k.ask({ t: "login", u: "ADMKezle", p: "b2b2b2" }); await l.ask({ t: "login", u: "ADMLefaar", p: "c3c3c3" }); await u.ask({ t: "reg", u: "Zeca", p: "secret1", c: "BR" });
   const item = { n: "Traje Aurora", l: "s", c: 300, col: "#33ccff" };
   assert.equal((await v.ask({ t: "cat.pub", kind: "cos", item })).ok, false);
-  assert.ok((await v.ask({ t: "adm.msg", text: "admin sem estúdio" })).ok);
+  assert.equal((await v.ask({ t: "adm.msg", text: "não sou admin" })).ok, false);
   assert.ok((await l.ask({ t: "cat.pub", kind: "cos", item })).ok);
   assert.equal((await u.ask({ t: "cat.pub", kind: "cos", item })).ok, false);
   const r = await k.ask({ t: "cat.pub", kind: "cos", item }); assert.ok(r.ok);
@@ -61,9 +62,9 @@ test("catálogo: só ADMKezle/ADMLefaar publicam; ADMVinnil (admin) não", async
 });
 test("amigos: pedido, aceite e selo de verificado (amigo de admin)", async () => {
   const h = mk(); await h.ensureAdmins({ ADMVinnil: "a1a1a1", ADMKezle: "b2b2b2", ADMLefaar: "c3c3c3" });
-  const a = client(h), v = client(h); await a.ask({ t: "reg", u: "Ana", p: "secret1", c: "BR" }); await v.ask({ t: "login", u: "ADMVinnil", p: "a1a1a1" });
-  let us = (await a.ask({ t: "users" })).users; assert.ok(us.length === 4 && us.find((x) => x.u === "ADMVinnil").vf && !us.find((x) => x.u === "Ana").vf);
-  await a.ask({ t: "fr", op: "add", u: "ADMVinnil" }); await v.ask({ t: "fr", op: "acc", u: "Ana" });
+  const a = client(h), v = client(h); await a.ask({ t: "reg", u: "Ana", p: "secret1", c: "BR" }); await v.ask({ t: "login", u: "ADMLefaar", p: "c3c3c3" });
+  let us = (await a.ask({ t: "users" })).users; assert.ok(us.length === 3 && us.find((x) => x.u === "ADMLefaar").vf && !us.find((x) => x.u === "Ana").vf);
+  await a.ask({ t: "fr", op: "add", u: "ADMLefaar" }); await v.ask({ t: "fr", op: "acc", u: "Ana" });
   us = (await v.ask({ t: "users" })).users; assert.ok(us.find((x) => x.u === "Ana").vf, "amigo de admin é verificado");
   await v.ask({ t: "fr", op: "rm", u: "Ana" }); us = (await v.ask({ t: "users" })).users; assert.ok(!us.find((x) => x.u === "Ana").vf);
 });
@@ -105,22 +106,23 @@ test("mural global: contas (a mais antiga vence), eventos só de admin, itens s�
   assert.equal(a.acct.admkezle.d.pass, "p1:1000:aa:aa");
   assert.ok(!B.merge(a, acct("x", 1, "aa")), "nome inválido");
   const ev = (by, mult) => ({ k: "ev", id: "e1", by, ts: 10, d: { name: "Maratona", start: 1, end: 9, mult } });
-  assert.ok(!B.merge(a, ev("Joao", 5)), "evento de não-admin recusado"); assert.ok(B.merge(a, ev("ADMVinnil", 5)));
+  assert.ok(!B.merge(a, ev("Joao", 5)), "evento de não-admin recusado"); assert.ok(!B.merge(a, ev("ADMVinnil", 5)), "ADMVinnil é usuário comum"); assert.ok(B.merge(a, ev("ADMLefaar", 5)));
   assert.ok(!B.merge(a, { k: "cos", id: "u_c_1", by: "ADMVinnil", ts: 1, d: { id: "u_c_1", n: "X" } }), "ADMVinnil não é desenhista");
+  assert.ok(!B.merge(a, { k: "ev", id: "e1", by: "ADMVinnil", ts: 30, del: true }), "não-admin não apaga evento");
   assert.ok(B.merge(a, { k: "cos", id: "u_c_1", by: "ADMLefaar", ts: 1, d: { id: "u_c_1", n: "X" } }));
-  assert.ok(B.merge(a, { k: "ev", id: "e1", by: "ADMVinnil", ts: 20, del: true }), "tombstone mais novo remove"); assert.equal(B.live(a, "ev").length, 0);
+  assert.ok(B.merge(a, { k: "ev", id: "e1", by: "ADMLefaar", ts: 20, del: true }), "tombstone mais novo remove"); assert.equal(B.live(a, "ev").length, 0);
   B.all(a).forEach((it) => B.merge(b, it)); assert.deepEqual(JSON.stringify(B.all(a).sort((x, y) => x.id < y.id ? -1 : 1)), JSON.stringify(B.all(b).sort((x, y) => x.id < y.id ? -1 : 1)));
   assert.ok(B.batches(Array.from({ length: 50 }, (_, i) => acct("User" + i, i, "aa")), 1500).length > 1);
 });
 
 test("hub: ações globais emitem itens para o mural e ingest aplica itens recebidos", async () => {
   const out = [], h = new Hub({ store: {}, hash, verify, onGlobal: (it) => out.push(it) }); await h.ensureAdmins({ ADMVinnil: "a1a1a1", ADMKezle: "b2b2b2", ADMLefaar: "c3c3c3" });
-  const v = client(h), k = client(h), u = client(h); await v.ask({ t: "login", u: "ADMVinnil", p: "a1a1a1" }); await k.ask({ t: "login", u: "ADMKezle", p: "b2b2b2" });
+  const v = client(h), k = client(h), u = client(h); await v.ask({ t: "login", u: "ADMLefaar", p: "c3c3c3" }); await k.ask({ t: "login", u: "ADMKezle", p: "b2b2b2" });
   await v.ask({ t: "adm.msg", text: "Olá mundo" }); await v.ask({ t: "adm.ev.add", ev: { name: "Maratona", start: 1, end: 9e12, mult: 3 } }); await k.ask({ t: "cat.pub", kind: "cos", item: { n: "Traje", l: "s", c: 50, col: "#fff000" } });
   assert.deepEqual(out.map((x) => x.k), ["msg", "ev", "cos"]);
   const r = await u.ask({ t: "reg", u: "Nova1", p: "secret1", c: "BR" }); assert.ok(r.ok); assert.equal(out.pop().k, "acct");
   // outro mundo recebe os mesmos itens
   const h2 = new Hub({ store: {}, hash, verify }), c2 = client(h2); out.forEach((it) => h2.ingest(it)); h2.ingest({ k: "acct", id: "nova1", ts: 5, d: { name: "Nova1", cc: "BR", pass: "hx", created: 5 } });
   assert.equal(h2.store.events.length, 1); assert.equal(h2.store.catalog.cos.length, 1); assert.ok(h2.store.users.nova1);
-  assert.ok(h2.ingest({ k: "ev", id: out[1].id, by: "ADMVinnil", ts: 99, del: true })); assert.equal(h2.store.events.length, 0);
+  assert.ok(h2.ingest({ k: "ev", id: out[1].id, by: "ADMLefaar", ts: 99, del: true })); assert.equal(h2.store.events.length, 0);
 });
