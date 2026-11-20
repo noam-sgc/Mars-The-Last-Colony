@@ -167,7 +167,7 @@
       const name = clean(m.u, 16), k = R.key(name);
       if (!R.validName(name)) return no("Usuário: 3 a 16 letras, números, _ ou -");
       // Nomes ADM são reservados a quem os criar primeiro: depois de registrados, ninguém mais os usa.
-      if (!R.isAdmin(name) && !R.admNameOk(name) && /^adm/i.test(name)) return no("Nomes iniciados em ADM são reservados");
+      if (!R.isAdmin(name) && /^adm/i.test(name)) return no("Nomes iniciados em ADM são reservados");
       if (String(m.p || "").length < 6) return no("A senha precisa de 6+ caracteres");
       if (!R.validCountry(m.c)) return no("Escolha um país");
       if (this.store.users[k]) return no(R.isAdmin(name) ? "Este nome reservado já foi registrado por outra pessoa" : "Usuário já existe");
