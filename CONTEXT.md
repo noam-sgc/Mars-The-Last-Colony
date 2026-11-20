@@ -143,3 +143,9 @@ Veja `docs/DEPLOY.md` (site estático na Vercel; sem servidor de jogo).
 - Guarda-roupa em seções com miniaturas 3D (como a ficha de referência): **Equipe** (8 personagens prontos + os publicados no Estúdio), **Aparência** (Tipos de cabelo ×13, Tons de pele, Nacionalidades com bandeira no braço, rosto/corpo, capacete na mão/cabeça/sem), Trajes, Calças, Capacetes, Mochilas, **Acessórios** (óculos de proteção, headset…), **Equipamentos** (dispositivo de pulso, tablet, garrafa, cinto, kit médico, chave inglesa, lanterna), Cabelos, Relógios, Eventos.
 - Itens básicos grátis: 8 trajes, 5 calças, 6 capacetes e 8 mochilas coloridos (`BASE_FREE` em `js/data.js`).
 - Estúdio: nova camada Equipamento (`t`) e novo tipo de publicação **chr** (Personagens/Equipe: aparência + itens). Mural/Hub/API aceitam `chr`.
+
+## Atualização: avatar cartoon, 99 bandeiras e desenho livre no Estúdio
+- `js/avatar.js`: avatar novo no estilo das fichas (cel-shading `MeshToonMaterial` + contorno; traje branco com painéis de acento `ac`, arnês, joelheiras/botas coloridas, luvas, mochila com tela, capacete com viseira). `lq:1` = sem contorno (colonos).
+- `js/flags.js`: bandeiras desenhadas para todos os 99 países de `MarsRules.COUNTRIES` (lista ampliada).
+- `js/paint.js`: PaintPad (textura pintada à mão, atlas 256×256: tronco, mangas, pernas, mochila, capacete), ProfilePad (silhueta do tronco, `pf`), HairPad (cabelo desenhado em grade 32×14: `hv` volume, `hl` comprimento, `hs` tipo de fio).
+- Hub aceita nos cosméticos: `ac`, `tx` (≤120 KB), `pf`, `hv/hl/hs`. Mural: cosméticos até 130 KB.

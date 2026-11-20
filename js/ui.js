@@ -162,7 +162,7 @@ function ward() {
   const refresh = () => { if (pv) pv.setObj(av(eq()), 0); }; refresh();
   $("#spH").onclick = () => setSpecies("human"); $("#spA").onclick = () => setSpecies("alien"); el.querySelectorAll("[data-sk]").forEach((b) => (b.onclick = () => { P.skin = b.dataset.sk; saveP(); ward(); }));
   $("#wrs").onclick = () => { WTRY = null; P.eq = Object.assign({}, DEF_EQ); saveP(); ward(); };
-  { let face = false; $("#wzm").onclick = () => { face = !face; pv.c.position.set(0, face ? 3.3 : 2.8, face ? 4.6 : 9.6); pv.c.lookAt(0, face ? 3.0 : 1.9, 0); $("#wzm").textContent = face ? "🧍 Corpo" : "🔍 Rosto"; }; }
+  { let face = false; $("#wzm").onclick = () => { face = !face; pv.c.position.set(0, face ? 3.3 : 2.8, face ? 5 : 9.6); pv.c.lookAt(0, face ? 3.1 : 1.9, 0); $("#wzm").textContent = face ? "🧍 Corpo" : "🔍 Rosto"; }; }
   $("#wsp").onclick = () => { if (pv) { pv.spin = !pv.spin; $("#wsp").textContent = pv.spin ? "⏸ Girar" : "▶ Girar"; } };
   if (WTAB == "look") return lookPanel(pv);
   if (WTAB == "team") return teamPanel(pv, ward);

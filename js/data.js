@@ -151,8 +151,8 @@ const allUP = () => UP.concat((CAT && CAT.up) || []);
 const _C = { blue: ["Azul", "#3d7bff"], orange: ["Laranja", "#ff8a1f"], green: ["Verde", "#46b86a"], purple: ["Roxo", "#8a4cd6"], white: ["Branco", "#e8e8ee"], red: ["Vermelho", "#d63b3b"], yellow: ["Amarelo", "#e8b923"], teal: ["Turquesa", "#2b9aa8"], gray: ["Cinza", "#8b909c"] };
 /** Itens básicos gratuitos (como nas fichas de equipe): 8 trajes, 5 calças, 6 capacetes e 8 mochilas coloridos. */
 const BASE_FREE = [].concat(
-  ["blue", "orange", "green", "purple", "white", "red", "yellow", "teal"].map((k, i) => ({ id: "s" + (11 + i), l: "s", n: "Traje " + _C[k][0].toLowerCase() + " de equipe", c: 0, col: _C[k][1], pt: 5, c2: "#f4f4f8" })),
-  ["white", "orange", "green", "purple", "blue"].map((k, i) => ({ id: "p" + (10 + i), l: "p", n: "Calça " + _C[k][0].toLowerCase() + " com joelheiras", c: 0, col: k == "white" ? "#cfd3dc" : _C[k][1], pt: 2, c2: "#2d3340" })),
+  ["blue", "orange", "green", "purple", "white", "red", "yellow", "teal"].map((k, i) => ({ id: "s" + (11 + i), l: "s", n: "Traje de equipe " + _C[k][0].toLowerCase(), c: 0, col: "#eef0f4", ac: k == "white" ? "#8b9bb4" : _C[k][1] })),
+  ["white", "orange", "green", "purple", "blue"].map((k, i) => ({ id: "p" + (10 + i), l: "p", n: "Calça com joelheiras " + _C[k][0].toLowerCase(), c: 0, col: "#e8eaf0", ac: k == "white" ? "#8b9bb4" : _C[k][1] })),
   ["blue", "orange", "purple", "green", "red", "yellow"].map((k, i) => ({ id: "h" + (10 + i), l: "h", n: "Capacete " + _C[k][0].toLowerCase(), c: 0, col: _C[k][1] })),
   ["blue", "orange", "green", "purple", "gray", "red", "yellow", "teal"].map((k, i) => ({ id: "b" + (10 + i), l: "b", n: "Mochila " + _C[k][0].toLowerCase(), c: 0, col: _C[k][1] })));
 const CX = [

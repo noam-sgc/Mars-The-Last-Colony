@@ -13,7 +13,7 @@
   function valid(it) {
     if (!it || typeof it !== "object" || !KINDS.includes(it.k) || !str(it.id, 60) || !Number.isFinite(it.ts)) return false;
     if (it.del) return it.k !== "acct" && it.k !== "sav" && (it.k === "ev" || it.k === "msg" ? R.isAdmin(it.by) : R.isArtist(it.by));
-    const d = it.d; if (!d || typeof d !== "object" || JSON.stringify(d).length > (it.k === "sav" ? MAXSAV : MAXD)) return false;
+    const d = it.d; if (!d || typeof d !== "object" || JSON.stringify(d).length > (it.k === "sav" ? MAXSAV : it.k === "cos" ? 130000 : MAXD)) return false;
     switch (it.k) {
       case "acct": return R.validName(d.name) && R.key(d.name) === it.id && str(d.pass, 200) && /^p1:\d+:[0-9a-f]+:[0-9a-f]+$/.test(d.pass) && R.validCountry(d.cc) && Number.isFinite(d.created);
       case "sav": return R.validName(it.by) && R.key(it.by) === it.id && d.p && typeof d.p === "object" && d.s && typeof d.s === "object";   // progresso da conta (o mais novo vence)

@@ -12,8 +12,8 @@ const CLOUD = (() => {
     if (first) { await seed(); } BUL.markSynced(); done(); return true;
   }
   /** Primeira conexão: envia para a nuvem tudo que este navegador já conhece (contas antigas passam a existir para todos). */
-  async function seed() { const all = BUL.snapshot().filter((x) => !x.del || x.k !== "sav"); for (let i = 0; i < all.length; i += 60) await J("/api/bul", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: all.slice(i, i + 60) }) }); }
-  async function flush() { if (!on || !pend.length) return; const items = pend.splice(0, 100); const r = await J("/api/bul", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) }); if (!r) pend = items.concat(pend); if (pend.length) t = setTimeout(flush, 3000); }
+  async function seed() { const all = BUL.snapshot().filter((x) => !x.del || x.k !== "sav"); for (const items of MarsBul.batches(all, 800000)) await J("/api/bul", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.slice(0, 200) }) }); }
+  async function flush() { if (!on || !pend.length) return; const bs = MarsBul.batches(pend.splice(0, 100), 800000), items = bs.shift() || []; pend = bs.flat().concat(pend); if (!items.length) return; const r = await J("/api/bul", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) }); if (!r) pend = items.concat(pend); if (pend.length) t = setTimeout(flush, 3000); }
   return {
     get on() { return on; },
     /** Diagnóstico para o jogador/dono do site. */

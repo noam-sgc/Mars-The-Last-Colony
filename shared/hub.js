@@ -333,6 +333,10 @@
       if (kind === "cos") {
         const layer = ["s", "p", "w", "h", "b", "r", "a", "t"].includes(it.l) ? it.l : "s";   // traje, calça, relógio, capacete, mochila, cabelo, acessório
         out = { id: "u_c_" + rnd(6), l: layer, n: name, c: num(it.c, 0, 5000, 100), col: color(it.col, "#ff6a2b"), glow: it.glow ? color(it.glow, "#ffffff") : "", adm: ["admin", "artist"].includes(it.adm) ? it.adm : "", sh: num(it.sh, 0, 12, 0), pt: num(it.pt, 0, 9, 0), c2: color(it.c2, "#ffffff"), sz: num(it.sz, .7, 1.5, 1), by: me.name };
+        if (it.ac) out.ac = color(it.ac, "#3d7bff");
+        if (typeof it.tx === "string" && it.tx.length <= 120000 && /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/=]+$/.test(it.tx)) out.tx = it.tx;   // textura pintada à mão
+        if (Array.isArray(it.pf) && it.pf.length === 6) out.pf = it.pf.map((v) => num(v, .25, .85, .5));   // silhueta desenhada
+        if (/^[0-9]{448}$/.test(it.hv) && /^[0-9]{448}$/.test(it.hl)) { out.hv = it.hv; out.hl = it.hl; out.hs = num(it.hs, 0, 3, 0); }   // cabelo desenhado
       } else if (kind === "part") {
         out = { id: "u_p_" + rnd(6), n: name, c: num(it.c, 5, 500, 50), k: ["eff", "water", "food", "oxy", "fuel", "morale"].includes(it.k) ? it.k : "eff", p: num(it.p, 0.2, 3, 1),
           shape: ["box", "cyl", "dome", "tower", "ring"].includes(it.shape) ? it.shape : "box", col: color(it.col, "#9aa7b8"), glow: color(it.glow, "#44ffcc"), h: num(it.h, 1, 8, 3), w: num(it.w, 1, 6, 3), by: me.name };
