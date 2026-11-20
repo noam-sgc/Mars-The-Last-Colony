@@ -149,3 +149,8 @@ Veja `docs/DEPLOY.md` (site estático na Vercel; sem servidor de jogo).
 - `js/flags.js`: bandeiras desenhadas para todos os 99 países de `MarsRules.COUNTRIES` (lista ampliada).
 - `js/paint.js`: PaintPad (textura pintada à mão, atlas 256×256: tronco, mangas, pernas, mochila, capacete), ProfilePad (silhueta do tronco, `pf`), HairPad (cabelo desenhado em grade 32×14: `hv` volume, `hl` comprimento, `hs` tipo de fio).
 - Hub aceita nos cosméticos: `ac`, `tx` (≤120 KB), `pf`, `hv/hl/hs`. Mural: cosméticos até 130 KB.
+
+## Atualização: avatar do "Avatar Studio" do usuário e ADMVinnil admin
+- `js/avatar2.js`: o avatar do jogo passou a ser o modelo do **Mars Colony — Avatar Studio 3D** (HTML criado pelo usuário), portado para Three r128 (cápsulas via torno, `vendor/RoundedBoxGeometry.js`). Converte cosméticos/aparência do jogo (`asState`) e mantém pintura, cabelo desenhado, acessórios do Estúdio (`headExtras`), alienígenas e animação de andar/piscar.
+- Aparência ganhou cor dos olhos (`ec`) e acessórios grátis da missão (`ax`, bitmask: óculos, fones, pulso, tablet, garrafa, cinto, kit, chave, lanterna). Equipe = Yuki, Kwame, Saoirse, Amira, Wei, Nia, Rafael, Emma.
+- ADMVinnil voltou a ser **admin** (sem Estúdio). Admins: ADMVinnil, ADMKezle, ADMLefaar; desenhistas: ADMKezle e ADMLefaar.

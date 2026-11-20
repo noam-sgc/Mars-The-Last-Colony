@@ -149,12 +149,13 @@ const allUP = () => UP.concat((CAT && CAT.up) || []);
 // ---------- cosméticos ----------
 // l: s traje · p calça · w relógio · h capacete · b mochila
 const _C = { blue: ["Azul", "#3d7bff"], orange: ["Laranja", "#ff8a1f"], green: ["Verde", "#46b86a"], purple: ["Roxo", "#8a4cd6"], white: ["Branco", "#e8e8ee"], red: ["Vermelho", "#d63b3b"], yellow: ["Amarelo", "#e8b923"], teal: ["Turquesa", "#2b9aa8"], gray: ["Cinza", "#8b909c"] };
-/** Itens básicos gratuitos (como nas fichas de equipe): 8 trajes, 5 calças, 6 capacetes e 8 mochilas coloridos. */
+/** Itens básicos gratuitos (paleta do Avatar Studio): 8 trajes (branco + acento), 5 calças, 6 capacetes e 8 mochilas. */
+const _ST = [["Azul", "#2f6fe4"], ["Laranja", "#f07818"], ["Verde", "#58b431"], ["Roxo", "#8e44ad"], ["Branco", "#dfe6ee"], ["Vermelho", "#d63031"], ["Amarelo", "#f2b705"], ["Ciano", "#17a2b8"]];
 const BASE_FREE = [].concat(
-  ["blue", "orange", "green", "purple", "white", "red", "yellow", "teal"].map((k, i) => ({ id: "s" + (11 + i), l: "s", n: "Traje de equipe " + _C[k][0].toLowerCase(), c: 0, col: "#eef0f4", ac: k == "white" ? "#8b9bb4" : _C[k][1] })),
-  ["white", "orange", "green", "purple", "blue"].map((k, i) => ({ id: "p" + (10 + i), l: "p", n: "Calça com joelheiras " + _C[k][0].toLowerCase(), c: 0, col: "#e8eaf0", ac: k == "white" ? "#8b9bb4" : _C[k][1] })),
-  ["blue", "orange", "purple", "green", "red", "yellow"].map((k, i) => ({ id: "h" + (10 + i), l: "h", n: "Capacete " + _C[k][0].toLowerCase(), c: 0, col: _C[k][1] })),
-  ["blue", "orange", "green", "purple", "gray", "red", "yellow", "teal"].map((k, i) => ({ id: "b" + (10 + i), l: "b", n: "Mochila " + _C[k][0].toLowerCase(), c: 0, col: _C[k][1] })));
+  _ST.map(([n, c], i) => ({ id: "s" + (11 + i), l: "s", n: "Traje de equipe " + n.toLowerCase(), c: 0, col: "#eef1f6", ac: c })),
+  [["Branca", "#e8ecf2"], ["Laranja", "#f07818"], ["Verde", "#58b431"], ["Roxa", "#8e44ad"], ["Azul", "#2f6fe4"]].map(([n, c], i) => ({ id: "p" + (10 + i), l: "p", n: "Calça " + n.toLowerCase(), c: 0, col: c })),
+  [["Azul", "#2f6fe4"], ["Laranja", "#f07818"], ["Roxo", "#8e44ad"], ["Verde", "#58b431"], ["Vermelho", "#d63031"], ["Amarelo", "#f2b705"]].map(([n, c], i) => ({ id: "h" + (10 + i), l: "h", n: "Capacete " + n.toLowerCase(), c: 0, col: c })),
+  [["Azul", "#2f6fe4"], ["Laranja", "#f07818"], ["Verde", "#58b431"], ["Roxa", "#8e44ad"], ["Cinza", "#9aa3ad"], ["Vermelha", "#d63031"], ["Amarela", "#f2b705"], ["Ciano", "#17a2b8"]].map(([n, c], i) => ({ id: "b" + (10 + i), l: "b", n: "Mochila " + n.toLowerCase(), c: 0, col: c })));
 const CX = [
   { id: "s0", l: "s", n: "Traje ARES branco", c: 0, col: "#e8e8ee" }, { id: "s1", l: "s", n: "Traje laranja de resgate", c: 150, col: "#ff8a1f" }, { id: "s2", l: "s", n: "Traje azul orbital", c: 200, col: "#3d7bff" },
   { id: "s3", l: "s", n: "Traje preto furtivo", c: 250, col: "#2b2b33" }, { id: "s4", l: "s", n: "Traje dourado de comandante", c: 500, col: "#e8b923", glow: "#ffcf3d" },
