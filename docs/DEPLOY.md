@@ -21,7 +21,8 @@ Sem um cofre persistente, contas e progresso só existem enquanto algum navegado
 (função da Vercel) que guarda o **mural global** (contas, progresso, eventos, itens do Estúdio, avisos) num Redis REST.
 O chat, os amigos online e as partidas continuam 100% WebRTC; a nuvem é só o "cofre".
 
-1. No projeto da Vercel: **Storage → Create → Upstash for Redis** (plano grátis) e conecte ao projeto. Ele cria as variáveis
+0. **Mais simples:** Storage → Create → **Blob** (da própria Vercel, sem contas extras) e conecte ao projeto: cria `BLOB_READ_WRITE_TOKEN`. A API usa Blob automaticamente se não houver Redis.
+1. Alternativa: no projeto da Vercel: **Storage → Create → Upstash for Redis** (plano grátis) e conecte ao projeto. Ele cria as variáveis
    `KV_REST_API_URL` e `KV_REST_API_TOKEN` (ou `UPSTASH_REDIS_REST_URL/TOKEN`).
 2. Faça um novo deploy (Redeploy). Pronto: `GET /api/bul` passa a responder `{"cloud":true}` e a tela de login mostra
    "☁ Online: contas e progresso na nuvem".
