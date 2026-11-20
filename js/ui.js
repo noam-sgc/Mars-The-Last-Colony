@@ -180,12 +180,12 @@ function ward() {
     const act = document.createElement("button"); act.style.fontSize = "12px";
     const claimable = !o && (x.ev || String(x.id).startsWith("ev_")) && EV.active.some((e) => e.suit.id == x.id);
     if (!usable) { act.textContent = "Restrito"; act.disabled = true; }
-    else if (o) { act.textContent = equipped ? "Equipado" : "Equipar"; act.disabled = equipped; act.onclick = (ev) => { ev.stopPropagation(); P.eq[x.l] = x.id; WTRY = null; saveP(); ward(); }; }
-    else if (claimable) { act.textContent = "Resgatar grátis"; act.onclick = (ev) => { ev.stopPropagation(); const e = EV.active.find((q) => q.suit.id == x.id); EV.claim(e); P.eq[x.l] = x.id; saveP(); ward(); }; }
+    else if (o) { act.textContent = equipped ? "Equipado" : "Equipar"; act.disabled = equipped; act.onclick = (ev) => { ev.stopPropagation(); P.eq[x.l] = x.id; P.chr = ""; WTRY = null; saveP(); ward(); }; }
+    else if (claimable) { act.textContent = "Resgatar grátis"; act.onclick = (ev) => { ev.stopPropagation(); const e = EV.active.find((q) => q.suit.id == x.id); EV.claim(e); P.eq[x.l] = x.id; P.chr = ""; saveP(); ward(); }; }
     else if (String(x.id).startsWith("ev_")) { act.textContent = "Evento encerrado"; act.disabled = true; }
-    else { act.textContent = x.c + " créditos"; act.disabled = P.cr < x.c; act.onclick = (ev) => { ev.stopPropagation(); P.cr -= x.c; P.own.push(x.id); P.eq[x.l] = x.id; WTRY = null; saveP(); ward(); }; }
+    else { act.textContent = x.c + " créditos"; act.disabled = P.cr < x.c; act.onclick = (ev) => { ev.stopPropagation(); P.cr -= x.c; P.own.push(x.id); P.eq[x.l] = x.id; P.chr = ""; WTRY = null; saveP(); ward(); }; }
     d.appendChild(act);
-    if (!o && usable && !claimable && x.c > 0) { const r = Math.min(P.pp, x.c), b2 = document.createElement("button"); b2.style.fontSize = "11px"; b2.textContent = r ? (r >= x.c ? "100% com PP" : x.c - r + " cr + " + r + " PP") : "Sem PP"; b2.disabled = !r || P.cr < x.c - r; b2.onclick = (ev) => { ev.stopPropagation(); P.cr -= x.c - r; P.pp -= r; P.own.push(x.id); P.eq[x.l] = x.id; saveP(); ward(); }; d.appendChild(b2); }
+    if (!o && usable && !claimable && x.c > 0) { const r = Math.min(P.pp, x.c), b2 = document.createElement("button"); b2.style.fontSize = "11px"; b2.textContent = r ? (r >= x.c ? "100% com PP" : x.c - r + " cr + " + r + " PP") : "Sem PP"; b2.disabled = !r || P.cr < x.c - r; b2.onclick = (ev) => { ev.stopPropagation(); P.cr -= x.c - r; P.pp -= r; P.own.push(x.id); P.eq[x.l] = x.id; P.chr = ""; saveP(); ward(); }; d.appendChild(b2); }
     wi.appendChild(d);
   });
 }

@@ -123,7 +123,7 @@ function walkAnim(g, t, speed) { const u = g.userData; if (!u.legs) return; cons
 
 const SKINS = { verde: { c: "#8affd8", g: "#22cc99", n: "Verde-lunar" }, violeta: { c: "#c9a4ff", g: "#8a55ff", n: "Violeta" }, azul: { c: "#8ec9ff", g: "#3a8dff", n: "Azul-gelo" }, laranja: { c: "#ffc08a", g: "#ff8a2a", n: "Âmbar" }, cinza: { c: "#cfd8dc", g: "#8aa0a8", n: "Cinza-prata" } };
 /** Aparência do jogador local (cosméticos + espécie). */
-const myEq = () => Object.assign({}, P.eq, { sp: P.sp === "alien" ? "alien" : "human", sk: P.skin || "verde", lk: lookNorm(P.look) });
+const myEq = () => Object.assign({}, P.eq, { sp: P.sp === "alien" ? "alien" : "human", sk: P.skin || "verde", lk: lookNorm(P.look), chr: P.chr || "" });
 /** Achado colecionável: coin (bolsa de moedas), tank (cilindro com a cor do tanque) ou phase (estrela dourada do bônus da fase). tall = com coluna de luz (visível de longe). */
 function mkLoot(kind, k, tall) {
   const g = new THREE.Group(), glowM = (c, i) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: i == null ? .9 : i, roughness: .35, metalness: .4 });
