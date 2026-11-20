@@ -44,7 +44,7 @@ function copyText(t, label) {
   try { navigator.clipboard.writeText(t).then(ok, () => fb()); } catch (e) { fb(); }
   function fb() { const i = document.createElement("input"); i.value = t; document.body.appendChild(i); i.select(); try { document.execCommand("copy"); ok(); } catch (e) { toast("Selecione e copie: " + esc(t)); } i.remove(); }
 }
-function syncLine() { return CLOUD.on ? "☁ Online: contas e progresso na nuvem, acessíveis de qualquer aparelho." : BUL.synced ? "🌐 Contas, eventos e avisos sincronizados com o mural global." : "⏳ Conectando ao mural global (contas de outros aparelhos)…"; }
+function syncLine() { return CLOUD.on ? CLOUD.explain() : CLOUD.why != "wait" ? CLOUD.explain() + " Enquanto isso, só aparecem contas de quem estiver online junto com você. " : BUL.synced ? "🌐 Contas, eventos e avisos sincronizados com o mural global." : "⏳ Conectando ao mural global (contas de outros aparelhos)…"; }
 setInterval(() => { const e = document.getElementById("async"); if (e) e.textContent = syncLine(); }, 800);
 function worldLine() {
   if (NET.mode == "p2p") return `🌐 Conectado ao mundo <b>${esc(NET.world)}</b> (WebRTC). Sua conta fica neste mundo.`;
@@ -229,7 +229,7 @@ function renderSocial() {
   const row = (u, btns) => `<div class="pl"><span class="nm"><i class="on-dot ${u.on ? "on" : ""}"></i>${userHTML(u)}</span><span class="row">${btns}</span></div>`;
   const rel = (u) => { const x = SOC.users.find((y) => y.u == u.u); return x ? x.fr : SOC.friends.some((f) => f.u == u.u) ? 2 : 0; };
   let body = "";
-  const addBox = `<div class="row" style="margin:6px 0"><input id="fnm" maxlength="16" placeholder="Adicionar pelo nome de usuário (mesmo offline)" style="flex:1;min-width:0"><button id="fadd" class="pri">＋ Pedir amizade</button></div><small class="mu">A outra pessoa não precisa estar online: o pedido fica guardado e ela responde quando ligar o jogo.</small>`;
+  const addBox = `${CLOUD.on ? "" : `<div class="pill w" style="border-color:var(--bad);margin:6px 0"><small>${esc(CLOUD.explain())} Sem a nuvem, amigos offline só aparecem se alguém que os conhece estiver online.</small></div>`}<div class="row" style="margin:6px 0"><input id="fnm" maxlength="16" placeholder="Adicionar pelo nome de usuário (mesmo offline)" style="flex:1;min-width:0"><button id="fadd" class="pri">＋ Pedir amizade</button></div><small class="mu">A outra pessoa não precisa estar online: o pedido fica guardado e ela responde quando ligar o jogo.</small>`;
   const sbox = addBox + `<input id="sq" placeholder="🔎 Filtrar por nome ou país…" value="${esc(el.dataset.q || "")}" style="width:100%;margin-bottom:6px">`;
   if (socTab == "friends") body = sbox + SOC.friends.filter(hit).map((u) => row(Object.assign({}, u, (SOC.users.find((x) => x.u == u.u) || {})), `${acts(u)}<button class="gh" data-rm="${esc(u.u)}">✕</button>`)).join("") || `<p class="mu">${q ? "Nenhum amigo encontrado." : "Você ainda não tem amigos. Abra “Todos os usuários” para adicionar. ✔ Amigos de administradores ganham o selo de verificado."}</p>`;
   if (socTab == "friends" && SOC.reqOut.length) body += `<div class="tag" style="margin:10px 0 2px">⏳ Aguardando resposta (${SOC.reqOut.length})</div>` + SOC.reqOut.map((x) => row(x, `<small class="mu">entregue quando ficar online</small><button class="gh" data-can="${esc(x.u)}">Cancelar</button>`)).join("");
