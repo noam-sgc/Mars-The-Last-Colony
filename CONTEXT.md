@@ -138,3 +138,8 @@ Veja `docs/DEPLOY.md` (site estático na Vercel; sem servidor de jogo).
 - **Cosméticos com layout** (Estúdio): camadas novas `r` (cabelo) e `a` (acessório); campos `sh` (forma), `pt` (padrão), `c2` (cor 2), `sz` (tamanho) além de cor/brilho. Validação em `Hub.publish`.
 - **Nuvem** (`api/bul.js` + `js/cloud.js`): cofre persistente do mural (novo tipo `sav` = progresso da conta). Requer Upstash Redis na Vercel (docs/DEPLOY.md); sem ele, volta ao gossip. WebRTC segue para comunicação em tempo real.
 - **Ultra Learn Voyage jogável** (`js/ulvgame.js`): cada capítulo é uma fase da colônia com ☢ radiação, 🔧 peças, 🔬 dados, falhas, tempestades solares/poeira, terminais de conhecimento (E) e emergência de missão. O quiz solto continua na aba principal; o modo estudo (painéis) permanece.
+
+## Atualização: fichas de equipe e seções do Guarda-roupa
+- Guarda-roupa em seções com miniaturas 3D (como a ficha de referência): **Equipe** (8 personagens prontos + os publicados no Estúdio), **Aparência** (Tipos de cabelo ×13, Tons de pele, Nacionalidades com bandeira no braço, rosto/corpo, capacete na mão/cabeça/sem), Trajes, Calças, Capacetes, Mochilas, **Acessórios** (óculos de proteção, headset…), **Equipamentos** (dispositivo de pulso, tablet, garrafa, cinto, kit médico, chave inglesa, lanterna), Cabelos, Relógios, Eventos.
+- Itens básicos grátis: 8 trajes, 5 calças, 6 capacetes e 8 mochilas coloridos (`BASE_FREE` em `js/data.js`).
+- Estúdio: nova camada Equipamento (`t`) e novo tipo de publicação **chr** (Personagens/Equipe: aparência + itens). Mural/Hub/API aceitam `chr`.

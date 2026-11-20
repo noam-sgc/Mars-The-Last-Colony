@@ -6,8 +6,8 @@
   else root.MarsBul = factory(root.MarsRules);
 })(typeof self !== "undefined" ? self : this, function (R) {
   "use strict";
-  const KINDS = ["acct", "ev", "cos", "part", "up", "msg", "sav"], MAXD = 6000, MAXSAV = 24000;
-  const newStore = () => ({ acct: {}, ev: {}, cos: {}, part: {}, up: {}, msg: {}, sav: {} });
+  const KINDS = ["acct", "ev", "cos", "part", "up", "chr", "msg", "sav"], MAXD = 6000, MAXSAV = 24000;
+  const newStore = () => ({ acct: {}, ev: {}, cos: {}, part: {}, up: {}, chr: {}, msg: {}, sav: {} });
   const str = (v, n) => typeof v === "string" && v.length <= n;
   /** O item é aceitável? (formato + permissões declaradas: admin para ev/msg, desenhista para cos/part/up) */
   function valid(it) {

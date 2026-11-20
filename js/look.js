@@ -2,17 +2,18 @@
    (formas, padrões, tamanho, cor secundária) usadas pelo guarda-roupa e pelo Estúdio. */
 const LOOK = {
   TONES: ["#ffdcc0", "#f3c9a4", "#e0a878", "#c68642", "#a86a3c", "#8a5530", "#6b3f24", "#4a2a18"],
-  HAIRS: ["Careca", "Curto", "Crespo", "Cacheado volumoso", "Longo liso", "Coque", "Rabo de cavalo", "Tranças", "Moicano", "Dreads"],
+  HAIRS: ["Careca", "Curto", "Crespo", "Cacheado volumoso", "Longo liso", "Coque", "Rabo de cavalo", "Tranças", "Moicano", "Dreads", "Hijab", "Chanel", "Topete"],
+  NATS: ["BR", "US", "JP", "FR", "DE", "IN", "CN", "ZA", "GB", "CA"], HOLD: ["Capacete na mão", "Capacete na cabeça (vidro)", "Sem capacete"],
   HCOLS: ["#1a1210", "#3b2a20", "#6a4630", "#a8742f", "#d9a441", "#e8d8a0", "#b3402a", "#6b5cff", "#2fd4c0", "#e84fa8"],
   FACES: ["Sorriso", "Neutro", "Sorrisão", "Surpreso"], GLASS: ["Sem óculos", "Redondos", "Quadrados", "Escuros"], BEARDS: ["Sem barba", "Bigode", "Barba", "Cavanhaque"], BUILDS: ["Esguio", "Médio", "Forte"], HEIGHTS: ["Baixo", "Médio", "Alto"],
   EYES: ["Redondos", "Amendoados", "Grandes"],
-  DEF: { t: 3, hr: 3, hc: "#1a1210", ey: 0, fc: 0, gl: 1, br: 0, bd: 1, ht: 1, hg: 0 },
+  DEF: { t: 3, hr: 3, hc: "#1a1210", ey: 0, fc: 0, gl: 1, br: 0, bd: 1, ht: 1, hg: 0, nc: "BR" },
 };
 const _in = (v, a, b, d) => (Number.isInteger(v) && v >= a && v <= b ? v : d);
 /** Valida/normaliza um objeto de aparência (vindo da rede ou do disco). */
 function lookNorm(l) {
   l = l && typeof l === "object" ? l : {}; const D = LOOK.DEF;
-  return { t: _in(l.t, 0, 7, D.t), hr: _in(l.hr, 0, 9, D.hr), hc: /^#[0-9a-fA-F]{6}$/.test(l.hc) ? l.hc : D.hc, ey: _in(l.ey, 0, 2, D.ey), fc: _in(l.fc, 0, 3, D.fc), gl: _in(l.gl, 0, 3, D.gl), br: _in(l.br, 0, 3, D.br), bd: _in(l.bd, 0, 2, D.bd), ht: _in(l.ht, 0, 2, D.ht), hg: l.hg ? 1 : 0 };
+  return { t: _in(l.t, 0, 7, D.t), hr: _in(l.hr, 0, 12, D.hr), hc: /^#[0-9a-fA-F]{6}$/.test(l.hc) ? l.hc : D.hc, ey: _in(l.ey, 0, 2, D.ey), fc: _in(l.fc, 0, 3, D.fc), gl: _in(l.gl, 0, 3, D.gl), br: _in(l.br, 0, 3, D.br), bd: _in(l.bd, 0, 2, D.bd), ht: _in(l.ht, 0, 2, D.ht), hg: _in(l.hg, 0, 2, 0), nc: /^[A-Z]{2}$/.test(l.nc) ? l.nc : "" };
 }
 /** Aparência aleatória determinística (colonos e bots variados). */
 function lookRandom(seed) {
@@ -21,7 +22,7 @@ function lookRandom(seed) {
 }
 const _ft = (v, a, b, d) => (Number.isFinite(+v) ? Math.min(b, Math.max(a, +v)) : d);
 /** Parâmetros de layout de um cosmético (forma, padrão, cor secundária, tamanho). */
-const cxp = (it) => ({ sh: _in(it && it.sh, 0, 9, 0), pt: _in(it && it.pt, 0, 9, 0), c2: it && /^#[0-9a-fA-F]{6}$/.test(it.c2) ? it.c2 : "#ffffff", sz: _ft(it && it.sz, .7, 1.5, 1) });
+const cxp = (it) => ({ sh: _in(it && it.sh, 0, 12, 0), pt: _in(it && it.pt, 0, 9, 0), c2: it && /^#[0-9a-fA-F]{6}$/.test(it.c2) ? it.c2 : "#ffffff", sz: _ft(it && it.sz, .7, 1.5, 1) });
 
 /** Cabeça humana: pele, rosto, cabelo, óculos, barba e acessório. Origem no centro da cabeça. */
 function humanHead(lk, hairIt, accIt, helIt, M) {
@@ -63,6 +64,9 @@ function humanHead(lk, hairIt, accIt, helIt, M) {
     case 7: cap(.48, .55); for (let i = 0; i < 8; i++) { const a = -2.6 + i * .75, x = Math.sin(a) * .45, z = Math.cos(a) * .4 - .1; if (z > .2) continue; const b = add(new THREE.CylinderGeometry(.045, .03, .9, 6), HM(), x, -.4, z); b.rotation.z = Math.sin(a) * .08; add(new THREE.SphereGeometry(.06, 6, 5), HM(hp.c2), x * 1.02, -.86, z); } break;
     case 8: cap(.45, .5); { const m = add(new THREE.BoxGeometry(.13, .38, .95), HM(), 0, .45, -.05); } break;
     case 9: cap(.48, .55); for (let i = 0; i < 16; i++) { const a = -2.7 + i * .35, x = Math.sin(a) * .47, z = Math.cos(a) * .42 - .08; if (z > .22) continue; const b = add(new THREE.CylinderGeometry(.05, .035, .8 + (i % 3) * .2, 5), HM(), x, -.4, z); b.rotation.z = Math.sin(a) * .1; } break;
+    case 10: { const w = add(new THREE.SphereGeometry(.54, 18, 14, 0, 6.283, 0, Math.PI * .78), HM(), 0, -.02, -.04); w.scale.set(1, 1.02, 1.02); const dr = add(new THREE.CylinderGeometry(.5, .6, .55, 16, 1, true), HM(), 0, -.42, -.06); dr.scale.z = .9; add(new THREE.TorusGeometry(.36, .04, 6, 20), HM(hp.c2), 0, .22, .3).rotation.x = .2; hairR = .58; break; }
+    case 11: cap(.49, .6); add(new THREE.CylinderGeometry(.52, .5, .6, 18, 1, true), HM(), 0, -.12, -.06).scale.z = .95; [-1, 1].forEach((s) => add(new THREE.BoxGeometry(.1, .5, .2), HM(), s * .46, -.18, .1)); hairR = .55; break;
+    case 12: cap(.48, .58); { const q = add(new THREE.SphereGeometry(.3, 12, 10), HM(), 0, .42, .18); q.scale.set(1.4, .8, 1); add(new THREE.SphereGeometry(.2, 10, 8), HM(hp.c2), .18, .4, .3); } break;
     default: break;
   }
   // acessório
@@ -76,6 +80,8 @@ function humanHead(lk, hairIt, accIt, helIt, M) {
       case 4: [-1, 1].forEach((s) => { const e = add(new THREE.ConeGeometry(.14, .3, 4), AM(), s * .28, hairR > .6 ? .72 : .5, 0); e.rotation.z = -s * .35; }); break;
       case 5: [-1, 1].forEach((s) => { const a = add(new THREE.CylinderGeometry(.015, .015, .6, 5), AM(), s * .22, hairR > .6 ? .85 : .7, 0); a.rotation.z = -s * .3; add(new THREE.SphereGeometry(.05, 8, 6), AM("#ffffff"), s * .3, hairR > .6 ? 1.15 : 1, 0); }); break;
       case 6: add(new THREE.SphereGeometry(.4, 12, 8, 0, 6.283, Math.PI * .58, Math.PI * .3), AM(), 0, -.05, .06).scale.set(1.02, 1, 1.05); break;
+      case 8: { const s0 = add(new THREE.BoxGeometry(.95, .22, .1), AM("#222833"), 0, .05, .4); [-1, 1].forEach((s) => add(new THREE.BoxGeometry(.3, .18, .06), M(ac, { transparent: true, opacity: .55, emissive: ag || ac, emissiveIntensity: .5 }), s * .17, .05, .46)); break; }
+      case 9: { const b = add(new THREE.TorusGeometry(.47, .03, 6, 22, Math.PI), AM(), 0, .08, 0); [-1, 1].forEach((s) => add(new THREE.CylinderGeometry(.12, .12, .1, 12), AM(), s * .47, -.02, 0).rotation.z = Math.PI / 2); const mc = add(new THREE.CylinderGeometry(.012, .012, .35, 5), AM(), .4, -.16, .2); mc.rotation.set(.8, 0, .6); add(new THREE.SphereGeometry(.04, 6, 5), AM("#ff5a5a"), .3, -.3, .35); break; }
       case 7: add(new THREE.CircleGeometry(.1, 12), AM("#111118"), -.16, .05, .44); { const s = add(new THREE.BoxGeometry(.9, .015, .02), AM("#111118"), 0, .15, .3); s.rotation.z = .35; } break;
       default: break;
     }
@@ -94,7 +100,7 @@ function humanHead(lk, hairIt, accIt, helIt, M) {
       case 6: add(new THREE.SphereGeometry(hairR + .03, 16, 10, 0, 6.283, 0, Math.PI * .5), HLM(), 0, .1, -.02); [-1, 1].forEach((s) => { const e = add(new THREE.ConeGeometry(.12, .3, 4), HLM(), s * .3, top + .12, 0); e.rotation.z = -s * .3; }); break;
     }
   }
-  if (lk.hg || (has && hp2.sh == 0)) { const r = Math.max(.62, hairR + .1); const g = add(new THREE.SphereGeometry(r, 20, 14), M(has ? hc : "#aee4ff", { transparent: true, opacity: has ? .28 : .16, roughness: .05, metalness: .3, depthWrite: false, emissive: hglow || "#000", emissiveIntensity: hglow ? .4 : 0 }), 0, .04, 0); g.castShadow = false; add(new THREE.TorusGeometry(r * .78, .06, 8, 22), HLM(), 0, -.5, 0).rotation.x = Math.PI / 2; }
+  if (lk.hg == 1) { const r = Math.max(.62, hairR + .1); const g = add(new THREE.SphereGeometry(r, 20, 14), M(has ? hc : "#aee4ff", { transparent: true, opacity: has ? .28 : .16, roughness: .05, metalness: .3, depthWrite: false, emissive: hglow || "#000", emissiveIntensity: hglow ? .4 : 0 }), 0, .04, 0); g.castShadow = false; add(new THREE.TorusGeometry(r * .78, .06, 8, 22), HLM(), 0, -.5, 0).rotation.x = Math.PI / 2; }
   return H;
 }
 
@@ -129,23 +135,119 @@ function decoPack(g, pack, item, M, col, glow) {
 }
 function decoWatch(k, item) { const p = cxp(item); if (p.sh == 1) { k.geometry = new THREE.CylinderGeometry(.16, .16, .1, 14); k.rotation.z = Math.PI / 2; } else if (p.sh == 2) k.scale.set(1.2, .7, 1.25); k.scale.multiplyScalar(p.sz); }
 
-/** Painel "Aparência" do guarda-roupa: tipo de pessoa, cabelo, rosto, corpo. Atualiza o boneco na hora. */
+// ---------- equipe pré-montada (fichas de personagens) ----------
+const TEAM = [
+  { id: "tm1", n: "Mei Tanaka", d: "Engenheira de energia", look: { t: 1, hr: 11, hc: "#1a1210", fc: 0, gl: 0, nc: "JP" }, eq: { s: "s11", p: "p14", h: "h10", b: "b10" } },
+  { id: "tm2", n: "Kofi Mensah", d: "Geólogo", look: { t: 7, hr: 2, hc: "#1a1210", fc: 2, gl: 0, nc: "ZA" }, eq: { s: "s12", p: "p11", h: "h11", b: "b11" } },
+  { id: "tm3", n: "Finn Murray", d: "Agricultor", look: { t: 0, hr: 3, hc: "#c8461e", fc: 2, gl: 0, nc: "GB" }, eq: { s: "s13", p: "p12", h: "h13", b: "b12" } },
+  { id: "tm4", n: "Amira Nasser", d: "Médica", look: { t: 3, hr: 10, hc: "#8a6ad6", fc: 0, gl: 0, nc: "IN" }, eq: { s: "s14", p: "p13", h: "h12", b: "b13" } },
+  { id: "tm5", n: "Haru Wei", d: "Piloto de rover", look: { t: 1, hr: 1, hc: "#1a1210", fc: 0, gl: 0, nc: "CN" }, eq: { s: "s17", p: "p10", h: "h15", b: "b16" } },
+  { id: "tm6", n: "Zuri Okoye", d: "Comunicações", look: { t: 6, hr: 3, hc: "#1a1210", fc: 0, gl: 0, nc: "BR" }, eq: { s: "s16", p: "p11", h: "h14", b: "b15" } },
+  { id: "tm7", n: "Marco Reyes", d: "Comandante", look: { t: 2, hr: 1, hc: "#6a4630", br: 2, fc: 1, gl: 0, bd: 2, nc: "DE" }, eq: { s: "s15", p: "p12", h: "h13", b: "b14" } },
+  { id: "tm8", n: "Ingrid Berg", d: "Cientista", look: { t: 0, hr: 5, hc: "#e8d8a0", fc: 0, gl: 0, nc: "CA" }, eq: { s: "s18", p: "p14", h: "h10", b: "b17" } },
+];
+const teamAll = () => TEAM.concat((typeof CAT !== "undefined" && CAT.chr) || []);
+const teamEq = (pr, withLook) => Object.assign({}, DEF_EQ, pr.eq || {}, { sp: pr.sp || "human", sk: "verde", lk: lookNorm(pr.look) });
+/** Veste o personagem pré-montado: aparência completa + itens que você já tem (os demais ficam no padrão). */
+function applyPreset(pr) {
+  P.look = lookNorm(Object.assign({}, pr.look, { hg: 0 })); P.sp = pr.sp === "alien" ? "alien" : "human"; let miss = 0;
+  Object.keys(pr.eq || {}).forEach((l) => { const id = pr.eq[l], it = cxById(id); if (P.own.includes(id) && canUseItem(it)) P.eq[l] = id; else if (id) miss++; });
+  saveP(); toast(`🧑‍🚀 ${esc(pr.n)} vestido!${miss ? " (" + miss + " item(ns) que você ainda não tem ficaram no padrão)" : ""}`);
+}
+/** Aba "Equipe": fichas de personagens prontos (base + publicados pelos desenhistas). */
+function teamPanel(pv, redraw) {
+  const wi = $("#wi"); wi.innerHTML = `<div class="sec" style="grid-column:1/-1"><h4>MONTE SUA EQUIPE PARA A MISSÃO</h4><small class="mu">Escolha um personagem pronto e depois ajuste cada detalhe em Aparência, Trajes, Capacetes, Mochilas… Diversidade fortalece a missão.</small></div>`;
+  teamAll().forEach((pr) => { const d = document.createElement("div"); d.className = "it"; d.innerHTML = `<span class="tg">${pr.by ? "✨ " + esc(pr.by) : "Equipe"}</span><img class="th" alt="${esc(pr.n)}"><b style="font-size:12px">${esc(pr.n)}</b><small>${esc(pr.d || "")} ${pr.look && pr.look.nc ? "· " + pr.look.nc : ""}</small>`;
+    lazyThumb(d.querySelector("img"), () => thumbAv(teamEq(pr), "full")); d.onclick = () => { pv.setObj(av(teamEq(pr)), 0); };
+    const b = document.createElement("button"); b.textContent = "Usar este personagem"; b.style.fontSize = "12px"; b.onclick = (e) => { e.stopPropagation(); applyPreset(pr); redraw(); }; d.appendChild(b); wi.appendChild(d); });
+}
+const _q = []; let _qt = 0;
+/** Preenche miniaturas aos poucos (uma por quadro) para não travar a tela. */
+function lazyThumb(img, fn) { _q.push([img, fn]); if (!_qt) _qt = requestAnimationFrame(function run() { const j = _q.shift(); if (j) { try { j[0].src = j[1](); } catch (e) { /* ignore */ } } _qt = _q.length ? requestAnimationFrame(run) : 0; }); }
+
+/** Painel "Aparência": Tipos de cabelo, Tons de pele, Nacionalidades, rosto, corpo e capacete. Atualiza o boneco na hora. */
 function lookPanel(pv) {
   const wi = $("#wi"), L = () => P.look || (P.look = lookNorm());
-  const set = (o) => { Object.assign(L(), o); P.look = lookNorm(P.look); saveP(); pv.setObj(av(Object.assign({}, myEq(), WTRY || {})), 0); draw(); };
+  const prev = () => pv.setObj(av(Object.assign({}, myEq(), WTRY || {})), 0);
+  const set = (o) => { Object.assign(L(), o); P.look = lookNorm(P.look); saveP(); prev(); draw(); };
   const opts = (key, names) => `<div class="row" style="flex-wrap:wrap">${names.map((n, i) => `<button class="${L()[key] == i ? "sel" : ""}" data-k="${key}" data-v="${i}">${n}</button>`).join("")}</div>`;
   const draw = () => {
-    const l = L();
-    wi.innerHTML = `<div style="grid-column:1/-1">${P.sp == "alien" ? `<p class="mu">👽 Aparência humana só vale para a espécie humana (alienígenas escolhem a cor da pele ao lado).</p>` : ""}
-    <b>Tom de pele</b><div class="row" style="flex-wrap:wrap;margin:6px 0">${LOOK.TONES.map((c, i) => `<button data-k="t" data-v="${i}" class="${l.t == i ? "sel" : ""}" style="width:38px;height:38px;padding:0;border-radius:50%;background:${c}"></button>`).join("")}</div>
-    <b>Cabelo</b>${opts("hr", LOOK.HAIRS)}<b style="display:block;margin-top:8px">Cor do cabelo</b><div class="row" style="flex-wrap:wrap;margin:6px 0">${LOOK.HCOLS.map((c) => `<button data-k="hc" data-s="${c}" class="${l.hc == c ? "sel" : ""}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${c}"></button>`).join("")}<input type="color" id="lkc" value="${l.hc}" title="Cor personalizada" style="width:44px;height:34px"></div>
-    <b>Rosto</b>${opts("fc", LOOK.FACES)}<b style="display:block;margin-top:8px">Olhos</b>${opts("ey", LOOK.EYES)}<b style="display:block;margin-top:8px">Óculos</b>${opts("gl", LOOK.GLASS)}<b style="display:block;margin-top:8px">Barba</b>${opts("br", LOOK.BEARDS)}
-    <b style="display:block;margin-top:8px">Corpo</b>${opts("bd", LOOK.BUILDS)}<b style="display:block;margin-top:8px">Altura</b>${opts("ht", LOOK.HEIGHTS)}
-    <b style="display:block;margin-top:8px">Capacete de vidro</b>${opts("hg", ["Sem (rosto livre)", "Com bolha de vidro"])}
-    <div class="row" style="margin-top:12px"><button id="lkr">🎲 Aleatório</button><button id="lkd">Padrão</button></div><small class="mu">Grátis e pode mudar a qualquer momento. Cabelos e acessórios especiais ficam nas outras abas.</small></div>`;
-    wi.querySelectorAll("[data-k]").forEach((b) => (b.onclick = () => set({ [b.dataset.k]: b.dataset.s ? b.dataset.s : +b.dataset.v })));
-    $("#lkc").oninput = (e) => { Object.assign(L(), { hc: e.target.value }); P.look = lookNorm(P.look); saveP(); pv.setObj(av(Object.assign({}, myEq(), WTRY || {})), 0); };
-    $("#lkr").onclick = () => set(lookRandom(Math.floor(Math.random() * 1e6))); $("#lkd").onclick = () => set(LOOK.DEF);
+    const l = L(), allC = MarsRules.COUNTRIES;
+    wi.innerHTML = `<div style="grid-column:1/-1;display:grid;gap:10px">${P.sp == "alien" ? `<p class="mu">👽 Aparência humana só vale para a espécie humana (alienígenas escolhem a cor da pele ao lado).</p>` : ""}
+    <div class="sec"><h4>TIPOS DE CABELO</h4><div class="thg">${LOOK.HAIRS.map((n, i) => `<button class="thb ${l.hr == i ? "sel" : ""}" data-k="hr" data-v="${i}" title="${n}"><img class="th2" alt="${n}"><small>${n}</small></button>`).join("")}</div>
+      <b style="display:block;margin-top:8px">Cor do cabelo</b><div class="row" style="flex-wrap:wrap;margin:6px 0">${LOOK.HCOLS.map((c) => `<button data-k="hc" data-s="${c}" class="${l.hc == c ? "sel" : ""}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${c}"></button>`).join("")}<input type="color" id="lkc" value="${l.hc}" title="Cor personalizada" style="width:44px;height:34px"></div></div>
+    <div class="sec"><h4>TONS DE PELE</h4><div class="row" style="flex-wrap:wrap">${LOOK.TONES.map((c, i) => `<button data-k="t" data-v="${i}" class="${l.t == i ? "sel" : ""}" style="width:42px;height:42px;padding:0;border-radius:50%;background:${c}"></button>`).join("")}</div></div>
+    <div class="sec"><h4>NACIONALIDADES</h4><div class="thg">${LOOK.NATS.map((c) => `<button class="thb ${l.nc == c ? "sel" : ""}" data-k="nc" data-s="${c}"><img src="${flagURL(c)}" alt="${c}" style="width:56px;height:38px;border-radius:4px"></button>`).join("")}</div>
+      <div class="row" style="margin-top:6px"><select id="lkn"><option value="">Mais países…</option><option value="-">Sem bandeira</option>${allC.map((c) => `<option value="${c.c}" ${l.nc == c.c ? "selected" : ""}>${c.n}</option>`).join("")}</select></div></div>
+    <div class="sec"><h4>ROSTO E CORPO</h4><b>Rosto</b>${opts("fc", LOOK.FACES)}<b style="display:block;margin-top:8px">Olhos</b>${opts("ey", LOOK.EYES)}<b style="display:block;margin-top:8px">Óculos</b>${opts("gl", LOOK.GLASS)}<b style="display:block;margin-top:8px">Barba</b>${opts("br", LOOK.BEARDS)}
+      <b style="display:block;margin-top:8px">Corpo</b>${opts("bd", LOOK.BUILDS)}<b style="display:block;margin-top:8px">Altura</b>${opts("ht", LOOK.HEIGHTS)}<b style="display:block;margin-top:8px">Capacete</b>${opts("hg", LOOK.HOLD)}</div>
+    <div class="row"><button id="lkr">🎲 Aleatório</button><button id="lkd">Padrão</button></div><small class="mu">Grátis e pode mudar a qualquer momento. Cabelos, acessórios e equipamentos especiais ficam nas outras abas.</small></div>`;
+    wi.querySelectorAll("[data-k]").forEach((b) => (b.onclick = () => set({ [b.dataset.k]: b.dataset.s != null && b.dataset.s !== "" ? b.dataset.s : +b.dataset.v })));
+    wi.querySelectorAll("img.th2").forEach((im, i) => lazyThumb(im, () => thumbHair(i, L())));
+    $("#lkn").onchange = (e) => set({ nc: e.target.value == "-" ? "" : e.target.value });
+    $("#lkc").oninput = (e) => { Object.assign(L(), { hc: e.target.value }); P.look = lookNorm(P.look); saveP(); prev(); };
+    $("#lkr").onclick = () => set(Object.assign(lookRandom(Math.floor(Math.random() * 1e6)), { nc: LOOK.NATS[Math.floor(Math.random() * 10)] })); $("#lkd").onclick = () => set(LOOK.DEF);
   };
   draw();
 }
+
+// ---------- nacionalidade: bandeira desenhada em canvas (emoji de bandeira não aparece no Windows) ----------
+const _fc = {};
+function flagCanvas(cc) {
+  if (_fc[cc]) return _fc[cc]; const c = document.createElement("canvas"); c.width = 90; c.height = 60; const x = c.getContext("2d"), W = 90, H = 60, R = (col, a, b, w, h) => { x.fillStyle = col; x.fillRect(a, b, w, h); };
+  const poly = (col, pts) => { x.fillStyle = col; x.beginPath(); pts.forEach(([a, b], i) => (i ? x.lineTo(a, b) : x.moveTo(a, b))); x.fill(); }, circ = (col, a, b, r) => { x.fillStyle = col; x.beginPath(); x.arc(a, b, r, 0, 6.283); x.fill(); };
+  switch (cc) {
+    case "BR": R("#1f9e48", 0, 0, W, H); poly("#ffd400", [[45, 6], [84, 30], [45, 54], [6, 30]]); circ("#1b3f94", 45, 30, 14); break;
+    case "US": for (let i = 0; i < 7; i++) R(i % 2 ? "#ffffff" : "#c8283c", 0, i * H / 7, W, H / 7 + 1); R("#2a3a7c", 0, 0, 40, 32); for (let i = 0; i < 12; i++) R("#fff", 5 + (i % 4) * 9, 5 + Math.floor(i / 4) * 9, 3, 3); break;
+    case "JP": R("#ffffff", 0, 0, W, H); circ("#c8102e", 45, 30, 17); break;
+    case "FR": R("#2a3f94", 0, 0, 30, H); R("#fff", 30, 0, 30, H); R("#d6283a", 60, 0, 30, H); break;
+    case "DE": R("#111", 0, 0, W, 20); R("#d00", 0, 20, W, 20); R("#ffcc00", 0, 40, W, 20); break;
+    case "IN": R("#ff9933", 0, 0, W, 20); R("#fff", 0, 20, W, 20); R("#138808", 0, 40, W, 20); circ("#1a3a9a", 45, 30, 7); break;
+    case "CN": R("#d62828", 0, 0, W, H); poly("#ffde00", [[16, 8], [20, 18], [31, 18], [22, 25], [26, 35], [16, 29], [6, 35], [10, 25], [1, 18], [12, 18]]); break;
+    case "ZA": R("#d62828", 0, 0, W, 30); R("#1f3f9e", 0, 30, W, 30); poly("#fff", [[0, 0], [30, 30], [0, 60], [0, 50], [20, 30], [0, 10]]); poly("#0a8a3c", [[0, 6], [40, 30], [0, 54], [0, 46], [26, 30], [0, 14]]); R("#0a8a3c", 40, 24, 50, 12); poly("#111", [[0, 12], [20, 30], [0, 48]]); poly("#ffb81c", [[0, 12], [20, 30], [0, 48], [0, 44], [14, 30], [0, 16]]); break;
+    case "GB": R("#1f2f7a", 0, 0, W, H); x.strokeStyle = "#fff"; x.lineWidth = 12; x.beginPath(); x.moveTo(0, 0); x.lineTo(W, H); x.moveTo(W, 0); x.lineTo(0, H); x.stroke(); x.strokeStyle = "#c8102e"; x.lineWidth = 5; x.stroke(); R("#fff", 36, 0, 18, H); R("#fff", 0, 21, W, 18); R("#c8102e", 40, 0, 10, H); R("#c8102e", 0, 25, W, 10); break;
+    case "CA": R("#d62828", 0, 0, 22, H); R("#fff", 22, 0, 46, H); R("#d62828", 68, 0, 22, H); poly("#d62828", [[45, 12], [51, 26], [60, 24], [54, 36], [58, 40], [45, 38], [32, 40], [36, 36], [30, 24], [39, 26]]); break;
+    default: { let h = 7; for (const ch of cc) h = h * 31 + ch.charCodeAt(0); const cols = ["#d62828", "#1f5fbf", "#f2c200", "#1f9e48", "#ffffff", "#111111", "#ff8a1f"]; R(cols[h % 7], 0, 0, W, 20); R(cols[(h >> 3) % 7], 0, 20, W, 20); R(cols[(h >> 5) % 7], 0, 40, W, 20); }
+  }
+  x.strokeStyle = "#0006"; x.lineWidth = 2; x.strokeRect(0, 0, W, H); return (_fc[cc] = c);
+}
+const flagURL = (cc) => flagCanvas(cc).toDataURL(); const _ft2 = {};
+const flagTex = (cc) => _ft2[cc] || (_ft2[cc] = new THREE.CanvasTexture(flagCanvas(cc)));
+
+// ---------- equipamentos (camada t): dispositivo de pulso, tablet, garrafa, cinto, kit médico, chave inglesa, lanterna ----------
+function decoTool(g, arms, item, M) {
+  if (!item || !item.id || item.id === "t0") return; const p = cxp(item), col = item.col || "#888", gl = item.glow, MM = (c, o) => M(c || col, Object.assign({ metalness: .4, roughness: .45, emissive: gl || "#000", emissiveIntensity: gl ? .6 : 0 }, o || {}));
+  const on = (parent, geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; };
+  const hand = arms[1], wr = arms[0]; let o;
+  switch (p.sh) {
+    case 1: on(wr, new THREE.BoxGeometry(.3, .26, .34), MM(), 0, -.62, 0); on(wr, new THREE.BoxGeometry(.22, .04, .24), M("#66e0ff", { emissive: "#44ddff", emissiveIntensity: 1 }), 0, -.49, 0); break;
+    case 2: o = on(hand, new THREE.BoxGeometry(.5, .06, .7), MM(), .12, -.98, .4); on(o, new THREE.BoxGeometry(.42, .02, .6), M("#8ae6ff", { emissive: gl || "#44ccff", emissiveIntensity: .9 }), 0, .04, 0); o.rotation.x = -.5; break;
+    case 3: on(g, new THREE.CylinderGeometry(.11, .11, .5, 10), MM(), -.62, 1.1, .05); on(g, new THREE.CylinderGeometry(.06, .08, .1, 8), M("#333"), -.62, 1.4, .05); break;
+    case 4: { const t = on(g, new THREE.TorusGeometry(.55, .08, 6, 22), MM(), 0, 1.25, 0); t.rotation.x = Math.PI / 2; [-.4, .4].forEach((a) => on(g, new THREE.BoxGeometry(.16, .22, .12), MM("#c9ced8"), a, 1.12, .5)); break; }
+    case 5: { const b = on(g, new THREE.BoxGeometry(.4, .3, .22), MM(), .6, 1.15, .12); on(b, new THREE.BoxGeometry(.2, .07, .02), M(p.c2), 0, 0, .12); on(b, new THREE.BoxGeometry(.07, .2, .02), M(p.c2), 0, 0, .12); break; }
+    case 6: o = on(hand, new THREE.CylinderGeometry(.04, .04, .8, 6), MM(), .05, -1.2, .35); on(o, new THREE.TorusGeometry(.12, .05, 6, 10, 4.7), MM(), 0, .45, 0); o.rotation.x = -.6; break;
+    case 7: o = on(hand, new THREE.CylinderGeometry(.08, .1, .5, 10), MM(), .05, -1.05, .35); on(o, new THREE.ConeGeometry(.2, .5, 12, 1, true), M(gl || "#fff2a8", { transparent: true, opacity: .45, emissive: gl || "#fff2a8", emissiveIntensity: 1, side: THREE.DoubleSide, depthWrite: false }), 0, .5, 0).rotation.x = Math.PI; o.rotation.x = -1.2; break;
+    default: break;
+  }
+}
+/** Capacete carregado na mão (como na ficha de equipe). */
+function holdHelmet(arm, item, M) {
+  const col = item && item.col ? item.col : "#f0f0f0", g = new THREE.Group(), s = new THREE.Mesh(new THREE.SphereGeometry(.36, 14, 10), M(col, { metalness: .4, roughness: .35, emissive: item && item.glow || "#000", emissiveIntensity: item && item.glow ? .5 : 0 })); g.add(s);
+  const v = new THREE.Mesh(new THREE.SphereGeometry(.3, 12, 8, -1, 2, .5, 1.4), M("#10182a", { metalness: .9, roughness: .1 })); v.position.z = .08; g.add(v); g.position.set(-.05, -.95, .38); arm.add(g);
+}
+/** Faixa com a bandeira da nacionalidade no braço do traje. */
+function flagPatch(arm, cc) {
+  if (!cc) return; const m = new THREE.Mesh(new THREE.PlaneGeometry(.3, .2), new THREE.MeshBasicMaterial({ map: flagTex(cc) })); m.position.set(.18, -.3, 0); m.rotation.y = Math.PI / 2; arm.add(m);
+}
+
+// ---------- miniaturas 3D (render único reutilizado, cache por chave) ----------
+const THUMB = (() => {
+  let r = null, sc, cam, cache = {}, ok = true;
+  function init() { if (r || !ok) return; try { r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setSize(96, 120); sc = new THREE.Scene(); sc.add(new THREE.HemisphereLight(0xfff0e0, 0x402010, 1)); const d = new THREE.DirectionalLight(0xffffff, 1.1); d.position.set(3, 6, 6); sc.add(d); cam = new THREE.PerspectiveCamera(35, 96 / 120, .1, 60); } catch (e) { ok = false; } }
+  /** Renderiza um objeto 3D; modo "head" mostra só a cabeça/busto, "full" o corpo. */
+  function shot(obj, mode) { init(); if (!r) return ""; sc.add(obj); const full = mode === "full"; cam.position.set(0, full ? 2.0 : 3.0, full ? 8.3 : 3.6); cam.lookAt(0, full ? 1.85 : 2.95, 0); obj.rotation.y = full ? .35 : .25; r.render(sc, cam); const u = r.domElement.toDataURL("image/png"); sc.remove(obj); return u; }
+  return { shot, get: (key, fn) => cache[key] || (cache[key] = fn()), reset: () => { cache = {}; } };
+})();
+/** Miniatura do avatar com `eq` (corpo inteiro ou cabeça). */
+const thumbAv = (eq, mode) => THUMB.get("a|" + mode + "|" + JSON.stringify(eq) + "|" + allCX().length, () => THUMB.shot(av(eq), mode));
+const thumbHair = (hr, lk) => THUMB.get("h|" + hr + "|" + lk.t + "|" + lk.hc, () => { const o = new THREE.Group(), h = humanHead(Object.assign({}, lk, { hr, gl: 0, hg: 2 }), null, null, null, (c, op) => new THREE.MeshStandardMaterial(Object.assign({ color: c || "#888", roughness: .6 }, op || {}))); h.position.y = 2.95; o.add(h); return THUMB.shot(o, "head"); });

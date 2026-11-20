@@ -11,3 +11,7 @@ test("API /api/bul (memória): salva e devolve itens válidos, ignora inválidos
   const ok = await call("POST", { items: [{ k: "sav", id: "zed", by: "Zed", ts: 5, d: { p: {}, s: {} } }, { k: "acct", id: "x", ts: 1, d: {} }] });
   assert.equal(ok.saved, 1); const g = await call("GET"); assert.ok(g.items.some((i) => i.id === "zed")); assert.ok(!g.items.some((i) => i.k === "acct"));
 });
+test("chr: personagem publicado por desenhista vale no mural; de outra pessoa não", () => {
+  const Bul2 = require("../shared/bulletin.js"), it = (by) => ({ k: "chr", id: "u_h_1", by, ts: 1, d: { id: "u_h_1", n: "Capitã", look: { hr: 10 }, eq: { s: "s14" } } });
+  assert.ok(Bul2.valid(it("ADMLefaar"))); assert.ok(!Bul2.valid(it("Alice")));
+});

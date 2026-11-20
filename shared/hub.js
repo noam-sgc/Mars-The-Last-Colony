@@ -8,6 +8,9 @@
   "use strict";
   const rnd = (n) => Array.from({ length: n }, () => "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]).join("");
   const clean = (s, n) => String(s == null ? "" : s).replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, n);
+  const ri = (v, a, b, d) => (Number.isInteger(v) && v >= a && v <= b ? v : d);
+  /** Normaliza a aparência (tom de pele, cabelo, rosto, corpo, nacionalidade). */
+  const cleanLook = (lo) => { lo = lo && typeof lo === "object" ? lo : {}; return { t: ri(lo.t, 0, 7, 3), hr: ri(lo.hr, 0, 12, 3), hc: /^#[0-9a-fA-F]{6}$/.test(lo.hc) ? lo.hc : "#1a1210", ey: ri(lo.ey, 0, 2, 0), fc: ri(lo.fc, 0, 3, 0), gl: ri(lo.gl, 0, 3, 1), br: ri(lo.br, 0, 3, 0), bd: ri(lo.bd, 0, 2, 1), ht: ri(lo.ht, 0, 2, 1), hg: ri(lo.hg, 0, 2, 0), nc: /^[A-Z]{2}$/.test(lo.nc) ? lo.nc : "" }; };
   const num = (v, a, b, d) => { v = +v; return Number.isFinite(v) ? Math.max(a, Math.min(b, v)) : d; };
   const color = (c, d) => (/^#[0-9a-f]{6}$/i.test(c) ? c : d);
 
@@ -17,7 +20,7 @@
       this.o = opts;
       const s = (this.store = opts.store || {});
       s.users = s.users || {}; s.sessions = s.sessions || {}; s.events = s.events || [];
-      s.catalog = s.catalog || { cos: [], part: [], up: [] }; s.lb = s.lb || {}; s.global = s.global || [];
+      s.catalog = s.catalog || { cos: [], part: [], up: [], chr: [] }; s.catalog.chr = s.catalog.chr || []; s.lb = s.lb || {}; s.global = s.global || [];
       this.conns = new Map(); this.rooms = new Map(); this.parties = new Map(); this.lastChat = new Map();
       this.now = opts.now || (() => Date.now());
     }
@@ -35,7 +38,7 @@
         const i = s.events.findIndex((e) => e.id === it.id);
         if (it.del) { if (i >= 0) { s.events.splice(i, 1); ch = true; } } else { const e = Object.assign({ id: it.id, by: it.by }, it.d); if (i < 0) { s.events.push(e); ch = true; } else if (JSON.stringify(s.events[i]) !== JSON.stringify(e)) { s.events[i] = e; ch = true; } }
         if (ch) { s.events = s.events.slice(-60); this.bcast({ t: "events", events: s.events }); }
-      } else if (it.k === "cos" || it.k === "part" || it.k === "up") {
+      } else if (it.k === "cos" || it.k === "part" || it.k === "up" || it.k === "chr") {
         const l = s.catalog[it.k], i = l.findIndex((x) => x.id === it.id);
         if (it.del) { if (i >= 0) { l.splice(i, 1); ch = true; } } else if (i < 0) { l.push(it.d); if (l.length > 150) l.shift(); ch = true; } else if (JSON.stringify(l[i]) !== JSON.stringify(it.d)) { l[i] = it.d; ch = true; }
         if (ch) this.bcast({ t: "cat", catalog: s.catalog });
@@ -192,9 +195,9 @@
       const all = [].concat(R.ADMIN_COSMETICS, this.store.catalog.cos);
       const allowed = (id) => { const it = all.find((x) => x.id === id); return !it || R.canUse(it, role); };
       const own = (Array.isArray(p.own) ? p.own : []).filter((x) => typeof x === "string" && x.length < 40 && allowed(x)).slice(0, 300);
-      const eq = {}; ["s", "p", "w", "h", "b", "r", "a"].forEach((l) => { const id = p.eq && p.eq[l]; eq[l] = typeof id === "string" && allowed(id) && own.includes(id) ? id : l + "0"; });
+      const eq = {}; ["s", "p", "w", "h", "b", "r", "a", "t"].forEach((l) => { const id = p.eq && p.eq[l]; eq[l] = typeof id === "string" && allowed(id) && own.includes(id) ? id : l + "0"; });
       const nm = (a) => (Array.isArray(a) ? a.filter((x) => R.validName(x)).slice(0, 300) : []), fr0 = p.fr || {}, frs = { f: nm(fr0.f), in: nm(fr0.in), out: nm(fr0.out) };
-      const lo = p.look && typeof p.look === "object" ? p.look : {}, ri = (v, a, b, d) => (Number.isInteger(v) && v >= a && v <= b ? v : d), look = { t: ri(lo.t, 0, 7, 3), hr: ri(lo.hr, 0, 9, 3), hc: /^#[0-9a-fA-F]{6}$/.test(lo.hc) ? lo.hc : "#1a1210", ey: ri(lo.ey, 0, 2, 0), fc: ri(lo.fc, 0, 3, 0), gl: ri(lo.gl, 0, 3, 1), br: ri(lo.br, 0, 3, 0), bd: ri(lo.bd, 0, 2, 1), ht: ri(lo.ht, 0, 2, 1), hg: lo.hg ? 1 : 0 };
+      const look = cleanLook(p.look);
       const sp = p.sp === "alien" ? "alien" : "human", skin = ["verde", "violeta", "azul", "laranja", "cinza"].includes(p.skin) ? p.skin : "verde", spChosen = !!p.spChosen;
       const u0 = p.ulv || {}, ulv = { best: (Array.isArray(u0.best) ? u0.best : []).slice(0, 10).map((x) => (Number.isFinite(x) ? Math.max(0, Math.min(100, Math.round(x))) : null)), finished: num(u0.finished, 0, 1e4, 0), rank: clean(u0.rank, 30) };
       const facts = (Array.isArray(p.facts) ? p.facts : []).filter((x) => Number.isInteger(x) && x >= 0 && x < 500).slice(0, 500), q0 = p.quiz || {}, quiz = { ok: (Array.isArray(q0.ok) ? q0.ok : []).filter((x) => Number.isInteger(x) && x >= 0 && x < 500).slice(0, 500), day: clean(q0.day, 10) };
@@ -328,14 +331,17 @@
       const kind = m.kind, it = m.item || {}, name = clean(it.n, 40); if (!name) return no("Dê um nome");
       let out;
       if (kind === "cos") {
-        const layer = ["s", "p", "w", "h", "b", "r", "a"].includes(it.l) ? it.l : "s";   // traje, calça, relógio, capacete, mochila, cabelo, acessório
-        out = { id: "u_c_" + rnd(6), l: layer, n: name, c: num(it.c, 0, 5000, 100), col: color(it.col, "#ff6a2b"), glow: it.glow ? color(it.glow, "#ffffff") : "", adm: ["admin", "artist"].includes(it.adm) ? it.adm : "", sh: num(it.sh, 0, 9, 0), pt: num(it.pt, 0, 9, 0), c2: color(it.c2, "#ffffff"), sz: num(it.sz, .7, 1.5, 1), by: me.name };
+        const layer = ["s", "p", "w", "h", "b", "r", "a", "t"].includes(it.l) ? it.l : "s";   // traje, calça, relógio, capacete, mochila, cabelo, acessório
+        out = { id: "u_c_" + rnd(6), l: layer, n: name, c: num(it.c, 0, 5000, 100), col: color(it.col, "#ff6a2b"), glow: it.glow ? color(it.glow, "#ffffff") : "", adm: ["admin", "artist"].includes(it.adm) ? it.adm : "", sh: num(it.sh, 0, 12, 0), pt: num(it.pt, 0, 9, 0), c2: color(it.c2, "#ffffff"), sz: num(it.sz, .7, 1.5, 1), by: me.name };
       } else if (kind === "part") {
         out = { id: "u_p_" + rnd(6), n: name, c: num(it.c, 5, 500, 50), k: ["eff", "water", "food", "oxy", "fuel", "morale"].includes(it.k) ? it.k : "eff", p: num(it.p, 0.2, 3, 1),
           shape: ["box", "cyl", "dome", "tower", "ring"].includes(it.shape) ? it.shape : "box", col: color(it.col, "#9aa7b8"), glow: color(it.glow, "#44ffcc"), h: num(it.h, 1, 8, 3), w: num(it.w, 1, 6, 3), by: me.name };
       } else if (kind === "up") {
         const pm = {}, cr = {}; ["eff", "water", "food", "oxy", "fuel", "morale"].forEach((k) => { if (it.pm && it.pm[k]) pm[k] = num(it.pm[k], 0, 1, 0); if (it.cr && it.cr[k]) cr[k] = num(it.cr[k], 0, 0.8, 0); });
         out = { id: "u_u_" + rnd(6), k: it.k === "Software" ? "Software" : "Hardware", n: name, d: clean(it.d, 90) || "Upgrade da comunidade", c: num(it.c, 50, 5000, 300), pm, cr, time: num(it.time, 0, 120, 0), rw: num(it.rw, 0, 0.5, 0), by: me.name };
+      } else if (kind === "chr") {
+        const eq = {}; ["s", "p", "w", "h", "b", "r", "a", "t"].forEach((l) => { const id = it.eq && it.eq[l]; if (typeof id === "string" && id.length < 40 && /^[\w-]+$/.test(id)) eq[l] = id; });
+        out = { id: "u_h_" + rnd(6), n: name, look: cleanLook(it.look), eq, sp: it.sp === "alien" ? "alien" : "human", d: clean(it.d, 90), by: me.name };
       } else return no("Tipo inválido");
       const l = this.store.catalog[kind]; l.push(out); if (l.length > 150) l.shift();
       this.save(); this.bcast({ t: "cat", catalog: this.store.catalog }); this.emitG({ k: kind, id: out.id, by: me.name, ts: this.now(), d: out }); c_ok(ok, out);

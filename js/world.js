@@ -138,7 +138,9 @@ function av(e) {
     helmet.visible = false; visor.visible = false; neck.material = M(LOOK.TONES[lk.t], { roughness: .7, metalness: 0 });
     const hh = humanHead(lk, cxById(e.r), cxById(e.a), cxById(e.h), M); hh.position.y = 2.95; g.add(hh); g.userData.head = hh;
     const bk = [.88, 1, 1.15][lk.bd]; torso.scale.x *= bk; torso.scale.z *= bk; arms.forEach((a) => { a.position.x *= bk; });
+    const hi = cxById(e.h); if (lk.hg === 0 && !(hi.sh > 0 && hi.sh <= 6)) holdHelmet(arms[0], hi.id ? hi : { col: "#f0f0f0" }, M); flagPatch(arms[1], lk.nc);
   }
+  decoTool(g, arms, cxById(e.t), M);
   decoSuit(g, torso, arms, suit, M); decoPants(legs, cxById(e.p), M);
   if (e.sp === "alien") {   // espécie alienígena: cabeça oval, olhos grandes e antenas; trajes e acessórios continuam valendo
     const sk = SKINS[e.sk] || SKINS.verde, SM = (o) => M(sk.c, Object.assign({ emissive: sk.g, emissiveIntensity: .35, roughness: .5 }, o || {}));
