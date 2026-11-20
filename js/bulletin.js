@@ -9,11 +9,11 @@ const BUL = (() => {
   const hubItem = (it) => (it.del ? { k: it.k, id: it.id, by: it.by, ts: it.ts, del: true } : { k: it.k, id: it.id, by: it.by, ts: it.ts, d: it.d });
   /** Aplica itens ao Hub local e ao estado do jogo. */
   function apply(items) {
-    let ev = false, cat = false;
+    let ev = false, cat = false; items = items.slice().sort((a, b) => MarsBul.KINDS.indexOf(a.k) - MarsBul.KINDS.indexOf(b.k));
     items.forEach((it) => {
       if (it.k === "msg") { if (!it.del && !seen.has(it.id) && Date.now() - it.ts < 864e5) { seen.add(it.id); if (it.by !== ACC.user && typeof showGmsg === "function") showGmsg({ from: it.by, text: it.d.text }); } return; }
       try { LocalHub.hub.ingest(hubItem(it)); } catch (e) { /* ignore */ }
-      if (it.k === "ev") ev = true; else if (it.k !== "acct") cat = true;
+      if (it.k === "ev") ev = true; else if (it.k !== "acct" && it.k !== "sav") cat = true;
     });
     if (ev && typeof EV !== "undefined") { EV.glob = MarsBul.live(store, "ev").map((x) => Object.assign({ id: x.id, by: x.by }, x.d)); EV.refresh(); if (typeof menu === "function" && $("#menu") && $("#menu").classList.contains("on")) menu(); }
     if (cat && typeof refreshCatalog === "function") refreshCatalog();
@@ -26,7 +26,7 @@ const BUL = (() => {
     snapshot: () => MarsBul.all(store),
     hasAcct: (name) => !!store.acct[MarsRules.key(name)],
     /** Novo item criado aqui (conta, evento, publicação, aviso): guarda, aplica e espalha. */
-    add(it) { if (!MarsBul.merge(store, it)) return false; apply([store[it.k][it.id]]); if (typeof GS !== "undefined") GS.pushBul([store[it.k][it.id]]); return true; },
+    add(it) { if (!MarsBul.merge(store, it)) return false; apply([store[it.k][it.id]]); if (typeof GS !== "undefined") GS.pushBul([store[it.k][it.id]]); if (typeof CLOUD !== "undefined") CLOUD.push([store[it.k][it.id]]); return true; },
     /** Itens vindos da rede: devolve os que realmente mudaram (para o registro repassar). */
     receive(items) { const ch = []; (items || []).forEach((it) => { if (MarsBul.merge(store, it)) ch.push(store[it.k][it.id]); }); if (ch.length) apply(ch); return ch; },
     applyAll() { apply(MarsBul.all(store)); },

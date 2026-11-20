@@ -120,19 +120,26 @@ function mk(t, col) {
 // ---------- astronauta ----------
 function av(e) {
   e = e || {}; const g = new THREE.Group(), M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c || "#888", roughness: .6, metalness: .15 }, o || {}));
-  const suit = cxById(e.s || "s0"), suitC = suit.col || "#e8e8ee", pantC = cc(e.p) || "#808690", helC = cc(e.h) || "#f0f0f0", bagC = cc(e.b) || "#b9bcc4", watch = cxById(e.w);
+  const lk = lookNorm(e.lk), suit = cxById(e.s || "s0"), suitC = suit.col || "#e8e8ee", pantC = cc(e.p) || "#808690", helC = cc(e.h) || "#f0f0f0", bagC = cc(e.b) || "#b9bcc4", watch = cxById(e.w);
   const part = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
   const legs = [-.28, .28].map((x) => { const l = new THREE.Group(); l.position.set(x, 1.05, 0); const m = new THREE.Mesh(new THREE.CylinderGeometry(.23, .2, 1, 8), M(pantC)); m.position.y = -.5; m.castShadow = true; l.add(m);
     const b = new THREE.Mesh(new THREE.BoxGeometry(.42, .22, .6), M("#3a3d46")); b.position.set(0, -1, .08); l.add(b); g.add(l); return l; });
   const torso = part(new THREE.CylinderGeometry(.55, .5, 1.25, 12), M(suitC, suit.glow ? { emissive: suit.glow, emissiveIntensity: .25 } : {}), 0, 1.75, 0);
   part(new THREE.BoxGeometry(.7, .5, .12), M("#2d3340", { emissive: "#44ddff", emissiveIntensity: .25 }), 0, 1.85, .52);
   const pack = part(new THREE.BoxGeometry(.8, 1, .45), M(bagC), 0, 1.8, -.62); if (cxById(e.b).glow) part(new THREE.SphereGeometry(.14, 8, 6), M("#fff", { emissive: cxById(e.b).glow, emissiveIntensity: 1.2 }), 0, 1.3, -.9);
+  decoPack(g, pack, cxById(e.b), M, bagC, cxById(e.b).glow);
   const hands = [], arms = [-.72, .72].map((x) => { const a = new THREE.Group(); a.position.set(x, 2.2, 0); const m = new THREE.Mesh(new THREE.CylinderGeometry(.17, .15, 1, 8), M(suitC)); m.position.y = -.45; m.castShadow = true; a.add(m);
     const h = new THREE.Mesh(new THREE.SphereGeometry(.17, 8, 6), M("#3a3d46")); h.position.y = -1; a.add(h); hands.push(h); g.add(a); return a; });
-  if (watch && watch.col) { const k = new THREE.Mesh(new THREE.BoxGeometry(.24, .16, .24), M(watch.col, { emissive: watch.glow || watch.col, emissiveIntensity: watch.glow ? .9 : .15, metalness: .8 })); k.position.set(0, -.78, 0); arms[1].add(k); }
+  if (watch && watch.col) { const k0 = 1; const k = new THREE.Mesh(new THREE.BoxGeometry(.24, .16, .24), M(watch.col, { emissive: watch.glow || watch.col, emissiveIntensity: watch.glow ? .9 : .15, metalness: .8 })); k.position.set(0, -.78, 0); arms[1].add(k); decoWatch(k, watch); }
   const neck = part(new THREE.CylinderGeometry(.33, .4, .18, 10), M("#9aa0aa"), 0, 2.45, 0);
   const helmet = part(new THREE.SphereGeometry(.5, 16, 12), M(helC, { metalness: .4, roughness: .35 }), 0, 2.95, 0);
   const visor = part(new THREE.SphereGeometry(.36, 14, 10), M("#1a2a44", { metalness: .95, roughness: .08, emissive: "#0a1830", emissiveIntensity: .5 }), 0, 2.97, .22); visor.scale.set(1, .85, .8);
+  if (e.sp !== "alien") {   // humano: rosto, cabelo e corpo personalizáveis (aparência 3D), capacete vira bolha/boné
+    helmet.visible = false; visor.visible = false; neck.material = M(LOOK.TONES[lk.t], { roughness: .7, metalness: 0 });
+    const hh = humanHead(lk, cxById(e.r), cxById(e.a), cxById(e.h), M); hh.position.y = 2.95; g.add(hh); g.userData.head = hh;
+    const bk = [.88, 1, 1.15][lk.bd]; torso.scale.x *= bk; torso.scale.z *= bk; arms.forEach((a) => { a.position.x *= bk; });
+  }
+  decoSuit(g, torso, arms, suit, M); decoPants(legs, cxById(e.p), M);
   if (e.sp === "alien") {   // espécie alienígena: cabeça oval, olhos grandes e antenas; trajes e acessórios continuam valendo
     const sk = SKINS[e.sk] || SKINS.verde, SM = (o) => M(sk.c, Object.assign({ emissive: sk.g, emissiveIntensity: .35, roughness: .5 }, o || {}));
     neck.material = SM(); hands.forEach((h) => (h.material = SM())); legs.forEach((l) => (l.children[1].material = SM()));
@@ -143,13 +150,13 @@ function av(e) {
     if (e.h && e.h !== "h0") { helmet.material = M(helC, { transparent: true, opacity: .28, roughness: .1, metalness: .3, depthWrite: false }); helmet.scale.set(1.15, 1.4, 1.1); helmet.position.y = 3.05; } else helmet.visible = false;
   }
   if (suit.glow) { const ring = new THREE.Mesh(new THREE.TorusGeometry(.95, .035, 6, 28), new THREE.MeshBasicMaterial({ color: suit.glow, transparent: true, opacity: .6 })); ring.rotation.x = Math.PI / 2; ring.position.y = .06; g.add(ring); g.userData.ring = ring; }
-  g.scale.setScalar(1.15); g.userData.legs = legs; g.userData.arms = arms; return g;
+  g.scale.setScalar(1.15 * (e.sp === "alien" ? 1 : [.93, 1, 1.07][lk.ht])); g.userData.legs = legs; g.userData.arms = arms; return g;
 }
 function walkAnim(g, t, speed) { const u = g.userData; if (!u.legs) return; const s = Math.sin(t * 9) * Math.min(1, speed) * .7; u.legs[0].rotation.x = s; u.legs[1].rotation.x = -s; if (u.arms[0]) { u.arms[0].rotation.x = -s * .8; u.arms[1].rotation.x = s * .8; } if (u.ring) u.ring.rotation.z = t; }
 
 const SKINS = { verde: { c: "#8affd8", g: "#22cc99", n: "Verde-lunar" }, violeta: { c: "#c9a4ff", g: "#8a55ff", n: "Violeta" }, azul: { c: "#8ec9ff", g: "#3a8dff", n: "Azul-gelo" }, laranja: { c: "#ffc08a", g: "#ff8a2a", n: "Âmbar" }, cinza: { c: "#cfd8dc", g: "#8aa0a8", n: "Cinza-prata" } };
 /** Aparência do jogador local (cosméticos + espécie). */
-const myEq = () => Object.assign({}, P.eq, { sp: P.sp === "alien" ? "alien" : "human", sk: P.skin || "verde" });
+const myEq = () => Object.assign({}, P.eq, { sp: P.sp === "alien" ? "alien" : "human", sk: P.skin || "verde", lk: lookNorm(P.look) });
 /** Achado colecionável: coin (bolsa de moedas), tank (cilindro com a cor do tanque) ou phase (estrela dourada do bônus da fase). tall = com coluna de luz (visível de longe). */
 function mkLoot(kind, k, tall) {
   const g = new THREE.Group(), glowM = (c, i) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: i == null ? .9 : i, roughness: .35, metalness: .4 });
@@ -173,7 +180,7 @@ function mkColonist(seed, alien) {
   const t = new THREE.Mesh(alien ? new THREE.SphereGeometry(.5, 10, 8) : new THREE.CylinderGeometry(.4, .38, 1, 8), M(body, alien ? { emissive: "#1ad8a0", emissiveIntensity: .35 } : {})); t.position.y = 1.4; if (alien) t.scale.y = 1.3; t.castShadow = true; g.add(t);
   const hd = new THREE.Mesh(new THREE.SphereGeometry(alien ? .5 : .36, 12, 10), M(alien ? "#8affd8" : "#f2c9a4", alien ? { emissive: "#22cc99", emissiveIntensity: .4 } : {})); hd.position.y = alien ? 2.35 : 2.15; if (alien) hd.scale.set(1, 1.15, .95); hd.castShadow = true; g.add(hd);
   if (alien) { [-.2, .2].forEach((x) => { const e = new THREE.Mesh(new THREE.SphereGeometry(.17, 8, 6), new THREE.MeshBasicMaterial({ color: "#10162a" })); e.position.set(x, 2.4, .38); e.scale.set(1, 1.4, .5); g.add(e); const a = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .55, 5), M("#8affd8")); a.position.set(x * 1.4, 2.95, 0); a.rotation.z = -x * 2; g.add(a); const b = new THREE.Mesh(new THREE.SphereGeometry(.08, 6, 5), new THREE.MeshBasicMaterial({ color: "#ffffff" })); b.position.set(x * 2, 3.2, 0); g.add(b); }); }
-  else { const h = new THREE.Mesh(new THREE.SphereGeometry(.4, 10, 8, 0, 6.283, 0, 1.2), M(cols[Math.floor(r(cols.length))])); h.position.y = 2.2; g.add(h); }
+  else { hd.visible = false; const hh = humanHead(lookRandom(seed + 13), null, null, null, M); hh.position.y = 2.2; hh.scale.setScalar(.85); g.add(hh); }
   g.userData.legs = legs; g.userData.arms = []; g.scale.setScalar(1.15);
   g.userData.info = alien ? { name: ["Zyl", "Orx", "Quel", "Nemi", "Tavo", "Ilu"][Math.floor(r(6))] + "-" + (10 + Math.floor(r(80))), job: "emissário alienígena", alien: true } : { name: CNAMES[Math.floor(r(CNAMES.length))], job: CJOBS[Math.floor(r(CJOBS.length))], alien: false };
   return g;

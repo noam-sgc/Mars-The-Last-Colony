@@ -157,12 +157,17 @@ const CX = [
   { id: "h0", l: "h", n: "Capacete branco", c: 0, col: "#f0f0f0" }, { id: "h1", l: "h", n: "Capacete grafite", c: 120, col: "#555a66" }, { id: "h2", l: "h", n: "Capacete laranja", c: 160, col: "#ff9a3c" }, { id: "h3", l: "h", n: "Capacete cromado", c: 300, col: "#c8d6e8", glow: "#9ec9ff" },
   { id: "s7", l: "s", n: "Traje Pioneiro de Marte", c: 180, col: "#c9a66b", sp: "human" }, { id: "h5", l: "h", n: "Capacete Explorador", c: 150, col: "#d9c27a", sp: "human" },
   { id: "s8", l: "s", n: "Manto Estelar", c: 220, col: "#6a4cff", glow: "#a58bff", sp: "alien" }, { id: "h6", l: "h", n: "Bolha Cósmica", c: 200, col: "#7fe8ff", glow: "#7fe8ff", sp: "alien" },
+  { id: "r0", l: "r", n: "Cabelo do perfil", c: 0, col: "" }, { id: "r1", l: "r", n: "Cacheado azul-neon", c: 140, col: "#4a7bff", sh: 3, pt: 1, c2: "#9ad0ff" }, { id: "r2", l: "r", n: "Tranças douradas", c: 160, col: "#d9a441", sh: 7, c2: "#fff0b0" }, { id: "r3", l: "r", n: "Moicano magenta", c: 120, col: "#e84fa8", sh: 8 }, { id: "r4", l: "r", n: "Dreads de fogo", c: 180, col: "#c8461e", sh: 9 }, { id: "r5", l: "r", n: "Coque prateado", c: 100, col: "#cfd3dc", sh: 5 },
+  { id: "a0", l: "a", n: "Sem acessório", c: 0, col: "" }, { id: "a1", l: "a", n: "Óculos redondos dourados", c: 70, col: "#d8b04a", sh: 1 }, { id: "a2", l: "a", n: "Óculos quadrados grafite", c: 70, col: "#3a3d46", sh: 2 }, { id: "a3", l: "a", n: "Viseira neon", c: 150, col: "#22e6ff", glow: "#22e6ff", sh: 3 }, { id: "a4", l: "a", n: "Orelhas de gato", c: 110, col: "#ffb3d9", sh: 4 }, { id: "a5", l: "a", n: "Antenas de comunicação", c: 130, col: "#9aa7b8", glow: "#ff5a5a", sh: 5 },
+  { id: "h7", l: "h", n: "Boné de campo", c: 90, col: "#2f6bd6", sh: 1 }, { id: "h8", l: "h", n: "Coroa de cristal", c: 260, col: "#e8c8ff", glow: "#c070ff", sh: 3 }, { id: "h9", l: "h", n: "Fones de comunicação", c: 110, col: "#44485a", glow: "#33ddff", sh: 5 },
+  { id: "s9", l: "s", n: "Traje colete tático", c: 210, col: "#4c5a3a", sh: 3, pt: 3, c2: "#c9a66b" }, { id: "s10", l: "s", n: "Traje ombreiras de comandante", c: 280, col: "#2d4f9c", pt: 2, c2: "#e8b923" }, { id: "p3", l: "p", n: "Calça boca de sino", c: 90, col: "#6a4cff", sh: 1, pt: 1, c2: "#ffffff" }, { id: "p4", l: "p", n: "Bermuda de explorador", c: 90, col: "#7a6a4f", sh: 3, c2: "#e8e8ee" },
+  { id: "b3", l: "b", n: "Tanques gêmeos", c: 140, col: "#cfd3dc", sh: 2 }, { id: "b4", l: "b", n: "Asas de energia", c: 300, col: "#6a4cff", glow: "#7fe8ff", sh: 3, c2: "#7fe8ff" },
   { id: "b0", l: "b", n: "Mochila padrão", c: 0, col: "#b9bcc4" }, { id: "b1", l: "b", n: "Mochila de oxigênio azul", c: 110, col: "#4a86e8" }, { id: "b2", l: "b", n: "Mochila reforçada", c: 170, col: "#6b5a44" }, { id: "b3", l: "b", n: "Mochila a jato", c: 350, col: "#ff6a2b", glow: "#ffa04a" },
 ];
-const SL = { s: "Trajes", p: "Calças", w: "Relógios", h: "Capacetes", b: "Mochilas", e: "Eventos", a: "Admin" };
-const LAYERS = ["s", "p", "w", "h", "b"];
-const DEF_EQ = { s: "s0", p: "p0", w: "w0", h: "h0", b: "b0" };
-const DEF_OWN = ["s0", "p0", "w0", "h0", "b0"];
+const SL = { s: "Trajes", p: "Calças", w: "Relógios", h: "Capacetes", b: "Mochilas", r: "Cabelos", a: "Acessórios", look: "Aparência", e: "Eventos", adm: "Admin" };
+const LAYERS = ["s", "p", "w", "h", "b", "r", "a"];
+const DEF_EQ = { s: "s0", p: "p0", w: "w0", h: "h0", b: "b0", r: "r0", a: "a0" };
+const DEF_OWN = ["s0", "p0", "w0", "h0", "b0", "r0", "a0"];
 const TMPCX = [];
 const allCX = () => CX.concat(MarsRules.ADMIN_COSMETICS, (CAT && CAT.cos) || [], EV.suits(), TMPCX);
 const cxById = (id) => allCX().find((x) => x.id == id) || {};

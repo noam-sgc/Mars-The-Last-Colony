@@ -6,16 +6,17 @@
   else root.MarsBul = factory(root.MarsRules);
 })(typeof self !== "undefined" ? self : this, function (R) {
   "use strict";
-  const KINDS = ["acct", "ev", "cos", "part", "up", "msg"], MAXD = 6000;
-  const newStore = () => ({ acct: {}, ev: {}, cos: {}, part: {}, up: {}, msg: {} });
+  const KINDS = ["acct", "ev", "cos", "part", "up", "msg", "sav"], MAXD = 6000, MAXSAV = 24000;
+  const newStore = () => ({ acct: {}, ev: {}, cos: {}, part: {}, up: {}, msg: {}, sav: {} });
   const str = (v, n) => typeof v === "string" && v.length <= n;
   /** O item é aceitável? (formato + permissões declaradas: admin para ev/msg, desenhista para cos/part/up) */
   function valid(it) {
     if (!it || typeof it !== "object" || !KINDS.includes(it.k) || !str(it.id, 60) || !Number.isFinite(it.ts)) return false;
-    if (it.del) return it.k !== "acct" && (it.k === "ev" || it.k === "msg" ? R.isAdmin(it.by) : R.isArtist(it.by));
-    const d = it.d; if (!d || typeof d !== "object" || JSON.stringify(d).length > MAXD) return false;
+    if (it.del) return it.k !== "acct" && it.k !== "sav" && (it.k === "ev" || it.k === "msg" ? R.isAdmin(it.by) : R.isArtist(it.by));
+    const d = it.d; if (!d || typeof d !== "object" || JSON.stringify(d).length > (it.k === "sav" ? MAXSAV : MAXD)) return false;
     switch (it.k) {
       case "acct": return R.validName(d.name) && R.key(d.name) === it.id && str(d.pass, 200) && /^p1:\d+:[0-9a-f]+:[0-9a-f]+$/.test(d.pass) && R.validCountry(d.cc) && Number.isFinite(d.created);
+      case "sav": return R.validName(it.by) && R.key(it.by) === it.id && d.p && typeof d.p === "object" && d.s && typeof d.s === "object";   // progresso da conta (o mais novo vence)
       case "ev": return R.isAdmin(it.by) && str(d.name, 40) && Number.isFinite(d.start) && Number.isFinite(d.end) && d.end > d.start;
       case "msg": return R.isAdmin(it.by) && str(d.text, 240);
       default: return R.isArtist(it.by) && str(d.n, 40) && str(d.id, 60);   // cos/part/up

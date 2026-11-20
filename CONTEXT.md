@@ -131,3 +131,10 @@ Veja `docs/DEPLOY.md` (site estático na Vercel; sem servidor de jogo).
 - Posições dos outros jogadores em tempo real no Multi (hoje ficam em círculo no centro).
 - Malha completa entre convidados (hoje estrela via anfitrião); TURN próprio; ranking por modo; migração de anfitrião.
 - Mais interiores únicos por edifício; mais eventos temáticos com mini-metas.
+
+
+## Atualização: aparência, Estúdio, nuvem e ULV jogável
+- **Aparência 3D** (`js/look.js`, aba "Aparência" do Guarda-roupa): 8 tons de pele, 10 cabelos (crespo, cacheado volumoso, tranças, dreads, coque, moicano…), cor do cabelo, rosto, olhos, óculos, barba, corpo, altura, bolha de vidro. `P.look` → `myEq().lk`. Colonos usam `lookRandom`.
+- **Cosméticos com layout** (Estúdio): camadas novas `r` (cabelo) e `a` (acessório); campos `sh` (forma), `pt` (padrão), `c2` (cor 2), `sz` (tamanho) além de cor/brilho. Validação em `Hub.publish`.
+- **Nuvem** (`api/bul.js` + `js/cloud.js`): cofre persistente do mural (novo tipo `sav` = progresso da conta). Requer Upstash Redis na Vercel (docs/DEPLOY.md); sem ele, volta ao gossip. WebRTC segue para comunicação em tempo real.
+- **Ultra Learn Voyage jogável** (`js/ulvgame.js`): cada capítulo é uma fase da colônia com ☢ radiação, 🔧 peças, 🔬 dados, falhas, tempestades solares/poeira, terminais de conhecimento (E) e emergência de missão. O quiz solto continua na aba principal; o modo estudo (painéis) permanece.

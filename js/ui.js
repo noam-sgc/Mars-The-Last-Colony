@@ -22,7 +22,7 @@ function authScreen(tab) {
   $("#auth").querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => authScreen(b.dataset.t)));
   const go = async () => {
     const u = $("#au").value.trim(), p = $("#ap").value; $("#ae").textContent = ""; $("#ago").disabled = true;
-    const go1 = $("#ago"); if (!BUL.synced) { $("#ae").textContent = "🌐 Sincronizando contas com o mural global…"; const ok = await BUL.whenSynced(4000); $("#ae").textContent = ok ? "" : "⚠ Sem conexão com o mural global: usando só as contas deste aparelho."; }
+    const go1 = $("#ago"); if (!CLOUD.on) { $("#ae").textContent = "☁ Buscando sua conta na nuvem…"; await CLOUD.settle(5000); $("#ae").textContent = ""; } if (!BUL.synced) { $("#ae").textContent = "🌐 Sincronizando contas com o mural global…"; const ok = await BUL.whenSynced(4000); $("#ae").textContent = ok ? "" : "⚠ Sem conexão com o mural global: usando só as contas deste aparelho."; }
     const r = await NET.ask(tab == "reg" ? { t: "reg", u, p, c: $("#ac").value } : { t: "login", u, p }); go1.disabled = false;
     if (!r.ok) { $("#ae").textContent = (r.err || "Falha") + (tab != "reg" && /incorretos/.test(r.err || "") && !BUL.hasAcct(u) ? (BUL.synced ? " Esse usuário não existe no mural global: crie a conta em “Criar conta”." : " Ainda sem conexão com o mural global: se criou a conta em outro aparelho, aguarde conectar e tente de novo.") : ""); return; } applyAuth(r);
   };
@@ -44,7 +44,7 @@ function copyText(t, label) {
   try { navigator.clipboard.writeText(t).then(ok, () => fb()); } catch (e) { fb(); }
   function fb() { const i = document.createElement("input"); i.value = t; document.body.appendChild(i); i.select(); try { document.execCommand("copy"); ok(); } catch (e) { toast("Selecione e copie: " + esc(t)); } i.remove(); }
 }
-function syncLine() { return BUL.synced ? "🌐 Contas, eventos e avisos sincronizados com o mural global." : "⏳ Conectando ao mural global (contas de outros aparelhos)…"; }
+function syncLine() { return CLOUD.on ? "☁ Online: contas e progresso na nuvem, acessíveis de qualquer aparelho." : BUL.synced ? "🌐 Contas, eventos e avisos sincronizados com o mural global." : "⏳ Conectando ao mural global (contas de outros aparelhos)…"; }
 setInterval(() => { const e = document.getElementById("async"); if (e) e.textContent = syncLine(); }, 800);
 function worldLine() {
   if (NET.mode == "p2p") return `🌐 Conectado ao mundo <b>${esc(NET.world)}</b> (WebRTC). Sua conta fica neste mundo.`;
@@ -153,8 +153,8 @@ function askSpecies() {
 let WTAB = "s", WTRY = null;
 function ward() {
   screen("ward"); $("#ward").className = "scr pg on"; const el = $("#ward"); const role = ACC.role;
-  const tabs = ["s", "p", "w", "h", "b", "e"].concat(isAdminAcc() ? ["a"] : []); if (!tabs.includes(WTAB)) WTAB = "s";
-  el.innerHTML = `<div class="left"><div class="top" style="width:100%"><button id="rb2">← Voltar</button><h2>Guarda-roupa</h2></div><div class="pv" id="pv"></div><div class="pill w" style="width:100%;text-align:center"><b>Espécie</b><div class="row" style="justify-content:center;margin-top:6px"><button id="spH" class="${P.sp != "alien" ? "sel" : ""}">🧑‍🚀 Humano</button><button id="spA" class="${P.sp == "alien" ? "sel" : ""}">👽 Alienígena</button></div><small class="mu" style="display:block;margin-top:6px">Grátis e pode mudar a qualquer momento.<br><b>Bônus:</b> ${SPB_TXT[P.sp]}</small>${P.sp == "alien" ? `<div class="row" style="justify-content:center;margin-top:8px">${Object.keys(SKINS).map((k) => `<button class="sw-btn ${P.skin == k ? "sel" : ""}" data-sk="${k}" title="${SKINS[k].n}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${SKINS[k].c};box-shadow:0 0 8px ${SKINS[k].g}"></button>`).join("")}</div><small class="mu">Cor da pele</small>` : ""}</div><div class="pill" style="text-align:center">Créditos: <b id="wc">${P.cr}</b> · PP: <b>${P.pp}</b></div><div class="row"><button id="wsp">⏸ Girar</button><button id="wrs">Padrão</button></div><small class="mu" style="text-align:center">Toque num item para experimentar. Arraste o boneco para girar.</small></div>
+  const tabs = ["look", "s", "p", "w", "h", "b", "r", "a", "e"].concat(isAdminAcc() ? ["adm"] : []); if (!tabs.includes(WTAB)) WTAB = "s";
+  el.innerHTML = `<div class="left"><div class="top" style="width:100%"><button id="rb2">← Voltar</button><h2>Guarda-roupa</h2></div><div class="pv" id="pv"></div><div class="pill w" style="width:100%;text-align:center"><b>Espécie</b><div class="row" style="justify-content:center;margin-top:6px"><button id="spH" class="${P.sp != "alien" ? "sel" : ""}">🧑‍🚀 Humano</button><button id="spA" class="${P.sp == "alien" ? "sel" : ""}">👽 Alienígena</button></div><small class="mu" style="display:block;margin-top:6px">Grátis e pode mudar a qualquer momento.<br><b>Bônus:</b> ${SPB_TXT[P.sp]}</small>${P.sp == "alien" ? `<div class="row" style="justify-content:center;margin-top:8px">${Object.keys(SKINS).map((k) => `<button class="sw-btn ${P.skin == k ? "sel" : ""}" data-sk="${k}" title="${SKINS[k].n}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${SKINS[k].c};box-shadow:0 0 8px ${SKINS[k].g}"></button>`).join("")}</div><small class="mu">Cor da pele</small>` : ""}</div><div class="pill" style="text-align:center">Créditos: <b id="wc">${P.cr}</b> · PP: <b>${P.pp}</b></div><div class="row"><button id="wsp">⏸ Girar</button><button id="wzm">🔍 Rosto</button><button id="wrs">Padrão</button></div><small class="mu" style="text-align:center">Toque num item para experimentar. Arraste o boneco para girar.</small></div>
   <div class="right"><div class="tabs">${tabs.map((t) => `<button data-t="${t}" class="${t == WTAB ? "sel" : ""}">${SL[t]}</button>`).join("")}</div><div class="items" id="wi"></div></div>`;
   $("#rb2").onclick = () => { if (window.studioStop) studioStop(); menu(); }; el.querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => { WTAB = b.dataset.t; ward(); }));
   const eq = () => Object.assign({}, myEq(), WTRY || {});
@@ -162,9 +162,11 @@ function ward() {
   const refresh = () => { if (pv) pv.setObj(av(eq()), 0); }; refresh();
   $("#spH").onclick = () => setSpecies("human"); $("#spA").onclick = () => setSpecies("alien"); el.querySelectorAll("[data-sk]").forEach((b) => (b.onclick = () => { P.skin = b.dataset.sk; saveP(); ward(); }));
   $("#wrs").onclick = () => { WTRY = null; P.eq = Object.assign({}, DEF_EQ); saveP(); ward(); };
+  { let face = false; $("#wzm").onclick = () => { face = !face; pv.c.position.set(0, face ? 3.3 : 2.8, face ? 4.6 : 9.6); pv.c.lookAt(0, face ? 3.0 : 1.9, 0); $("#wzm").textContent = face ? "🧍 Corpo" : "🔍 Rosto"; }; }
   $("#wsp").onclick = () => { if (pv) { pv.spin = !pv.spin; $("#wsp").textContent = pv.spin ? "⏸ Girar" : "▶ Girar"; } };
+  if (WTAB == "look") return lookPanel(pv);
   const spItem = (x) => !x.sp || x.sp === P.sp;
-  let items = []; if (WTAB == "e") items = allCX().filter((x) => x.ev || String(x.id).startsWith("ev_")); else if (WTAB == "a") items = allCX().filter((x) => x.adm && canUseItem(x)); else items = allCX().filter((x) => x.l == WTAB && !x.ev && !String(x.id).startsWith("ev_") && !(x.adm));
+  let items = []; if (WTAB == "e") items = allCX().filter((x) => x.ev || String(x.id).startsWith("ev_")); else if (WTAB == "adm") items = allCX().filter((x) => x.adm && canUseItem(x)); else items = allCX().filter((x) => x.l == WTAB && !x.ev && !String(x.id).startsWith("ev_") && !(x.adm));
   if (WTAB == "e") { EV.active.forEach((e) => { if (!items.some((i) => i.id == e.suit.id)) items.push(e.suit); }); }
   items = items.filter(spItem);
   const wi = $("#wi"); if (!items.length) wi.innerHTML = `<p class="mu">Nada aqui ainda. ${WTAB == "e" ? "Resgate trajes durante os eventos!" : ""}</p>`;
