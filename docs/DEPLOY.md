@@ -13,8 +13,8 @@ O jogo é 100% estático: não há servidor de jogo. Qualquer hospedagem de arqu
 - Sem TURN, algumas redes (CGNAT/corporativas) não fecham a conexão direta.
 
 ## Contas ADM
-Crie ADMVinnil, ADMKezle e ADMLefaar pelo fluxo normal de *Criar conta* (o primeiro a registrar cada nome o possui).
-Admins: ADMVinnil, ADMKezle, ADMLefaar. Desenhistas: apenas ADMKezle e ADMLefaar.
+Crie ADMKezle e ADMLefaar pelo fluxo normal de *Criar conta* (o primeiro a registrar cada nome o possui).
+Admins e desenhistas: ADMKezle e ADMLefaar. ADMVinnil é usuário comum.
 
 ## Contas e progresso na nuvem (para o jogo ficar "online de verdade")
 Sem um cofre persistente, contas e progresso só existem enquanto algum navegador estiver aberto. O repositório inclui `api/bul.js`
