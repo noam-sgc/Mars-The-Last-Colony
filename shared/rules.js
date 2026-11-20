@@ -20,7 +20,11 @@
   // ---------- países ----------
   const COUNTRIES = ("BR:Brasil,PT:Portugal,US:Estados Unidos,CA:Canadá,MX:México,AR:Argentina,CL:Chile,CO:Colômbia,PE:Peru,UY:Uruguai,PY:Paraguai,BO:Bolívia,VE:Venezuela,EC:Equador," +
     "ES:Espanha,FR:França,DE:Alemanha,IT:Itália,GB:Reino Unido,IE:Irlanda,NL:Países Baixos,BE:Bélgica,CH:Suíça,AT:Áustria,SE:Suécia,NO:Noruega,DK:Dinamarca,FI:Finlândia,PL:Polônia,UA:Ucrânia,RU:Rússia,TR:Turquia,GR:Grécia," +
-    "JP:Japão,KR:Coreia do Sul,CN:China,IN:Índia,ID:Indonésia,PH:Filipinas,VN:Vietnã,TH:Tailândia,SA:Arábia Saudita,AE:Emirados Árabes,IL:Israel,EG:Egito,ZA:África do Sul,NG:Nigéria,MA:Marrocos,AO:Angola,MZ:Moçambique,CV:Cabo Verde,AU:Austrália,NZ:Nova Zelândia")
+    "JP:Japão,KR:Coreia do Sul,CN:China,IN:Índia,ID:Indonésia,PH:Filipinas,VN:Vietnã,TH:Tailândia,SA:Arábia Saudita,AE:Emirados Árabes,IL:Israel,EG:Egito,ZA:África do Sul,NG:Nigéria,MA:Marrocos,AO:Angola,MZ:Moçambique,CV:Cabo Verde,AU:Austrália,NZ:Nova Zelândia," +
+    "GH:Gana,KE:Quênia,ET:Etiópia,SN:Senegal,CM:Camarões,CI:Costa do Marfim,TZ:Tanzânia,DZ:Argélia,TN:Tunísia,GW:Guiné-Bissau,ST:São Tomé e Príncipe,TL:Timor-Leste," +
+    "PK:Paquistão,BD:Bangladesh,IR:Irã,IQ:Iraque,JO:Jordânia,LB:Líbano,QA:Catar,MY:Malásia,SG:Singapura,NP:Nepal,LK:Sri Lanka,MN:Mongólia,KZ:Cazaquistão," +
+    "CU:Cuba,DO:República Dominicana,HT:Haiti,JM:Jamaica,PA:Panamá,CR:Costa Rica,GT:Guatemala,HN:Honduras,SV:El Salvador,NI:Nicarágua," +
+    "CZ:Tchéquia,SK:Eslováquia,HU:Hungria,RO:Romênia,BG:Bulgária,RS:Sérvia,HR:Croácia,IS:Islândia,EE:Estônia,LV:Letônia,LT:Lituânia")
     .split(",").map((s) => { const [c, n] = s.split(":"); return { c, n }; });
   const validCountry = (c) => COUNTRIES.some((x) => x.c === c);
   const flag = (c) => /^[A-Z]{2}$/.test(c) ? String.fromCodePoint(...[...c].map((ch) => 0x1f1e6 + ch.charCodeAt(0) - 65)) : "🏳";

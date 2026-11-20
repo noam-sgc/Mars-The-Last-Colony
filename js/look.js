@@ -31,11 +31,17 @@ function humanHead(lk, hairIt, accIt, helIt, M) {
   const hp = cxp(hairIt), hairStyle = hairIt && hairIt.id && hairIt.id !== "r0" ? hp.sh : lk.hr, hairCol = hairIt && hairIt.id && hairIt.id !== "r0" && hairIt.col ? hairIt.col : lk.hc, HM = (c) => M(c || hairCol, { roughness: .85, metalness: 0 });
   const head = add(new THREE.SphereGeometry(R, 20, 16), SK(), 0, 0, 0); head.scale.set(1, 1.08, 1.02);
   [-1, 1].forEach((s) => add(new THREE.SphereGeometry(.09, 8, 6), SK(), s * .43, -.02, 0));   // orelhas
-  // olhos
-  const ew = [.065, .06, .085][lk.ey], eh = [.075, .045, .1][lk.ey];
-  [-1, 1].forEach((s) => { const w = add(new THREE.SphereGeometry(ew + .02, 10, 8), M("#ffffff", { roughness: .3 }), s * .16, .05, .36); w.scale.set(1, eh / ew * .9 + .1, .45);
-    const p = add(new THREE.SphereGeometry(ew * .8, 10, 8), M("#1c1410", { roughness: .2 }), s * .16, .05, .385); p.scale.set(1, 1.1, .5);
-    const b = add(new THREE.BoxGeometry(.16, .028, .03), HM(), s * .16, .18, .38); b.rotation.z = s * (lk.fc == 3 ? -.1 : .12); if (lk.fc == 3) b.position.y = .21; });
+  // olhos estilo cartoon: esclera, íris, pupila e dois brilhos
+  const es = [1, .78, 1.22][lk.ey], iris = ["#5a3a22", "#3b2414", "#2b5a8a", "#3a6a3a"][lk.t % 2 ? 0 : 1];
+  [-1, 1].forEach((s) => { const x = s * .16, y = .02;
+    const w = add(new THREE.SphereGeometry(.1, 16, 12), M("#ffffff"), x, y, .355); w.scale.set(.95, 1.12 * es, .5);
+    const ir = add(new THREE.SphereGeometry(.072, 14, 10), M(iris), x + s * .004, y - .008, .392); ir.scale.set(1, 1.15 * es, .45);
+    add(new THREE.SphereGeometry(.04, 10, 8), M("#0b0806"), x + s * .004, y - .01, .41).scale.set(1, 1.1 * es, .4);
+    add(new THREE.SphereGeometry(.022, 8, 6), new THREE.MeshBasicMaterial({ color: "#ffffff" }), x + .025, y + .04 * es, .425);
+    add(new THREE.SphereGeometry(.011, 6, 5), new THREE.MeshBasicMaterial({ color: "#ffffff" }), x - .022, y - .035 * es, .424);
+    if (lk.ey == 1) { const l = add(new THREE.TorusGeometry(.095, .014, 5, 12, Math.PI), M("#1a1210"), x, y + .02, .39); l.scale.y = .8; }
+    const b = add(new THREE.BoxGeometry(.15, .03, .03), HM(), x, .17 + (lk.fc == 3 ? .04 : 0), .385); b.rotation.z = s * (lk.fc == 3 ? -.12 : .1);
+    const bl = add(new THREE.CircleGeometry(.06, 14), new THREE.MeshBasicMaterial({ color: "#ff7a8a", transparent: true, opacity: .35, depthWrite: false }), s * .25, -.1, .372); bl.rotation.y = s * .55; bl.castShadow = false; });
   add(new THREE.SphereGeometry(.055, 8, 6), SK(), 0, -.04, .44).scale.set(1, 1.1, .9);   // nariz
   // boca
   if (lk.fc == 1) add(new THREE.BoxGeometry(.15, .022, .03), M("#5a2a2a"), 0, -.2, .41);
@@ -50,11 +56,11 @@ function humanHead(lk, hairIt, accIt, helIt, M) {
     [-1, 1].forEach((s) => { if (lk.gl == 1) add(new THREE.TorusGeometry(.115, .016, 6, 18), gm, s * .16, .05, .41); else if (lk.gl == 2) { const f = add(new THREE.BoxGeometry(.25, .17, .03), gm, s * .16, .05, .41); f.material = M("#25262e", { metalness: .6 }); const gl = add(new THREE.BoxGeometry(.2, .12, .035), M("#bfe6ff", { transparent: true, opacity: .3, roughness: .05 }), s * .16, .05, .415); } else add(new THREE.CircleGeometry(.13, 14), M("#050508", { metalness: .8, roughness: .1 }), s * .16, .05, .42); });
     add(new THREE.BoxGeometry(.1, .02, .02), gm, 0, .06, .42); }
   // cabelo
-  let hairR = .5; const cap = (r, phi, y) => { const m = add(new THREE.SphereGeometry(r, 18, 12, 0, 6.283, 0, Math.PI * phi), HM(), 0, y == null ? .04 : y, -.02); return m; };
+  let hairR = .5; const cap = (r, phi, y) => { const yy = y == null ? .04 : y, m = add(new THREE.SphereGeometry(r, 20, 12, 0, 6.283, 0, Math.PI * Math.min(phi, .4)), HM(), 0, yy, -.02); add(new THREE.SphereGeometry(r * .995, 20, 12, Math.PI * .8, Math.PI * 1.4, 0, Math.PI * phi), HM(), 0, yy, -.02); return m; };
   const sd = (() => { let s = 77; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; })();
-  const curls = (n, rad, sz, front) => { for (let i = 0; i < n; i++) { const u = sd() * 2 - 1, a = sd() * 6.283, q = Math.sqrt(1 - u * u), d = new THREE.Vector3(q * Math.cos(a), Math.abs(u) * .9 + .1, q * Math.sin(a)); if (d.z > .3 && d.y < (front || .62)) continue; if (d.y < .18 && d.z > -.2 && Math.abs(d.x) < .75) continue;
+  const curls = (n, rad, sz, front) => { for (let i = 0; i < n; i++) { const u = sd() * 2 - 1, a = sd() * 6.283, q = Math.sqrt(1 - u * u), d = new THREE.Vector3(q * Math.cos(a), Math.abs(u) * .9 + .1, q * Math.sin(a)); if (d.z > .05 && d.y < .62 && Math.abs(d.x) < .85) continue; if (d.z > -.2 && d.y < .3) continue; if (d.y < .1) continue;
       const mech = hp.pt == 1 && i % 4 == 0, m = add(new THREE.SphereGeometry(sz * (.8 + sd() * .5), 8, 6), HM(mech ? hp.c2 : null), d.x * rad, d.y * rad * 1.02, d.z * rad); m.scale.y = .95; } hairR = rad + sz + .06; };
-  switch (hairStyle) {
+  if (hairIt && hairIt.hv) { hairR = drawnHair(H, hairIt, HM); } else switch (hairStyle) {
     case 1: cap(.47, .58); break;
     case 2: cap(.48, .55); curls(34, .5, .2, .55); break;
     case 3: cap(.5, .6); curls(52, .62, .24, .5); break;
@@ -64,8 +70,8 @@ function humanHead(lk, hairIt, accIt, helIt, M) {
     case 7: cap(.48, .55); for (let i = 0; i < 8; i++) { const a = -2.6 + i * .75, x = Math.sin(a) * .45, z = Math.cos(a) * .4 - .1; if (z > .2) continue; const b = add(new THREE.CylinderGeometry(.045, .03, .9, 6), HM(), x, -.4, z); b.rotation.z = Math.sin(a) * .08; add(new THREE.SphereGeometry(.06, 6, 5), HM(hp.c2), x * 1.02, -.86, z); } break;
     case 8: cap(.45, .5); { const m = add(new THREE.BoxGeometry(.13, .38, .95), HM(), 0, .45, -.05); } break;
     case 9: cap(.48, .55); for (let i = 0; i < 16; i++) { const a = -2.7 + i * .35, x = Math.sin(a) * .47, z = Math.cos(a) * .42 - .08; if (z > .22) continue; const b = add(new THREE.CylinderGeometry(.05, .035, .8 + (i % 3) * .2, 5), HM(), x, -.4, z); b.rotation.z = Math.sin(a) * .1; } break;
-    case 10: { const w = add(new THREE.SphereGeometry(.54, 18, 14, 0, 6.283, 0, Math.PI * .78), HM(), 0, -.02, -.04); w.scale.set(1, 1.02, 1.02); const dr = add(new THREE.CylinderGeometry(.5, .6, .55, 16, 1, true), HM(), 0, -.42, -.06); dr.scale.z = .9; add(new THREE.TorusGeometry(.36, .04, 6, 20), HM(hp.c2), 0, .22, .3).rotation.x = .2; hairR = .58; break; }
-    case 11: cap(.49, .6); add(new THREE.CylinderGeometry(.52, .5, .6, 18, 1, true), HM(), 0, -.12, -.06).scale.z = .95; [-1, 1].forEach((s) => add(new THREE.BoxGeometry(.1, .5, .2), HM(), s * .46, -.18, .1)); hairR = .55; break;
+    case 10: { add(new THREE.SphereGeometry(.54, 20, 12, 0, 6.283, 0, Math.PI * .36), HM(), 0, -.02, -.04); const w = add(new THREE.SphereGeometry(.54, 20, 14, Math.PI / 2 + .8, Math.PI * 2 - 1.6, 0, Math.PI * .8), HM(), 0, -.02, -.04); w.scale.set(1, 1.02, 1.02); const dr = add(new THREE.CylinderGeometry(.5, .6, .55, 16, 1, true), HM(), 0, -.42, -.06); dr.scale.z = .9; add(new THREE.TorusGeometry(.36, .04, 6, 20), HM(hp.c2), 0, .22, .3).rotation.x = .2; hairR = .58; break; }
+    case 11: cap(.49, .6); add(new THREE.CylinderGeometry(.52, .5, .6, 18, 1, true, Math.PI / 3, Math.PI * 4 / 3), HM(), 0, -.12, -.06).scale.z = .95; [-1, 1].forEach((s) => add(new THREE.BoxGeometry(.1, .5, .2), HM(), s * .46, -.18, .1)); hairR = .55; break;
     case 12: cap(.48, .58); { const q = add(new THREE.SphereGeometry(.3, 12, 10), HM(), 0, .42, .18); q.scale.set(1.4, .8, 1); add(new THREE.SphereGeometry(.2, 10, 8), HM(hp.c2), .18, .4, .3); } break;
     default: break;
   }
@@ -103,37 +109,6 @@ function humanHead(lk, hairIt, accIt, helIt, M) {
   if (lk.hg == 1) { const r = Math.max(.62, hairR + .1); const g = add(new THREE.SphereGeometry(r, 20, 14), M(has ? hc : "#aee4ff", { transparent: true, opacity: has ? .28 : .16, roughness: .05, metalness: .3, depthWrite: false, emissive: hglow || "#000", emissiveIntensity: hglow ? .4 : 0 }), 0, .04, 0); g.castShadow = false; add(new THREE.TorusGeometry(r * .78, .06, 8, 22), HLM(), 0, -.5, 0).rotation.x = Math.PI / 2; }
   return H;
 }
-
-/** Customização de layout do traje: corte e padrões. */
-function decoSuit(g, torso, arms, suit, M) {
-  const p = cxp(suit), c2 = p.c2; const k = [1, .88, 1.14, 1][p.sh] || 1; torso.scale.x *= k; torso.scale.z *= k; arms.forEach((a) => { a.position.x *= k; a.scale.x = k; });
-  const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; }, AM = M(c2, { emissive: suit.glow || "#000", emissiveIntensity: suit.glow ? .3 : 0 });
-  if (p.sh == 3) [-1, 1].forEach((s) => add(new THREE.BoxGeometry(.28, .3, .12), AM, s * .24, 1.55, .56));
-  switch (p.pt) {
-    case 1: add(new THREE.BoxGeometry(1.02, .22, .06), AM, 0, 2.05, .5).scale.set(1, 1, 1); break;
-    case 2: [-1, 1].forEach((s) => add(new THREE.SphereGeometry(.26, 10, 8), AM, s * .62 * k, 2.3, 0).scale.set(1, .7, 1)); break;
-    case 3: { const t = add(new THREE.TorusGeometry(.53 * k, .06, 6, 20), AM, 0, 1.3, 0); t.rotation.x = Math.PI / 2; break; }
-    case 4: { const t = add(new THREE.TorusGeometry(.38, .09, 8, 18), AM, 0, 2.37, 0); t.rotation.x = Math.PI / 2; break; }
-    case 5: arms.forEach((a) => { [-.45, -.7].forEach((y) => { const t = new THREE.Mesh(new THREE.TorusGeometry(.18, .03, 6, 14), AM); t.rotation.x = Math.PI / 2; t.position.y = y; a.add(t); }); }); break;
-    case 6: add(new THREE.CircleGeometry(.17, 18), M(suit.glow || c2, { emissive: suit.glow || c2, emissiveIntensity: .8 }), -.25, 2.05, .56); break;
-    case 7: [-.12, .12].forEach((x) => add(new THREE.BoxGeometry(.07, 1.1, .05), AM, x, 1.75, .56)); break;
-    default: break;
-  }
-}
-function decoPants(legs, item, M) {
-  const p = cxp(item); legs.forEach((l, i) => { const m = l.children[0], s = i ? 1 : -1;
-    if (p.sh == 1) { m.geometry = new THREE.CylinderGeometry(.22, .36, 1, 10); } else if (p.sh == 2) m.scale.x = m.scale.z = .82; else if (p.sh == 3) { m.geometry = new THREE.CylinderGeometry(.23, .22, .55, 8); m.position.y = -.28; const sock = new THREE.Mesh(new THREE.CylinderGeometry(.17, .17, .45, 8), M(p.c2)); sock.position.y = -.77; l.add(sock); }
-    if (p.pt == 1) { const st = new THREE.Mesh(new THREE.BoxGeometry(.05, .9, .08), M(p.c2)); st.position.set(s * .22, -.5, 0); l.add(st); } else if (p.pt == 2) { const kn = new THREE.Mesh(new THREE.SphereGeometry(.15, 8, 6), M(p.c2)); kn.position.set(0, -.55, .16); l.add(kn); } });
-}
-/** Mochila: formas variadas (caixa, redonda, tanques, asas, grande) e tamanho. */
-function decoPack(g, pack, item, M, col, glow) {
-  const p = cxp(item); if (!item || !item.id || item.id === "b0") { pack.scale.setScalar(p.sz); return; }
-  const mat = M(col || "#b9bcc4", { emissive: glow || "#000", emissiveIntensity: glow ? .5 : 0 }), add = (geo, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
-  if (p.sh == 1) { pack.geometry = new THREE.SphereGeometry(.55, 14, 10); } else if (p.sh == 2) { pack.visible = false; [-.25, .25].forEach((x) => add(new THREE.CylinderGeometry(.2, .2, 1.1, 10), x, 1.8, -.6)); } else if (p.sh == 3) { [-1, 1].forEach((s) => { const w = add(new THREE.BoxGeometry(.05, 1.2, .8), s * .55, 2.1, -.7); w.rotation.set(.2, 0, s * .5); w.material = M(p.c2, { emissive: glow || p.c2, emissiveIntensity: .6, transparent: true, opacity: .8 }); }); } else if (p.sh == 4) pack.scale.set(1.25, 1.15, 1.3);
-  if (p.pt == 1) add(new THREE.CylinderGeometry(.02, .02, .8, 5), .3, 2.6, -.7); else if (p.pt == 2) add(new THREE.SphereGeometry(.1, 8, 6), 0, 1.3, -.95).material = M("#ff3030", { emissive: "#ff2020", emissiveIntensity: 1.4 });
-  pack.scale.multiplyScalar(p.sz);
-}
-function decoWatch(k, item) { const p = cxp(item); if (p.sh == 1) { k.geometry = new THREE.CylinderGeometry(.16, .16, .1, 14); k.rotation.z = Math.PI / 2; } else if (p.sh == 2) k.scale.set(1.2, .7, 1.25); k.scale.multiplyScalar(p.sz); }
 
 // ---------- equipe pré-montada (fichas de personagens) ----------
 const TEAM = [
@@ -177,67 +152,18 @@ function lookPanel(pv) {
     <div class="sec"><h4>TIPOS DE CABELO</h4><div class="thg">${LOOK.HAIRS.map((n, i) => `<button class="thb ${l.hr == i ? "sel" : ""}" data-k="hr" data-v="${i}" title="${n}"><img class="th2" alt="${n}"><small>${n}</small></button>`).join("")}</div>
       <b style="display:block;margin-top:8px">Cor do cabelo</b><div class="row" style="flex-wrap:wrap;margin:6px 0">${LOOK.HCOLS.map((c) => `<button data-k="hc" data-s="${c}" class="${l.hc == c ? "sel" : ""}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${c}"></button>`).join("")}<input type="color" id="lkc" value="${l.hc}" title="Cor personalizada" style="width:44px;height:34px"></div></div>
     <div class="sec"><h4>TONS DE PELE</h4><div class="row" style="flex-wrap:wrap">${LOOK.TONES.map((c, i) => `<button data-k="t" data-v="${i}" class="${l.t == i ? "sel" : ""}" style="width:42px;height:42px;padding:0;border-radius:50%;background:${c}"></button>`).join("")}</div></div>
-    <div class="sec"><h4>NACIONALIDADES</h4><div class="thg">${LOOK.NATS.map((c) => `<button class="thb ${l.nc == c ? "sel" : ""}" data-k="nc" data-s="${c}"><img src="${flagURL(c)}" alt="${c}" style="width:56px;height:38px;border-radius:4px"></button>`).join("")}</div>
-      <div class="row" style="margin-top:6px"><select id="lkn"><option value="">Mais países…</option><option value="-">Sem bandeira</option>${allC.map((c) => `<option value="${c.c}" ${l.nc == c.c ? "selected" : ""}>${c.n}</option>`).join("")}</select></div></div>
+    <div class="sec"><h4>NACIONALIDADES (${allC.length})</h4><div class="row" style="margin-bottom:6px"><input id="lkq" placeholder="🔎 Buscar país…" style="flex:1"><button data-k="nc" data-s="-">Sem bandeira</button></div>
+      <div class="thg" id="lkf" style="max-height:250px;overflow:auto;grid-template-columns:repeat(auto-fill,minmax(70px,1fr))">${allC.map((c) => `<button class="thb ${l.nc == c.c ? "sel" : ""}" data-k="nc" data-s="${c.c}" data-n="${esc(c.n.toLowerCase())}" title="${esc(c.n)}"><img src="${flagURL(c.c)}" alt="${c.c}" style="width:54px;height:36px;border-radius:4px"><small>${esc(c.n)}</small></button>`).join("")}</div></div>
     <div class="sec"><h4>ROSTO E CORPO</h4><b>Rosto</b>${opts("fc", LOOK.FACES)}<b style="display:block;margin-top:8px">Olhos</b>${opts("ey", LOOK.EYES)}<b style="display:block;margin-top:8px">Óculos</b>${opts("gl", LOOK.GLASS)}<b style="display:block;margin-top:8px">Barba</b>${opts("br", LOOK.BEARDS)}
       <b style="display:block;margin-top:8px">Corpo</b>${opts("bd", LOOK.BUILDS)}<b style="display:block;margin-top:8px">Altura</b>${opts("ht", LOOK.HEIGHTS)}<b style="display:block;margin-top:8px">Capacete</b>${opts("hg", LOOK.HOLD)}</div>
     <div class="row"><button id="lkr">🎲 Aleatório</button><button id="lkd">Padrão</button></div><small class="mu">Grátis e pode mudar a qualquer momento. Cabelos, acessórios e equipamentos especiais ficam nas outras abas.</small></div>`;
-    wi.querySelectorAll("[data-k]").forEach((b) => (b.onclick = () => set({ [b.dataset.k]: b.dataset.s != null && b.dataset.s !== "" ? b.dataset.s : +b.dataset.v })));
+    wi.querySelectorAll("[data-k]").forEach((b) => (b.onclick = () => set({ [b.dataset.k]: b.dataset.s === "-" ? "" : b.dataset.s != null && b.dataset.s !== "" ? b.dataset.s : +b.dataset.v })));
+    $("#lkq").oninput = (e) => { const q = e.target.value.toLowerCase(); $("#lkf").querySelectorAll("[data-n]").forEach((b) => (b.style.display = !q || b.dataset.n.includes(q) || b.dataset.s.toLowerCase() == q ? "" : "none")); };
     wi.querySelectorAll("img.th2").forEach((im, i) => lazyThumb(im, () => thumbHair(i, L())));
-    $("#lkn").onchange = (e) => set({ nc: e.target.value == "-" ? "" : e.target.value });
     $("#lkc").oninput = (e) => { Object.assign(L(), { hc: e.target.value }); P.look = lookNorm(P.look); saveP(); prev(); };
-    $("#lkr").onclick = () => set(Object.assign(lookRandom(Math.floor(Math.random() * 1e6)), { nc: LOOK.NATS[Math.floor(Math.random() * 10)] })); $("#lkd").onclick = () => set(LOOK.DEF);
+    $("#lkr").onclick = () => set(Object.assign(lookRandom(Math.floor(Math.random() * 1e6)), { nc: allC[Math.floor(Math.random() * allC.length)].c })); $("#lkd").onclick = () => set(LOOK.DEF);
   };
   draw();
-}
-
-// ---------- nacionalidade: bandeira desenhada em canvas (emoji de bandeira não aparece no Windows) ----------
-const _fc = {};
-function flagCanvas(cc) {
-  if (_fc[cc]) return _fc[cc]; const c = document.createElement("canvas"); c.width = 90; c.height = 60; const x = c.getContext("2d"), W = 90, H = 60, R = (col, a, b, w, h) => { x.fillStyle = col; x.fillRect(a, b, w, h); };
-  const poly = (col, pts) => { x.fillStyle = col; x.beginPath(); pts.forEach(([a, b], i) => (i ? x.lineTo(a, b) : x.moveTo(a, b))); x.fill(); }, circ = (col, a, b, r) => { x.fillStyle = col; x.beginPath(); x.arc(a, b, r, 0, 6.283); x.fill(); };
-  switch (cc) {
-    case "BR": R("#1f9e48", 0, 0, W, H); poly("#ffd400", [[45, 6], [84, 30], [45, 54], [6, 30]]); circ("#1b3f94", 45, 30, 14); break;
-    case "US": for (let i = 0; i < 7; i++) R(i % 2 ? "#ffffff" : "#c8283c", 0, i * H / 7, W, H / 7 + 1); R("#2a3a7c", 0, 0, 40, 32); for (let i = 0; i < 12; i++) R("#fff", 5 + (i % 4) * 9, 5 + Math.floor(i / 4) * 9, 3, 3); break;
-    case "JP": R("#ffffff", 0, 0, W, H); circ("#c8102e", 45, 30, 17); break;
-    case "FR": R("#2a3f94", 0, 0, 30, H); R("#fff", 30, 0, 30, H); R("#d6283a", 60, 0, 30, H); break;
-    case "DE": R("#111", 0, 0, W, 20); R("#d00", 0, 20, W, 20); R("#ffcc00", 0, 40, W, 20); break;
-    case "IN": R("#ff9933", 0, 0, W, 20); R("#fff", 0, 20, W, 20); R("#138808", 0, 40, W, 20); circ("#1a3a9a", 45, 30, 7); break;
-    case "CN": R("#d62828", 0, 0, W, H); poly("#ffde00", [[16, 8], [20, 18], [31, 18], [22, 25], [26, 35], [16, 29], [6, 35], [10, 25], [1, 18], [12, 18]]); break;
-    case "ZA": R("#d62828", 0, 0, W, 30); R("#1f3f9e", 0, 30, W, 30); poly("#fff", [[0, 0], [30, 30], [0, 60], [0, 50], [20, 30], [0, 10]]); poly("#0a8a3c", [[0, 6], [40, 30], [0, 54], [0, 46], [26, 30], [0, 14]]); R("#0a8a3c", 40, 24, 50, 12); poly("#111", [[0, 12], [20, 30], [0, 48]]); poly("#ffb81c", [[0, 12], [20, 30], [0, 48], [0, 44], [14, 30], [0, 16]]); break;
-    case "GB": R("#1f2f7a", 0, 0, W, H); x.strokeStyle = "#fff"; x.lineWidth = 12; x.beginPath(); x.moveTo(0, 0); x.lineTo(W, H); x.moveTo(W, 0); x.lineTo(0, H); x.stroke(); x.strokeStyle = "#c8102e"; x.lineWidth = 5; x.stroke(); R("#fff", 36, 0, 18, H); R("#fff", 0, 21, W, 18); R("#c8102e", 40, 0, 10, H); R("#c8102e", 0, 25, W, 10); break;
-    case "CA": R("#d62828", 0, 0, 22, H); R("#fff", 22, 0, 46, H); R("#d62828", 68, 0, 22, H); poly("#d62828", [[45, 12], [51, 26], [60, 24], [54, 36], [58, 40], [45, 38], [32, 40], [36, 36], [30, 24], [39, 26]]); break;
-    default: { let h = 7; for (const ch of cc) h = h * 31 + ch.charCodeAt(0); const cols = ["#d62828", "#1f5fbf", "#f2c200", "#1f9e48", "#ffffff", "#111111", "#ff8a1f"]; R(cols[h % 7], 0, 0, W, 20); R(cols[(h >> 3) % 7], 0, 20, W, 20); R(cols[(h >> 5) % 7], 0, 40, W, 20); }
-  }
-  x.strokeStyle = "#0006"; x.lineWidth = 2; x.strokeRect(0, 0, W, H); return (_fc[cc] = c);
-}
-const flagURL = (cc) => flagCanvas(cc).toDataURL(); const _ft2 = {};
-const flagTex = (cc) => _ft2[cc] || (_ft2[cc] = new THREE.CanvasTexture(flagCanvas(cc)));
-
-// ---------- equipamentos (camada t): dispositivo de pulso, tablet, garrafa, cinto, kit médico, chave inglesa, lanterna ----------
-function decoTool(g, arms, item, M) {
-  if (!item || !item.id || item.id === "t0") return; const p = cxp(item), col = item.col || "#888", gl = item.glow, MM = (c, o) => M(c || col, Object.assign({ metalness: .4, roughness: .45, emissive: gl || "#000", emissiveIntensity: gl ? .6 : 0 }, o || {}));
-  const on = (parent, geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; };
-  const hand = arms[1], wr = arms[0]; let o;
-  switch (p.sh) {
-    case 1: on(wr, new THREE.BoxGeometry(.3, .26, .34), MM(), 0, -.62, 0); on(wr, new THREE.BoxGeometry(.22, .04, .24), M("#66e0ff", { emissive: "#44ddff", emissiveIntensity: 1 }), 0, -.49, 0); break;
-    case 2: o = on(hand, new THREE.BoxGeometry(.5, .06, .7), MM(), .12, -.98, .4); on(o, new THREE.BoxGeometry(.42, .02, .6), M("#8ae6ff", { emissive: gl || "#44ccff", emissiveIntensity: .9 }), 0, .04, 0); o.rotation.x = -.5; break;
-    case 3: on(g, new THREE.CylinderGeometry(.11, .11, .5, 10), MM(), -.62, 1.1, .05); on(g, new THREE.CylinderGeometry(.06, .08, .1, 8), M("#333"), -.62, 1.4, .05); break;
-    case 4: { const t = on(g, new THREE.TorusGeometry(.55, .08, 6, 22), MM(), 0, 1.25, 0); t.rotation.x = Math.PI / 2; [-.4, .4].forEach((a) => on(g, new THREE.BoxGeometry(.16, .22, .12), MM("#c9ced8"), a, 1.12, .5)); break; }
-    case 5: { const b = on(g, new THREE.BoxGeometry(.4, .3, .22), MM(), .6, 1.15, .12); on(b, new THREE.BoxGeometry(.2, .07, .02), M(p.c2), 0, 0, .12); on(b, new THREE.BoxGeometry(.07, .2, .02), M(p.c2), 0, 0, .12); break; }
-    case 6: o = on(hand, new THREE.CylinderGeometry(.04, .04, .8, 6), MM(), .05, -1.2, .35); on(o, new THREE.TorusGeometry(.12, .05, 6, 10, 4.7), MM(), 0, .45, 0); o.rotation.x = -.6; break;
-    case 7: o = on(hand, new THREE.CylinderGeometry(.08, .1, .5, 10), MM(), .05, -1.05, .35); on(o, new THREE.ConeGeometry(.2, .5, 12, 1, true), M(gl || "#fff2a8", { transparent: true, opacity: .45, emissive: gl || "#fff2a8", emissiveIntensity: 1, side: THREE.DoubleSide, depthWrite: false }), 0, .5, 0).rotation.x = Math.PI; o.rotation.x = -1.2; break;
-    default: break;
-  }
-}
-/** Capacete carregado na mão (como na ficha de equipe). */
-function holdHelmet(arm, item, M) {
-  const col = item && item.col ? item.col : "#f0f0f0", g = new THREE.Group(), s = new THREE.Mesh(new THREE.SphereGeometry(.36, 14, 10), M(col, { metalness: .4, roughness: .35, emissive: item && item.glow || "#000", emissiveIntensity: item && item.glow ? .5 : 0 })); g.add(s);
-  const v = new THREE.Mesh(new THREE.SphereGeometry(.3, 12, 8, -1, 2, .5, 1.4), M("#10182a", { metalness: .9, roughness: .1 })); v.position.z = .08; g.add(v); g.position.set(-.05, -.95, .38); arm.add(g);
-}
-/** Faixa com a bandeira da nacionalidade no braço do traje. */
-function flagPatch(arm, cc) {
-  if (!cc) return; const m = new THREE.Mesh(new THREE.PlaneGeometry(.3, .2), new THREE.MeshBasicMaterial({ map: flagTex(cc) })); m.position.set(.18, -.3, 0); m.rotation.y = Math.PI / 2; arm.add(m);
 }
 
 // ---------- miniaturas 3D (render único reutilizado, cache por chave) ----------
@@ -245,9 +171,9 @@ const THUMB = (() => {
   let r = null, sc, cam, cache = {}, ok = true;
   function init() { if (r || !ok) return; try { r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setSize(96, 120); sc = new THREE.Scene(); sc.add(new THREE.HemisphereLight(0xfff0e0, 0x402010, 1)); const d = new THREE.DirectionalLight(0xffffff, 1.1); d.position.set(3, 6, 6); sc.add(d); cam = new THREE.PerspectiveCamera(35, 96 / 120, .1, 60); } catch (e) { ok = false; } }
   /** Renderiza um objeto 3D; modo "head" mostra só a cabeça/busto, "full" o corpo. */
-  function shot(obj, mode) { init(); if (!r) return ""; sc.add(obj); const full = mode === "full"; cam.position.set(0, full ? 2.0 : 3.0, full ? 8.3 : 3.6); cam.lookAt(0, full ? 1.85 : 2.95, 0); obj.rotation.y = full ? .35 : .25; r.render(sc, cam); const u = r.domElement.toDataURL("image/png"); sc.remove(obj); return u; }
+  function shot(obj, mode) { init(); if (!r) return ""; sc.add(obj); const full = mode === "full"; const hd = obj.userData && obj.userData.legs; cam.position.set(0, full ? 2.1 : hd ? 3.25 : 3.0, full ? 8.6 : hd ? 4.6 : 3.6); cam.lookAt(0, full ? 1.95 : hd ? 3.12 : 2.95, 0); obj.rotation.y = full ? .35 : .25; r.render(sc, cam); const u = r.domElement.toDataURL("image/png"); sc.remove(obj); return u; }
   return { shot, get: (key, fn) => cache[key] || (cache[key] = fn()), reset: () => { cache = {}; } };
 })();
 /** Miniatura do avatar com `eq` (corpo inteiro ou cabeça). */
-const thumbAv = (eq, mode) => THUMB.get("a|" + mode + "|" + JSON.stringify(eq) + "|" + allCX().length, () => THUMB.shot(av(eq), mode));
+const thumbAv = (eq, mode) => THUMB.get("a|" + mode + "|" + JSON.stringify(eq) + "|" + allCX().length + "|" + (typeof TX_VER !== "undefined" ? TX_VER : 0), () => THUMB.shot(av(eq), mode));
 const thumbHair = (hr, lk) => THUMB.get("h|" + hr + "|" + lk.t + "|" + lk.hc, () => { const o = new THREE.Group(), h = humanHead(Object.assign({}, lk, { hr, gl: 0, hg: 2 }), null, null, null, (c, op) => new THREE.MeshStandardMaterial(Object.assign({ color: c || "#888", roughness: .6 }, op || {}))); h.position.y = 2.95; o.add(h); return THUMB.shot(o, "head"); });
