@@ -2,7 +2,7 @@
 let S = { coins: 500, own: [], done: {}, color: "#d8d0c4", v: 3 };
 let P = { name: "", cr: 0, pp: 0, rp: 0, w: 0, day: "", own: DEF_OWN.slice(), eq: Object.assign({}, DEF_EQ), evs: {}, fr: { f: [], in: [], out: [], cc: {} }, v: 3 };
 const ACC = { user: null, role: "guest", cc: "", vf: false, token: null };
-let CAT = { cos: [], part: [], up: [] };
+let CAT = { cos: [], part: [], up: [], chr: [] };
 const isAdminAcc = () => ACC.role === "admin" || ACC.role === "artist";
 const isArtistAcc = () => ACC.role === "artist";
 
@@ -46,12 +46,12 @@ const EV = {
 function earn(n) { const v = n * EV.mult; S.coins += v; return v; }
 
 // ---------- peças/upgrades/cosméticos publicados pelos desenhistas ----------
-let HUBCAT = { cos: [], part: [], up: [] };
+let HUBCAT = { cos: [], part: [], up: [], chr: [] };
 /** Catálogo = itens do mundo conectado + itens publicados globalmente (mural). */
-function applyCatalog(c) { HUBCAT = { cos: (c && c.cos) || [], part: (c && c.part) || [], up: (c && c.up) || [] }; refreshCatalog(); }
+function applyCatalog(c) { HUBCAT = { cos: (c && c.cos) || [], part: (c && c.part) || [], up: (c && c.up) || [], chr: (c && c.chr) || [] }; refreshCatalog(); }
 function refreshCatalog() {
   const merge = (k) => { const seen = new Set(); return (HUBCAT[k] || []).concat(typeof BUL !== "undefined" ? BUL.liveData(k) : []).filter((x) => x && !seen.has(x.id) && seen.add(x.id)); };
-  CAT = { cos: merge("cos"), part: merge("part"), up: merge("up") };
+  CAT = { cos: merge("cos"), part: merge("part"), up: merge("up"), chr: merge("chr") };
   Object.keys(TY).forEach((k) => { if (!BUILTIN.includes(k)) delete TY[k]; });
   CAT.part.forEach((p) => { TY[p.id] = { n: p.n, c: p.c, k: p.k, p: p.p, custom: p }; });
 }

@@ -148,6 +148,13 @@ const allUP = () => UP.concat((CAT && CAT.up) || []);
 
 // ---------- cosméticos ----------
 // l: s traje · p calça · w relógio · h capacete · b mochila
+const _C = { blue: ["Azul", "#3d7bff"], orange: ["Laranja", "#ff8a1f"], green: ["Verde", "#46b86a"], purple: ["Roxo", "#8a4cd6"], white: ["Branco", "#e8e8ee"], red: ["Vermelho", "#d63b3b"], yellow: ["Amarelo", "#e8b923"], teal: ["Turquesa", "#2b9aa8"], gray: ["Cinza", "#8b909c"] };
+/** Itens básicos gratuitos (como nas fichas de equipe): 8 trajes, 5 calças, 6 capacetes e 8 mochilas coloridos. */
+const BASE_FREE = [].concat(
+  ["blue", "orange", "green", "purple", "white", "red", "yellow", "teal"].map((k, i) => ({ id: "s" + (11 + i), l: "s", n: "Traje " + _C[k][0].toLowerCase() + " de equipe", c: 0, col: _C[k][1], pt: 5, c2: "#f4f4f8" })),
+  ["white", "orange", "green", "purple", "blue"].map((k, i) => ({ id: "p" + (10 + i), l: "p", n: "Calça " + _C[k][0].toLowerCase() + " com joelheiras", c: 0, col: k == "white" ? "#cfd3dc" : _C[k][1], pt: 2, c2: "#2d3340" })),
+  ["blue", "orange", "purple", "green", "red", "yellow"].map((k, i) => ({ id: "h" + (10 + i), l: "h", n: "Capacete " + _C[k][0].toLowerCase(), c: 0, col: _C[k][1] })),
+  ["blue", "orange", "green", "purple", "gray", "red", "yellow", "teal"].map((k, i) => ({ id: "b" + (10 + i), l: "b", n: "Mochila " + _C[k][0].toLowerCase(), c: 0, col: _C[k][1] })));
 const CX = [
   { id: "s0", l: "s", n: "Traje ARES branco", c: 0, col: "#e8e8ee" }, { id: "s1", l: "s", n: "Traje laranja de resgate", c: 150, col: "#ff8a1f" }, { id: "s2", l: "s", n: "Traje azul orbital", c: 200, col: "#3d7bff" },
   { id: "s3", l: "s", n: "Traje preto furtivo", c: 250, col: "#2b2b33" }, { id: "s4", l: "s", n: "Traje dourado de comandante", c: 500, col: "#e8b923", glow: "#ffcf3d" },
@@ -162,13 +169,16 @@ const CX = [
   { id: "h7", l: "h", n: "Boné de campo", c: 90, col: "#2f6bd6", sh: 1 }, { id: "h8", l: "h", n: "Coroa de cristal", c: 260, col: "#e8c8ff", glow: "#c070ff", sh: 3 }, { id: "h9", l: "h", n: "Fones de comunicação", c: 110, col: "#44485a", glow: "#33ddff", sh: 5 },
   { id: "s9", l: "s", n: "Traje colete tático", c: 210, col: "#4c5a3a", sh: 3, pt: 3, c2: "#c9a66b" }, { id: "s10", l: "s", n: "Traje ombreiras de comandante", c: 280, col: "#2d4f9c", pt: 2, c2: "#e8b923" }, { id: "p3", l: "p", n: "Calça boca de sino", c: 90, col: "#6a4cff", sh: 1, pt: 1, c2: "#ffffff" }, { id: "p4", l: "p", n: "Bermuda de explorador", c: 90, col: "#7a6a4f", sh: 3, c2: "#e8e8ee" },
   { id: "b3", l: "b", n: "Tanques gêmeos", c: 140, col: "#cfd3dc", sh: 2 }, { id: "b4", l: "b", n: "Asas de energia", c: 300, col: "#6a4cff", glow: "#7fe8ff", sh: 3, c2: "#7fe8ff" },
+  { id: "t0", l: "t", n: "Sem equipamento", c: 0, col: "" }, { id: "t1", l: "t", n: "Dispositivo de pulso", c: 90, col: "#2d3340", glow: "#44ddff", sh: 1 }, { id: "t2", l: "t", n: "Tablet de missão", c: 110, col: "#3a4458", glow: "#66ccff", sh: 2 }, { id: "t3", l: "t", n: "Garrafa de água", c: 40, col: "#7fb7ff", glow: "#44ddff", sh: 3 }, { id: "t4", l: "t", n: "Cinto de ferramentas", c: 80, col: "#7a5a3a", sh: 4 }, { id: "t5", l: "t", n: "Kit médico", c: 100, col: "#f2f2f2", sh: 5, c2: "#e03030" }, { id: "t6", l: "t", n: "Chave inglesa", c: 60, col: "#c9ced8", sh: 6 }, { id: "t7", l: "t", n: "Lanterna", c: 70, col: "#4a4f5c", glow: "#fff2a8", sh: 7 },
+  { id: "a6", l: "a", n: "Óculos de proteção", c: 80, col: "#44aaff", glow: "#44aaff", sh: 8 }, { id: "a7", l: "a", n: "Headset de comunicação", c: 100, col: "#3a3d46", glow: "#33ddff", sh: 9 },
+  { id: "r6", l: "r", n: "Hijab de seda", c: 90, col: "#8a6ad6", sh: 10 }, { id: "r7", l: "r", n: "Chanel ruivo", c: 110, col: "#c8461e", sh: 11 }, { id: "r8", l: "r", n: "Topete castanho", c: 100, col: "#6a4630", sh: 12 },
   { id: "b0", l: "b", n: "Mochila padrão", c: 0, col: "#b9bcc4" }, { id: "b1", l: "b", n: "Mochila de oxigênio azul", c: 110, col: "#4a86e8" }, { id: "b2", l: "b", n: "Mochila reforçada", c: 170, col: "#6b5a44" }, { id: "b3", l: "b", n: "Mochila a jato", c: 350, col: "#ff6a2b", glow: "#ffa04a" },
 ];
-const SL = { s: "Trajes", p: "Calças", w: "Relógios", h: "Capacetes", b: "Mochilas", r: "Cabelos", a: "Acessórios", look: "Aparência", e: "Eventos", adm: "Admin" };
-const LAYERS = ["s", "p", "w", "h", "b", "r", "a"];
-const DEF_EQ = { s: "s0", p: "p0", w: "w0", h: "h0", b: "b0", r: "r0", a: "a0" };
-const DEF_OWN = ["s0", "p0", "w0", "h0", "b0", "r0", "a0"];
+const SL = { s: "Trajes", p: "Calças", w: "Relógios", h: "Capacetes", b: "Mochilas", r: "Cabelos", a: "Acessórios", t: "Equipamentos", team: "Equipe", look: "Aparência", e: "Eventos", adm: "Admin" };
+const LAYERS = ["s", "p", "w", "h", "b", "r", "a", "t"];
+const DEF_EQ = { s: "s0", p: "p0", w: "w0", h: "h0", b: "b0", r: "r0", a: "a0", t: "t0" };
+const DEF_OWN = ["s0", "p0", "w0", "h0", "b0", "r0", "a0", "t0"].concat(BASE_FREE.map((x) => x.id));
 const TMPCX = [];
-const allCX = () => CX.concat(MarsRules.ADMIN_COSMETICS, (CAT && CAT.cos) || [], EV.suits(), TMPCX);
+const allCX = () => CX.concat(BASE_FREE, MarsRules.ADMIN_COSMETICS, (CAT && CAT.cos) || [], EV.suits(), TMPCX);
 const cxById = (id) => allCX().find((x) => x.id == id) || {};
 const cc = (id) => cxById(id).col || "";
