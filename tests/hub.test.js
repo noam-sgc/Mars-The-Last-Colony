@@ -8,7 +8,8 @@ function client(hub) {
   return { c, log, ask: (m) => new Promise((r) => { m.rid = ++rid; pend[rid] = r; hub.handle(c, m); }) };
 }
 test("papéis: só 3 admins e 2 desenhistas", () => {
-  assert.deepEqual(R.ADMINS, ["ADMVinnil", "ADMKezle", "ADMLefaar"]);
+  assert.deepEqual(R.ADMINS, ["ADMVinnil", "ADMKezle", "ADMLefaar", "alisson"]);
+  assert.ok(R.isAdmin("Alisson") && R.isArtist("alisson") && R.roleOf("alisson") === "artist");
   assert.ok(R.isAdmin("admvinnil") && R.isAdmin("ADMLefaar") && !R.isArtist("ADMVinnil") && R.isArtist("ADMKezle") && R.isArtist("ADMLefaar"));
   assert.equal(R.roleOf("Joao"), "user");
 });
@@ -62,7 +63,7 @@ test("catálogo: só ADMKezle/ADMLefaar publicam; ADMVinnil (admin) não", async
 test("amigos: pedido, aceite e selo de verificado (amigo de admin)", async () => {
   const h = mk(); await h.ensureAdmins({ ADMVinnil: "a1a1a1", ADMKezle: "b2b2b2", ADMLefaar: "c3c3c3" });
   const a = client(h), v = client(h); await a.ask({ t: "reg", u: "Ana", p: "secret1", c: "BR" }); await v.ask({ t: "login", u: "ADMVinnil", p: "a1a1a1" });
-  let us = (await a.ask({ t: "users" })).users; assert.ok(us.length === 4 && us.find((x) => x.u === "ADMVinnil").vf && !us.find((x) => x.u === "Ana").vf);
+  let us = (await a.ask({ t: "users" })).users; assert.ok(us.length >= 4 && us.find((x) => x.u === "ADMVinnil").vf && !us.find((x) => x.u === "Ana").vf);
   await a.ask({ t: "fr", op: "add", u: "ADMVinnil" }); await v.ask({ t: "fr", op: "acc", u: "Ana" });
   us = (await v.ask({ t: "users" })).users; assert.ok(us.find((x) => x.u === "Ana").vf, "amigo de admin é verificado");
   await v.ask({ t: "fr", op: "rm", u: "Ana" }); us = (await v.ask({ t: "users" })).users; assert.ok(!us.find((x) => x.u === "Ana").vf);

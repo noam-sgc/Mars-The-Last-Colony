@@ -7,9 +7,9 @@
   "use strict";
 
   // ---------- papéis ----------
-  // Somente estes nomes são administradores; só ADMKezle e ADMLefaar são desenhistas (ADMVinnil é admin, sem estúdio).
-  const ADMINS = ["ADMVinnil", "ADMKezle", "ADMLefaar"];
-  const ARTISTS = ["ADMKezle", "ADMLefaar"];
+  // Somente estes nomes são administradores; só ADMKezle, ADMLefaar e alisson são desenhistas (ADMVinnil é admin, sem estúdio).
+  const ADMINS = ["ADMVinnil", "ADMKezle", "ADMLefaar", "alisson"];
+  const ARTISTS = ["ADMKezle", "ADMLefaar", "alisson"];
   const key = (n) => String(n || "").trim().toLowerCase();
   const isAdmin = (n) => ADMINS.some((a) => key(a) === key(n));
   const isArtist = (n) => ARTISTS.some((a) => key(a) === key(n));
