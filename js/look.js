@@ -13,13 +13,13 @@ const LOOK = {
   FEET: ["Bota padrão", "Tênis espacial", "Bota alta", "Bota robusta", "Bota com joelheira"], FEETC: ["", "#f4f4f8", "#2b2e36", "#8b909c", "#6b4a2f", "#d63031", "#2f6fe4", "#58b431", "#f07818", "#8e44ad"],
   EYEC: ["#2a1a10", "#5a3a1e", "#2e6e3e", "#2e5f9e", "#6e6e78"], EYEN: ["Castanho escuro", "Castanho", "Verde", "Azul", "Cinza"],
   AX: [["oculos", "🥽 Óculos"], ["fones", "🎧 Fones"], ["pulso", "⌚ Pulso"], ["tablet", "📟 Tablet"], ["garrafa", "🍶 Garrafa"], ["cinto", "🧷 Cinto"], ["kit", "⛑️ Kit médico"], ["chave", "🔧 Chave"], ["lanterna", "🔦 Lanterna"]],
-  DEF: { t: 3, hr: 3, hc: "#1a1210", ey: 0, fc: 0, gl: 1, br: 0, bd: 1, ht: 1, hg: 0, nc: "BR", ec: 0, h2: -1, hd: 0, es: 0, ft: 0, bc: "" },
+  DEF: { t: 3, hr: 3, hc: "#1a1210", ey: 0, fc: 0, gl: 1, br: 0, bd: 1, ht: 1, hg: 0, nc: "BR", ec: 0, h2: -1, hd: 0, es: 0, ft: 0, bc: "", v2: 0, pd: [0, 0, 0, -1, -1, 0, 0, -1, -1] },
 };
 const _in = (v, a, b, d) => (Number.isInteger(v) && v >= a && v <= b ? v : d);
 /** Valida/normaliza um objeto de aparência (vindo da rede ou do disco). */
 function lookNorm(l) {
   l = l && typeof l === "object" ? l : {}; const D = LOOK.DEF;
-  return { t: _in(l.t, 0, 7, D.t), hr: _in(l.hr, 0, 12, D.hr), hc: /^#[0-9a-fA-F]{6}$/.test(l.hc) ? l.hc : D.hc, ey: _in(l.ey, 0, 2, D.ey), fc: _in(l.fc, 0, 3, D.fc), gl: _in(l.gl, 0, 3, D.gl), br: _in(l.br, 0, 3, D.br), bd: _in(l.bd, 0, 2, D.bd), ht: _in(l.ht, 0, 2, D.ht), hg: _in(l.hg, 0, 2, 0), ec: _in(l.ec, 0, 4, 0), h2: _in(l.h2, -1, 22, -1), hd: _in(l.hd, 0, 4, 0), es: _in(l.es, 0, 4, 0), ft: _in(l.ft, 0, 4, 0), bc: /^#[0-9a-fA-F]{6}$/.test(l.bc) ? l.bc : "", ax: _in(l.ax, 0, 511, 0), nc: /^[A-Z]{2}$/.test(l.nc) ? l.nc : "" };
+  return { t: _in(l.t, 0, 7, D.t), hr: _in(l.hr, 0, 12, D.hr), hc: /^#[0-9a-fA-F]{6}$/.test(l.hc) ? l.hc : D.hc, ey: _in(l.ey, 0, 2, D.ey), fc: _in(l.fc, 0, 3, D.fc), gl: _in(l.gl, 0, 3, D.gl), br: _in(l.br, 0, 3, D.br), bd: _in(l.bd, 0, 2, D.bd), ht: _in(l.ht, 0, 2, D.ht), hg: _in(l.hg, 0, 2, 0), ec: _in(l.ec, 0, 4, 0), h2: _in(l.h2, -1, 22, -1), hd: _in(l.hd, 0, 4, 0), es: _in(l.es, 0, 4, 0), ft: _in(l.ft, 0, 4, 0), bc: /^#[0-9a-fA-F]{6}$/.test(l.bc) ? l.bc : "", v2: _in(l.v2, 0, 1, 0), pd: Array.isArray(l.pd) && l.pd.length === 9 ? l.pd.map((v, i) => _in(v, -2, 40, D.pd[i])) : D.pd.slice(), ax: _in(l.ax, 0, 511, 0), nc: /^[A-Z]{2}$/.test(l.nc) ? l.nc : "" };
 }
 /** Aparência aleatória determinística (colonos e bots variados). */
 function lookRandom(seed) {

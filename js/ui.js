@@ -153,7 +153,7 @@ function askSpecies() {
 let WTAB = "s", WTRY = null;
 function ward() {
   screen("ward"); $("#ward").className = "scr pg on"; const el = $("#ward"); const role = ACC.role;
-  const tabs = ["team", "look", "s", "p", "h", "b", "a", "t", "r", "w", "e"].concat(isAdminAcc() ? ["adm"] : []); if (!tabs.includes(WTAB)) WTAB = "team";
+  const tabs = ["team", "art", "look", "s", "p", "h", "b", "a", "t", "r", "w", "e"].concat(isAdminAcc() ? ["adm"] : []); if (!tabs.includes(WTAB)) WTAB = "team";
   el.innerHTML = `<div class="left"><div class="top" style="width:100%"><button id="rb2">← Voltar</button><h2>Guarda-roupa</h2></div><div class="pv" id="pv"></div><div class="pill w" style="width:100%;text-align:center"><b>Espécie</b><div class="row" style="justify-content:center;margin-top:6px"><button id="spH" class="${P.sp != "alien" ? "sel" : ""}">🧑‍🚀 Humano</button><button id="spA" class="${P.sp == "alien" ? "sel" : ""}">👽 Alienígena</button></div><small class="mu" style="display:block;margin-top:6px">Grátis e pode mudar a qualquer momento.<br><b>Bônus:</b> ${SPB_TXT[P.sp]}</small>${P.sp == "alien" ? `<div class="row" style="justify-content:center;margin-top:8px">${Object.keys(SKINS).map((k) => `<button class="sw-btn ${P.skin == k ? "sel" : ""}" data-sk="${k}" title="${SKINS[k].n}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${SKINS[k].c};box-shadow:0 0 8px ${SKINS[k].g}"></button>`).join("")}</div><small class="mu">Cor da pele</small>` : ""}</div><div class="pill" style="text-align:center">Créditos: <b id="wc">${P.cr}</b> · PP: <b>${P.pp}</b></div><div class="row"><button id="wsp">⏸ Girar</button><button id="wzm">🔍 Rosto</button><button id="wrs">Padrão</button></div><small class="mu" style="text-align:center">Toque num item para experimentar. Arraste o boneco para girar.</small></div>
   <div class="right"><div class="tabs">${tabs.map((t) => `<button data-t="${t}" class="${t == WTAB ? "sel" : ""}">${SL[t]}</button>`).join("")}</div><div class="items" id="wi"></div></div>`;
   $("#rb2").onclick = () => { if (window.studioStop) studioStop(); menu(); }; el.querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => { WTAB = b.dataset.t; ward(); }));
@@ -164,18 +164,20 @@ function ward() {
   $("#wrs").onclick = () => { WTRY = null; P.eq = Object.assign({}, DEF_EQ); saveP(); ward(); };
   { let face = false; $("#wzm").onclick = () => { face = !face; pv.c.position.set(0, face ? 3.3 : 2.8, face ? 5 : 9.6); pv.c.lookAt(0, face ? 3.1 : 1.9, 0); $("#wzm").textContent = face ? "🧍 Corpo" : "🔍 Rosto"; }; }
   $("#wsp").onclick = () => { if (pv) { pv.spin = !pv.spin; $("#wsp").textContent = pv.spin ? "⏸ Girar" : "▶ Girar"; } };
+  if (WTAB == "art") return artPanel(pv);
   if (WTAB == "look") return lookPanel(pv);
   if (WTAB == "team") return teamPanel(pv, ward);
   const spItem = (x) => !x.sp || x.sp === P.sp;
   let items = []; if (WTAB == "e") items = allCX().filter((x) => x.ev || String(x.id).startsWith("ev_")); else if (WTAB == "adm") items = allCX().filter((x) => x.adm && canUseItem(x)); else items = allCX().filter((x) => x.l == WTAB && !x.ev && !String(x.id).startsWith("ev_") && !(x.adm));
   if (WTAB == "e") { EV.active.forEach((e) => { if (!items.some((i) => i.id == e.suit.id)) items.push(e.suit); }); }
   items = items.filter(spItem);
-  const wi = $("#wi"); if (!items.length) wi.innerHTML = `<p class="mu">Nada aqui ainda. ${WTAB == "e" ? "Resgate trajes durante os eventos!" : ""}</p>`;
+  const wi = $("#wi"); if (lookNorm(P.look).v2) { const bn = document.createElement("div"); bn.className = "sec"; bn.style.gridColumn = "1/-1"; bn.innerHTML = `<small class="mu">🎨 Você está no visual <b>Arte 2D</b>: os itens desta aba valem para o visual 3D.</small> <button id="to3">Usar o visual 3D</button>`; wi.appendChild(bn); setTimeout(() => { const b3 = $("#to3"); if (b3) b3.onclick = () => { P.look.v2 = 0; saveP(); ward(); }; }); }
+  if (!items.length) wi.innerHTML = `<p class="mu">Nada aqui ainda. ${WTAB == "e" ? "Resgate trajes durante os eventos!" : ""}</p>`;
   items.forEach((x) => {
     const o = P.own.includes(x.id), equipped = P.eq[x.l] == x.id, usable = canUseItem(x), d = document.createElement("div"); d.className = "it" + (equipped ? " eq" : "");
     const rar = x.c >= 400 ? "Épico" : x.c >= 200 ? "Raro" : x.c > 0 ? "Comum" : x.adm ? "Admin" : x.ev || String(x.id).startsWith("ev_") ? "Evento" : "Básico";
     d.innerHTML = `<span class="tg">${rar}</span><img class="th" alt="" style="${x.glow ? "box-shadow:0 0 14px " + x.glow + "55" : ""}"><b style="font-size:12px">${esc(x.n)}</b><small>${x.by ? "✨ por " + esc(x.by) : SL[x.l]}</small>`;
-    lazyThumb(d.querySelector("img.th"), () => thumbAv(Object.assign({}, DEF_EQ, { sp: "human", sk: "verde", lk: lookNorm(P.look), [x.l]: x.id }), x.l == "r" || x.l == "a" ? "head" : "full"));
+    lazyThumb(d.querySelector("img.th"), () => thumbAv(Object.assign({}, DEF_EQ, { sp: "human", sk: "verde", lk: lookNorm(Object.assign({}, P.look, { v2: 0 })), [x.l]: x.id }), x.l == "r" || x.l == "a" ? "head" : "full"));
     d.onclick = () => { WTRY = { [x.l]: x.id }; refresh(); };
     const act = document.createElement("button"); act.style.fontSize = "12px";
     const claimable = !o && (x.ev || String(x.id).startsWith("ev_")) && EV.active.some((e) => e.suit.id == x.id);
