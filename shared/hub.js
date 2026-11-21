@@ -31,7 +31,8 @@
       const s = this.store; let ch = false;
       if (it.k === "acct") {
         const cur = s.users[it.id], d = it.d;
-        if (!cur || (!cur.npc && cur.pass !== d.pass && d.created < (cur.created || Infinity))) { s.users[it.id] = Object.assign(this.newUser(d.name, d.cc, d.pass), { created: d.created }); ch = true; }
+        if (!cur || (!cur.npc && cur.pass !== d.pass && d.created < (cur.created || Infinity))) { s.users[it.id] = Object.assign(this.newUser(d.name, d.cc, d.pass), { created: d.created, pwts: d.pwts || 0 }); ch = true; }
+        else if (cur && !cur.npc && d.pwts && d.pwts > (cur.pwts || 0) && d.created === cur.created) { cur.pass = d.pass; cur.pwts = d.pwts; ch = true; }   // senha redefinida (vem só da nuvem)
       } else if (it.k === "sav") {
         const u = s.users[it.id]; if (u && !u.npc && !it.del && it.ts > (u.profTs || 0)) { u.prof = this.sanitizeProf(u, it.d); u.profTs = it.ts; ch = true; }
       } else if (it.k === "ev") {

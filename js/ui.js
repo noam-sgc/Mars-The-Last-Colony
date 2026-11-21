@@ -15,18 +15,18 @@ function authScreen(tab) {
     <div class="tabs"><button data-t="login" class="${tab == "login" ? "sel" : ""}">Entrar</button><button data-t="reg" class="${tab == "reg" ? "sel" : ""}">Criar conta</button></div>
     <label class="f">Usuário<input id="au" maxlength="16" autocomplete="username" placeholder="3 a 16 letras/números"></label>
     <label class="f">Senha<input id="ap" type="password" autocomplete="${tab == "reg" ? "new-password" : "current-password"}" placeholder="mínimo 6 caracteres"></label>
-    ${tab == "reg" ? `<label class="f">País<select id="ac">${ctry("BR")}</select></label>` : ""}
+    ${tab == "reg" ? `<label class="f">País<select id="ac">${ctry("BR")}</select></label><label class="f">E-mail (opcional, para recuperar a senha)<input id="aem" type="email" autocomplete="email" placeholder="voce@exemplo.com"></label>` : ""}
     <div class="err" id="ae"></div><button class="pri" id="ago">${tab == "reg" ? "Criar conta e jogar" : "Entrar"}</button>
-    <button class="gh" id="agu">Jogar agora como convidado (solo, sandbox e bots; sem chat e amigos)</button>
+    ${tab == "login" ? `<button class="gh" id="afp">🔑 Esqueci minha senha</button>` : ""}<button class="gh" id="agu">Jogar agora como convidado (solo, sandbox e bots; sem chat e amigos)</button>
     <small class="mu" id="async">${syncLine()}</small><small class="mu">${worldLine()}</small><button class="gh" id="asw">← Trocar de mundo / entrar com código</button></div>`;
   $("#auth").querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => authScreen(b.dataset.t)));
   const go = async () => {
     const u = $("#au").value.trim(), p = $("#ap").value; $("#ae").textContent = ""; $("#ago").disabled = true;
     const go1 = $("#ago"); if (!CLOUD.on) { $("#ae").textContent = "☁ Buscando sua conta na nuvem…"; await CLOUD.settle(5000); $("#ae").textContent = ""; } if (!BUL.synced) { $("#ae").textContent = "🌐 Sincronizando contas com o mural global…"; const ok = await BUL.whenSynced(4000); $("#ae").textContent = ok ? "" : "⚠ Sem conexão com o mural global: usando só as contas deste aparelho."; }
     const r = await NET.ask(tab == "reg" ? { t: "reg", u, p, c: $("#ac").value } : { t: "login", u, p }); go1.disabled = false;
-    if (!r.ok) { $("#ae").textContent = (r.err || "Falha") + (tab != "reg" && /incorretos/.test(r.err || "") && !BUL.hasAcct(u) ? (BUL.synced ? " Esse usuário não existe no mural global: crie a conta em “Criar conta”." : " Ainda sem conexão com o mural global: se criou a conta em outro aparelho, aguarde conectar e tente de novo.") : ""); return; } applyAuth(r);
+    if (!r.ok) { $("#ae").textContent = (r.err || "Falha") + (tab != "reg" && /incorretos/.test(r.err || "") && !BUL.hasAcct(u) ? (BUL.synced ? " Esse usuário não existe no mural global: crie a conta em “Criar conta”." : " Ainda sem conexão com o mural global: se criou a conta em outro aparelho, aguarde conectar e tente de novo.") : ""); return; } if (tab == "reg" && $("#aem") && $("#aem").value.trim()) RESET.setEmail(u, p, $("#aem").value.trim(), true).then((x) => toast(x.ok ? "📧 E-mail salvo: " + esc(x.hint) : "⚠ E-mail não salvo: " + esc(x.err || "falha"), 4000)); applyAuth(r);
   };
-  $("#ago").onclick = go; $("#ap").onkeydown = (e) => { if (e.key == "Enter") go(); }; $("#asw").onclick = () => switchWorld(); $("#agu").onclick = () => { ACC.user = null; ACC.role = "guest"; loadLocal(); dailyBonus(); menu(); };
+  const fp = $("#afp"); if (fp) fp.onclick = () => RESET.ask($("#au").value.trim()); $("#ago").onclick = go; $("#ap").onkeydown = (e) => { if (e.key == "Enter") go(); }; $("#asw").onclick = () => switchWorld(); $("#agu").onclick = () => { ACC.user = null; ACC.role = "guest"; loadLocal(); dailyBonus(); menu(); };
 }
 function applyAuth(r) {
   ACC.user = r.me.u; ACC.role = r.me.role; ACC.cc = r.me.cc; ACC.vf = r.me.vf; ACC.token = r.token; try { localStorage.setItem(NET.tokKey(), r.token); } catch (e) { /* ignore */ }
@@ -87,7 +87,7 @@ function menu() {
   const ev = top ? `<div class="evb ${top.kind == "special" ? "sp" : ""}" style="border-color:${top.col}"><span style="font-size:26px">${top.icon || "🎉"}</span><div><b>${esc(top.name)}</b><div class="mu">Evento ativo · moedas <span class="x">x${top.mult}</span> em tudo!</div></div></div>` : up ? `<div class="evb"><span style="font-size:22px">${up.e.icon || "📅"}</span><div class="mu">Próximo evento em ${up.in} dia(s): <b>${esc(up.e.name)}</b> · moedas x${up.e.mult}</div></div>` : "";
   const m = $("#menu"); m.style.backgroundImage = `url(${IMG.b})`;
   m.innerHTML = `<h1>MARS<small>THE LAST COLONY</small></h1>
-  <div class="ubar"><div class="pill">${ACC.user ? `${MarsRules.flag(ACC.cc)} <b>${esc(ACC.user)}</b>${vfBadge(ACC.role, ACC.vf)}${roleChip(ACC.role)} <button class="gh" id="mlo" style="padding:2px 8px">Sair</button>` : `👤 Convidado <button class="gh" id="mlo" style="padding:2px 8px">Entrar</button>`}</div>
+  <div class="ubar"><div class="pill">${ACC.user ? `${MarsRules.flag(ACC.cc)} <b>${esc(ACC.user)}</b>${vfBadge(ACC.role, ACC.vf)}${roleChip(ACC.role)} <button class="gh" id="mrs" style="padding:2px 8px" title="Enviar e-mail para redefinir a senha">🔑 Redefinir senha</button> <button class="gh" id="mlo" style="padding:2px 8px">Sair</button>` : `👤 Convidado <button class="gh" id="mlo" style="padding:2px 8px">Entrar</button>`}</div>
   <div class="pill" id="mspc" style="cursor:pointer" title="Trocar de espécie (grátis)">${SPN[P.sp]}</div><div class="pill" style="text-align:center">🪙 <b>${Math.floor(S.coins)}</b> · ✨ <b>${P.cr}</b> · 🏆 <b>${P.pp}</b> PP · 🔬 <b>${P.rp}</b> RP</div></div>${ev}
   <div class="pill" id="mworld" style="text-align:center">${worldLine()} ${NET.mode == "local" && P2P.ready ? `<button id="mwc" style="padding:2px 8px">📋 Copiar código</button>` : ""} <button class="gh" id="msw" style="padding:2px 8px">Trocar de mundo</button></div>
   <div class="mb"><button class="big" data-m="ulv" style="border-color:#4fe3ff">🚀 Ultra Learn Voyage<small>Missão real a Marte: ciência e gestão de recursos · 10 capítulos com quizzes temáticos</small></button>
@@ -100,7 +100,7 @@ function menu() {
   ${isAdminAcc() ? `<button data-m="adm" class="big" style="border-color:#6a4cff">🛡 Ferramentas ADM${isArtistAcc() ? " · Estúdio de criação" : ""}</button>` : ""}</div><div id="msg"></div>`;
   screen("menu"); sc.fog.density = .006;
   m.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => { const k = b.dataset.m; if (k == "solo") cat(); else if (k == "sand") start("sand"); else if (k == "mp") lobby(); else if (k == "ward") ward(); else if (k == "shop") shop(true); else if (k == "soc") social(); else if (k == "lbd") board(); else if (k == "evt") eventsPanel(); else if (k == "ulv") ulvHome(); else if (k == "quiz") quizHome(); else if (k == "facts") factsHome(); else if (k == "adm") adminTools(); }));
-  $("#mspc").onclick = () => ward(); askSpecies(); $("#mlo").onclick = () => (ACC.user ? logout() : authScreen()); $("#msw").onclick = () => switchWorld(); if ($("#mwc")) $("#mwc").onclick = () => copyText(P2P.code, "Código do mundo");
+  $("#mspc").onclick = () => ward(); askSpecies(); $("#mlo").onclick = () => (ACC.user ? logout() : authScreen()); if ($("#mrs")) $("#mrs").onclick = () => RESET.ask(ACC.user); $("#msw").onclick = () => switchWorld(); if ($("#mwc")) $("#mwc").onclick = () => copyText(P2P.code, "Código do mundo");
 }
 
 // ---------- catálogo e loja ----------

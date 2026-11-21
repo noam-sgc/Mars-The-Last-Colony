@@ -8,7 +8,7 @@ const CLOUD = (() => {
   async function pull() {
     let r = null; try { const x = await fetch("/api/bul?since=" + since, { cache: "no-store" }); why = x.status === 404 ? "missing" : x.status === 503 ? "off" : x.ok ? "ok" : "err"; r = x.ok ? await x.json() : null; } catch (e) { why = "net"; }
     if (!r || !r.cloud) { if (!on) done(); return false; }
-    since = Math.max(since, r.now - 5000); const first = !on; on = true; const ch = BUL.receive(r.items || []); if (ch.length && typeof GS !== "undefined") GS.pushBul(ch);
+    since = Math.max(since, r.now - 5000); const first = !on; on = true; const ch = BUL.receive(r.items || [], true); if (ch.length && typeof GS !== "undefined") GS.pushBul(ch);
     if (first) { await seed(); } BUL.markSynced(); done(); return true;
   }
   /** Primeira conexão: envia para a nuvem tudo que este navegador já conhece (contas antigas passam a existir para todos). */

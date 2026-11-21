@@ -15,7 +15,7 @@
     if (it.del) return it.k !== "acct" && it.k !== "sav" && (it.k === "ev" || it.k === "msg" ? R.isAdmin(it.by) : R.isArtist(it.by));
     const d = it.d; if (!d || typeof d !== "object" || JSON.stringify(d).length > (it.k === "sav" ? MAXSAV : it.k === "cos" ? 130000 : MAXD)) return false;
     switch (it.k) {
-      case "acct": return R.validName(d.name) && R.key(d.name) === it.id && str(d.pass, 200) && /^p1:\d+:[0-9a-f]+:[0-9a-f]+$/.test(d.pass) && R.validCountry(d.cc) && Number.isFinite(d.created);
+      case "acct": return R.validName(d.name) && R.key(d.name) === it.id && str(d.pass, 200) && /^p1:\d+:[0-9a-f]+:[0-9a-f]+$/.test(d.pass) && R.validCountry(d.cc) && Number.isFinite(d.created) && (d.pwts == null || Number.isFinite(d.pwts));
       case "sav": return R.validName(it.by) && R.key(it.by) === it.id && d.p && typeof d.p === "object" && d.s && typeof d.s === "object";   // progresso da conta (o mais novo vence)
       case "ev": return R.isAdmin(it.by) && str(d.name, 40) && Number.isFinite(d.start) && Number.isFinite(d.end) && d.end > d.start;
       case "msg": return R.isAdmin(it.by) && str(d.text, 240);
@@ -23,9 +23,16 @@
     }
   }
   /** Mescla um item no store. Contas: vence a mais antiga (primeiro a registrar o nome). Demais: o mais novo vence. Retorna true se mudou. */
-  function merge(store, it) {
+  function merge(store, it, trusted) {
     if (!valid(it)) return false; const m = store[it.k], cur = m[it.id];
-    if (it.k === "acct") { if (!cur || it.d.created < cur.d.created || (it.d.created === cur.d.created && it.d.pass < cur.d.pass)) { m[it.id] = { k: it.k, id: it.id, ts: it.ts, d: it.d }; return true; } return false; }
+    if (it.k === "acct") {
+      const pw = it.d.pwts || 0, cp = (cur && cur.d.pwts) || 0;
+      // Redefinição de senha: só a nuvem (trusted) troca o hash, na mesma conta (created igual) e com pwts maior.
+      if (cur && (pw || cp)) { if (trusted && pw > cp && it.d.created === cur.d.created) { m[it.id] = { k: it.k, id: it.id, ts: it.ts, d: it.d }; return true; } return false; }
+      const d = trusted || !pw ? it.d : Object.assign({}, it.d, { pwts: undefined });   // itens de pares (gossip) nunca carregam pwts
+      if (d.pwts === undefined) delete d.pwts;
+      if (!cur || d.created < cur.d.created || (d.created === cur.d.created && d.pass < cur.d.pass)) { m[it.id] = { k: it.k, id: it.id, ts: it.ts, d }; return true; } return false;
+    }
     if (!cur || it.ts > cur.ts) { m[it.id] = { k: it.k, id: it.id, ts: it.ts, by: it.by, d: it.del ? null : it.d, del: !!it.del }; return true; }
     return false;
   }
