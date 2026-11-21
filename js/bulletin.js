@@ -28,7 +28,7 @@ const BUL = (() => {
     /** Novo item criado aqui (conta, evento, publicação, aviso): guarda, aplica e espalha. */
     add(it) { if (!MarsBul.merge(store, it)) return false; apply([store[it.k][it.id]]); if (typeof GS !== "undefined") GS.pushBul([store[it.k][it.id]]); if (typeof CLOUD !== "undefined") CLOUD.push([store[it.k][it.id]]); return true; },
     /** Itens vindos da rede: devolve os que realmente mudaram (para o registro repassar). */
-    receive(items) { const ch = []; (items || []).forEach((it) => { if (MarsBul.merge(store, it)) ch.push(store[it.k][it.id]); }); if (ch.length) apply(ch); return ch; },
+    receive(items, trusted) { const ch = []; (items || []).forEach((it) => { if (MarsBul.merge(store, it, !!trusted)) ch.push(store[it.k][it.id]); }); if (ch.length) apply(ch); return ch; },
     applyAll() { apply(MarsBul.all(store)); },
     markSynced() { if (!syncedAt) { syncedAt = Date.now(); waiters.splice(0).forEach((f) => f(true)); } },
     resetSync() { syncedAt = 0; },

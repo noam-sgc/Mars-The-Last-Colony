@@ -154,3 +154,7 @@ Veja `docs/DEPLOY.md` (site estático na Vercel; sem servidor de jogo).
 - `js/avatar2.js`: o avatar do jogo passou a ser o modelo do **Mars Colony — Avatar Studio 3D** (HTML criado pelo usuário), portado para Three r128 (cápsulas via torno, `vendor/RoundedBoxGeometry.js`). Converte cosméticos/aparência do jogo (`asState`) e mantém pintura, cabelo desenhado, acessórios do Estúdio (`headExtras`), alienígenas e animação de andar/piscar.
 - Aparência ganhou cor dos olhos (`ec`) e acessórios grátis da missão (`ax`, bitmask: óculos, fones, pulso, tablet, garrafa, cinto, kit, chave, lanterna). Equipe = Yuki, Kwame, Saoirse, Amira, Wei, Nia, Rafael, Emma.
 - ADMVinnil voltou a ser **admin** (sem Estúdio). Admins: ADMVinnil, ADMKezle, ADMLefaar e alisson; desenhistas: ADMKezle, ADMLefaar e alisson.
+
+## Atualização: guarda-roupa ampliado e redefinição de senha
+- Cabelos: 23 estilos (`LOOK.HAIRS2`, campo `h2`; contas antigas usam `hr` → `OLD2NEW`), formato da cabeça (`hd`) e dos olhos (`es`), pés/botas (`ft` + cor `bc`), joelheiras e painéis do traje. Equipe com 10 personagens.
+- `api/reset.js` + `js/reset.js`: redefinição de senha por e-mail (e-mail criptografado em `rst:`; link de uso único; a aba que pediu muda sozinha para "Redefinir senha"). Hash novo viaja no mural como `acct.d.pwts` e **só a nuvem** (trusted) pode trocá-lo (`MarsBul.merge(store, it, trusted)`). Contas existentes não são resetadas (`store.ver` continua 5).

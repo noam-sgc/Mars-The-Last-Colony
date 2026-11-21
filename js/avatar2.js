@@ -5,7 +5,7 @@
 const AS = {
   HAIRS: ["Afro", "Liso", "Cacheado", "Curto", "Tranças", "Loiro", "Rabo de cavalo", "Careca", "Hijab"],
   HAIR_OF: [7, 3, 0, 2, 1, 6, 6, 4, 3, 4, 8, 1, 5],   // estilo do jogo (0..12) → estilo do Studio (0..8)
-  HAIR_TO: [2, 11, 3, 1, 7, 12, 6, 0, 10],              // estilo do Studio → estilo do jogo
+  S2N: [7, 9, 6, 1, 18, 4, 15, 0, 21],   // estilo do Studio antigo (0..8) → lista nova              // estilo do Studio → estilo do jogo
   TOOL: { 1: "pulso", 2: "tablet", 3: "garrafa", 4: "cinto", 5: "kit", 6: "chave", 7: "lanterna" },
 };
 const asM = (c, o) => { o = o || {}; return new THREE.MeshStandardMaterial({ color: c, roughness: o.r != null ? o.r : .55, metalness: o.m != null ? o.m : .08, emissive: o.e != null ? o.e : 0x000000, emissiveIntensity: o.ei != null ? o.ei : 1, transparent: !!o.t, opacity: o.o != null ? o.o : 1, side: o.ds ? THREE.DoubleSide : THREE.FrontSide, depthWrite: o.dw != null ? o.dw : true, map: o.map || null }); };
@@ -56,21 +56,44 @@ function asTabletTex() {
   return (_tabT = new THREE.CanvasTexture(cv));
 }
 
-// ---------- cabelos (9 estilos do Studio) ----------
+// ---------- cabelos (23 estilos: curtos, médios, longos, cacheados, tranças, dreads, coques, rabos, hijab) ----------
 function asHair(idx, hairMat, accentMat) {
-  const g = new THREE.Group(), cap = (tilt, theta) => asP(g, asSP(.52, 32, 20, 0, Math.PI * 2, 0, Math.PI * (theta || .52)), hairMat, 0, .02, -.02, { rx: tilt == null ? -.25 : tilt });
+  const g = new THREE.Group(), hm = hairMat;
+  const cap = (tilt, theta, r) => asP(g, asSP(r || .52, 32, 20, 0, Math.PI * 2, 0, Math.PI * (theta || .52)), hm, 0, .02, -.02, { rx: tilt == null ? -.25 : tilt });
+  const ball = (r, x, y, z, sc) => asP(g, asSP(r, 12, 9), hm, x, y, z, sc ? { s: sc } : {});
+  const back = (len, w) => asP(g, asRB(w || .92, len, .2, .08), hm, 0, .12 - len / 2, -.4);
+  const curtain = (len) => [-1, 1].forEach((q) => asP(g, asRB(.14, len, .36, .06), hm, .5 * q, .1 - len / 2, -.04));
+  const fringe = (w) => asP(g, asRB(w || .64, .15, .12, .05), hm, 0, .34, .43, { rx: .35 });
+  const bowl = (h, y) => asP(g, new THREE.CylinderGeometry(.54, .5, h, 28, 1, true, .55, Math.PI * 2 - 1.1), asM(hm.color, { ds: true, r: .75 }), 0, y, -.02);
+  const waves = (xs, y0, n, step, amp, r) => xs.forEach((x, k) => { for (let i = 0; i < n; i++) ball(r || .09, x + Math.sin(i * 1.3 + k) * amp, y0 - i * step, -.38 + (Math.abs(x) < .3 ? 0 : .22 + .12 * Math.abs(x)) * (Math.abs(x) < .3 ? 0 : 1) * 0); });
+  const curls = (n, rad, sz, seed) => { for (let i = 0; i < n; i++) { const phi = i * 2.39996 + seed, th = .12 + (i / n) * 1.25, x = Math.sin(th) * Math.cos(phi) * rad, y = Math.cos(th) * rad + .04, z = Math.sin(th) * Math.sin(phi) * rad; if (z > .3 && y < .15) continue; ball(sz + (i % 4) * .012, x, y, z); } };
+  const hang = (xs, y0, n, step, r, zb) => xs.forEach((x) => { for (let i = 0; i < n; i++) ball(r - i * .004, x + Math.sin(i * 1.7 + x * 9) * .035, y0 - i * step, zb(x)); });
+  const sideZ = (x) => (Math.abs(x) > .42 ? -.04 : -.42 + Math.abs(x) * .3);
   switch (idx) {
-    case 0: asP(g, asSP(.55, 28, 20), hairMat, 0, .22, -.06, { s: [1.05, .95, 1.02] });
-      for (let i = 0; i < 12; i++) { const phi = i / 12 * Math.PI * 2, th = .5 + (i % 3) * .25, x = Math.sin(th) * Math.cos(phi) * .52, y = Math.cos(th) * .52 + .05, z = Math.sin(th) * Math.sin(phi) * .52; if (z > .3 && y < .15) continue; asP(g, asSP(.14 + (i * 7) % 3 * .02, 14, 10), hairMat, x, y, z); } break;
-    case 1: cap(-.22); asP(g, asRB(.6, .55, .18, .07), hairMat, 0, -.08, -.44); asP(g, asRB(.12, .42, .3, .05), hairMat, -.47, -.08, .02); asP(g, asRB(.12, .42, .3, .05), hairMat, .47, -.08, .02); asP(g, asRB(.5, .12, .1, .04), hairMat, 0, .32, .42, { rx: .35 }); break;
-    case 2: for (let i = 0; i < 22; i++) { const phi = i * 2.39996, th = .15 + (i / 22) * 1.15, x = Math.sin(th) * Math.cos(phi) * .5, y = Math.cos(th) * .5 + .04, z = Math.sin(th) * Math.sin(phi) * .5; if (z > .34 && y < .12) continue; asP(g, asSP(.12 + (i % 4) * .013, 12, 9), hairMat, x, y, z); }
-      asP(g, asSP(.11, 12, 9), hairMat, -.15, .42, .32); asP(g, asSP(.11, 12, 9), hairMat, .15, .42, .32); asP(g, asSP(.11, 12, 9), hairMat, 0, .46, .3); break;
-    case 3: cap(-.15, .5); asP(g, asBX(.06, .14, .12), hairMat, -.47, -.05, .08); asP(g, asBX(.06, .14, .12), hairMat, .47, -.05, .08); break;
-    case 4: cap(-.2); for (let i = 0; i < 10; i++) { const phi = Math.PI + (i / 9) * Math.PI, th = 1.75, ax = Math.sin(th) * Math.cos(phi) * .5, ay = Math.cos(th) * .5, az = Math.sin(th) * Math.sin(phi) * .5; asP(g, asCY(.04, .035, .45, 8), hairMat, ax, ay - .22, az); asP(g, asSP(.05, 10, 8), accentMat, ax, ay - .46, az); } break;
-    case 5: cap(-.2); asP(g, asRB(.46, .14, .12, .05), hairMat, .06, .3, .42, { rz: .18, rx: .3 }); break;
-    case 6: cap(-.2); asP(g, asSP(.09, 12, 9), accentMat, 0, .34, -.42); [[.11, .18, -.55], [.1, 0, -.6], [.09, -.18, -.62], [.075, -.34, -.6]].forEach(([r, y, z]) => asP(g, asSP(r, 14, 10), hairMat, 0, y, z)); break;
-    case 8: asP(g, asSP(.56, 32, 24, Math.PI / 2 + .85, Math.PI * 2 - 1.7), hairMat); asP(g, asTO(.44, .04, Math.PI * 2, 12, 40), hairMat, 0, 0, .36); asP(g, asCY(.34, .52, .4, 24, true), asM(hairMat.color, { ds: true }), 0, -.6, 0); asP(g, asTO(.3, .06, Math.PI * 2, 10, 28), hairMat, 0, -.42, .05, { rx: Math.PI / 2 }); break;
-    default: break;   // 7: careca
+    case 0: break;
+    case 1: cap(-.15, .5); fringe(.5); asP(g, asRB(.5, .1, .1, .04), hm, .14, .38, .4, { rz: .28, rx: .3 }); ball(.07, -.47, -.04, .08); ball(.07, .47, -.04, .08); break;
+    case 2: cap(-.12, .5); bowl(.3, .02); break;
+    case 3: cap(-.2, .5); ball(.3, 0, .52, .2, [1.35, .75, 1]); ball(.18, .28, .5, .22, [1.2, .8, 1]); ball(.18, -.28, .5, .22, [1.2, .8, 1]); break;
+    case 4: cap(-.2, .5); fringe(.5); asP(g, asRB(.46, .13, .12, .05), hm, .06, .3, .42, { rz: .18, rx: .3 }); ball(.07, -.47, -.06, .08); ball(.07, .47, -.06, .08); break;
+    case 5: cap(-.2, .5); for (let i = 0; i < 11; i++) { const a = i / 11 * Math.PI * 2; if (Math.sin(a) > .6) continue; ball(.13, Math.cos(a) * .46, .24 + Math.sin(i * 2) * .03, Math.sin(a) * .46 - .05); } for (let i = 0; i < 6; i++) ball(.14, Math.cos(i * 1.1) * .26, .5, Math.sin(i * 1.1) * .22 - .08); break;
+    case 6: curls(22, .5, .12, 0); ball(.11, -.15, .42, .32); ball(.11, .15, .42, .32); ball(.11, 0, .46, .3); break;
+    case 7: asP(g, asSP(.55, 28, 20), hm, 0, .22, -.06, { s: [1.05, .95, 1.02] }); for (let i = 0; i < 12; i++) { const phi = i / 12 * Math.PI * 2, th = .5 + (i % 3) * .25, x = Math.sin(th) * Math.cos(phi) * .52, y = Math.cos(th) * .52 + .05, z = Math.sin(th) * Math.sin(phi) * .52; if (z > .3 && y < .15) continue; ball(.14 + (i * 7) % 3 * .02, x, y, z); } break;
+    case 8: asP(g, asSP(.62, 28, 20), hm, 0, .24, -.08, { s: [1.1, 1, 1.05] }); curls(30, .66, .16, 1); break;
+    case 9: cap(-.22); asP(g, asRB(.6, .55, .18, .07), hm, 0, -.08, -.44); asP(g, asRB(.12, .42, .3, .05), hm, -.47, -.08, .02); asP(g, asRB(.12, .42, .3, .05), hm, .47, -.08, .02); fringe(.5); break;
+    case 10: cap(-.2); back(.6, .9); curtain(.55); for (let i = 0; i < 7; i++) ball(.1, -.4 + i * .135, -.5, -.4); [-1, 1].forEach((q) => { for (let i = 0; i < 3; i++) ball(.09, .5 * q + q * (i % 2) * .03, -.38 - i * .08, -.04); }); fringe(.5); break;
+    case 11: cap(-.2); back(1.15, .94); curtain(1.0); break;
+    case 12: cap(-.2); [-.34, -.17, 0, .17, .34].forEach((x, k) => { for (let i = 0; i < 9; i++) ball(.13, x + Math.sin(i * 1.2 + k) * .05, -.1 - i * .12, -.42); }); [-1, 1].forEach((q) => { for (let i = 0; i < 8; i++) ball(.1, .5 * q + Math.sin(i * 1.3) * .03 * q, -.05 - i * .12, -.04); }); break;
+    case 13: cap(-.2); back(1.15, .94); curtain(1.0); fringe(.7); break;
+    case 14: curls(18, .5, .13, 2); [-.34, -.17, 0, .17, .34].forEach((x, k) => { for (let i = 0; i < 7; i++) ball(.12, x + Math.sin(i * 2 + k) * .04, -.08 - i * .13, -.42); }); [-1, 1].forEach((q) => { for (let i = 0; i < 6; i++) ball(.11, .5 * q, -.05 - i * .13, -.05); }); break;
+    case 15: cap(-.2); ball(.09, 0, .3, -.45); asP(g, asTO(.1, .03, Math.PI * 2, 8, 18), accentMat, 0, .3, -.46, { rx: Math.PI / 2 }); [[.11, .42, -.52], [.13, .56, -.56], [.12, .62, -.5], [.1, .58, -.4], [.085, .5, -.36]].forEach(([r, y, z]) => ball(r, 0, y, z)); break;
+    case 16: cap(-.2); ball(.08, 0, -.05, -.5); asP(g, asTO(.09, .025, Math.PI * 2, 8, 18), accentMat, 0, -.05, -.51, { rx: Math.PI / 2 }); asP(g, new THREE.CylinderGeometry(.1, .05, .95, 12), hm, 0, -.55, -.52, {}); break;
+    case 17: cap(-.2); ball(.25, 0, .58, -.1); asP(g, asTO(.14, .035, Math.PI * 2, 8, 20), accentMat, 0, .44, -.1, { rx: Math.PI / 2 }); break;
+    case 18: cap(-.2); for (let i = 0; i < 11; i++) { const phi = Math.PI + (i / 10) * Math.PI, ax = Math.sin(1.7) * Math.cos(phi) * .5, az = Math.sin(1.7) * Math.sin(phi) * .5; asP(g, asCY(.04, .03, .95, 8), hm, ax, -.42, az); asP(g, asSP(.055, 10, 8), accentMat, ax, -.9, az); } break;
+    case 19: cap(-.2, .55); for (let i = 0; i < 18; i++) { const phi = Math.PI * .85 + (i / 17) * Math.PI * 1.3, ax = Math.sin(1.7) * Math.cos(phi) * .5, az = Math.sin(1.7) * Math.sin(phi) * .5; if (az > .25) continue; asP(g, asCY(.05, .035, .65 + (i % 4) * .14, 6), hm, ax, -.3 - (i % 4) * .05, az); } break;
+    case 20: cap(-.2); ball(.07, .47, -.02, .12); for (let i = 0; i < 6; i++) ball(.12 - i * .008, .48 + (i % 2) * .02, -.1 - i * .13, .1); asP(g, asSP(.05, 8, 6), accentMat, .49, -.88, .1); break;
+    case 21: asP(g, asSP(.56, 32, 24, Math.PI / 2 + .85, Math.PI * 2 - 1.7), hm); asP(g, asTO(.44, .04, Math.PI * 2, 12, 40), hm, 0, 0, .36); asP(g, asCY(.34, .52, .4, 24, true), asM(hm.color, { ds: true }), 0, -.6, 0); asP(g, asTO(.3, .06, Math.PI * 2, 10, 28), hm, 0, -.42, .05, { rx: Math.PI / 2 }); break;
+    case 22: cap(-.2); fringe(.5); [-1, 1].forEach((q) => { asP(g, asTO(.07, .02, Math.PI * 2, 8, 16), accentMat, .52 * q, .1, -.04, { ry: Math.PI / 2 }); for (let i = 0; i < 5; i++) ball(.13 - i * .012, .56 * q + q * i * .02, .02 - i * .13, -.04); }); break;
+    default: break;
   }
   return g;
 }
@@ -100,7 +123,15 @@ function asBuild(s) {
     if (s.pantSh == 2) { hip.scale.x = hip.scale.z = .85; }
     asP(hip, asCA(.13, .28), pantsMat, 0, -.22, 0); asP(hip, asSP(.145, 16, 12), s.pantPt == 2 ? asM(s.pantC2) : dark, 0, -.44, .02, { s: [1, .8, 1] });
     if (s.pantSh == 1) asP(hip, asCY(.115, .18, .44, 18), pantsMat, 0, -.66, 0); else asP(hip, asCA(.115, .26), s.pantSh == 3 ? asM(s.pantC2) : pantsMat, 0, -.64, 0);
-    if (s.pantPt == 1) asP(hip, asBX(.035, .78, .06), asM(s.pantC2), .125 * side, -.43, 0); asP(hip, asRB(.26, .2, .38, .06), accent, 0, -.95, .05); asP(hip, asBX(.28, .06, .4), dark, 0, -1.03, .05);
+    if (s.pantPt == 1) asP(hip, asBX(.035, .78, .06), asM(s.pantC2), .125 * side, -.43, 0); const bc = s.bootC ? asM(s.bootC, { r: .5 }) : accent, bw = asM(0xf4f4f8, { r: .5 });
+    asP(hip, asBX(.04, .3, .16), accent, .17 * side, -.22, 0); asP(hip, asSP(.13, 14, 10), asM(0x2b303a, { r: .55 }), 0, -.5, .13, { s: [1, 1, .55] });   // painel lateral da coxa e joelheira escura
+    switch (s.boot) {
+      case 1: asP(hip, asRB(.27, .17, .44, .08), bw, 0, -.96, .07); asP(hip, asRB(.22, .1, .2, .05), bc, 0, -.94, .2); asP(hip, asBX(.29, .05, .46), bc, 0, -1.03, .07); break;   // tênis espacial
+      case 2: asP(hip, asCY(.15, .17, .34, 16), bc, 0, -.84, 0); asP(hip, asRB(.27, .16, .44, .07), bc, 0, -.97, .07); asP(hip, asBX(.29, .06, .46), dark, 0, -1.03, .07); asP(hip, asTO(.16, .025, Math.PI * 2, 8, 20), bw, 0, -.7, 0, { rx: Math.PI / 2 }); break;   // bota alta
+      case 3: asP(hip, asRB(.3, .24, .46, .09), bc, 0, -.93, .06); asP(hip, asBX(.32, .08, .5), dark, 0, -1.02, .06); [0, 1, 2].forEach((i) => asP(hip, asBX(.33, .018, .05), asM(0x1b1f27), 0, -1.045, -.12 + i * .13)); asP(hip, asRB(.22, .09, .2, .04), bw, 0, -.86, .17); break;   // bota robusta
+      case 4: asP(hip, asRB(.27, .2, .42, .07), bc, 0, -.95, .06); asP(hip, asBX(.29, .06, .44), dark, 0, -1.03, .06); asP(hip, asSP(.14, 14, 10), asM(0x2b303a, { r: .55 }), 0, -.76, .13, { s: [1, .8, .6] }); asP(hip, asTO(.15, .03, Math.PI * 2, 8, 18), bw, 0, -.82, 0, { rx: Math.PI / 2 }); break;   // com joelheira baixa
+      default: asP(hip, asRB(.26, .2, .38, .06), bc, 0, -.95, .05); asP(hip, asBX(.28, .06, .4), dark, 0, -1.03, .05); asP(hip, asRB(.2, .08, .16, .03), bw, 0, -.9, .18);
+    }
     if (side === -1) rig.legL = hip; else rig.legR = hip;
   }
   // tronco
@@ -132,11 +163,17 @@ function asBuild(s) {
   const head = new THREE.Group(); head.position.y = 2.45; root.add(head); rig.head = head;
   if (s.alien) { const ah = alienHead(s.alien, asM3, s.alienHelm); ah.scale.setScalar(.8); ah.position.y = -.05; head.add(ah); }
   else {
-    asP(head, asSP(.5, 48, 32), skin, 0, 0, 0, { s: [.96, 1, .94], recv: true }); asP(head, asSP(.07, 12, 8), skin, -.48, -.02, 0); asP(head, asSP(.07, 12, 8), skin, .48, -.02, 0);
+    const HSH = [[.96, 1, .94], [.88, 1.12, .9], [1.06, .93, 1], [.96, 1, .94], [.94, 1.03, .92]][s.headSh || 0], hx = .5 * HSH[0];
+    asP(head, asSP(.5, 48, 32), skin, 0, 0, 0, { s: HSH, recv: true });
+    if (s.headSh == 3) asP(head, asRB(.7, .3, .5, .12), skin, 0, -.27, .0);   // queixo quadrado
+    if (s.headSh == 4) asP(head, asSP(.22, 18, 12), skin, 0, -.4, .1, { s: [1, 1, .9] });   // queixo fino
+    asP(head, asSP(.07, 12, 8), skin, -hx, -.02, 0); asP(head, asSP(.07, 12, 8), skin, hx, -.02, 0);
     for (const side of [-1, 1]) {
       const eye = new THREE.Group(); eye.position.set(.175 * side, .03, .44); head.add(eye);
-      asP(eye, asSP(.085, 16, 12), asM(0xffffff, { r: .25 }), 0, 0, 0, { s: [1, 1.15, .5], cast: false }); asP(eye, asSP(.042, 12, 10), eyeMat, 0, 0, .045, { cast: false });
-      asP(eye, asSP(.02, 10, 8), asM(0x0a0a0a), 0, 0, .065, { cast: false }); asP(eye, asSP(.012, 8, 6), asM(0xffffff, { e: 0xffffff, ei: .6 }), .015, .02, .078, { cast: false });
+      const ES = [[1, 1, 0], [1.18, .8, .16], [1.32, 1.3, 0], [1.08, .72, 0], [1.2, .78, -.3]][s.eyeSh || 0]; eye.scale.set(ES[0], ES[1], 1); eye.userData.sy = ES[1]; eye.rotation.z = ES[2] * side * -1;
+      asP(eye, asSP(.085, 16, 12), asM(0xffffff, { r: .25 }), 0, 0, 0, { s: [1, 1.15, .5], cast: false });
+      if (s.eyeSh == 3) asP(eye, asSP(.092, 14, 8, 0, Math.PI * 2, 0, Math.PI * .48), skin, 0, .004, .006, { s: [1, 1.15, .62], cast: false });   // pálpebra caída asP(eye, asSP(.064, 14, 12), eyeMat, 0, -.004, .04, { cast: false, s: [1, 1.1, .7] });
+      asP(eye, asSP(.033, 10, 8), asM(0x0a0a0a), 0, -.004, .06, { cast: false }); asP(eye, asSP(.012, 8, 6), asM(0xffffff, { e: 0xffffff, ei: .6 }), .015, .02, .078, { cast: false });
       rig.eyes.push(eye); asP(head, asBX(.14, .028, .03), hairMat, .175 * side, .17, .44, { rz: -.08 * side, cast: false });
     }
     asP(head, asSP(.035, 10, 8), skinDark, 0, -.06, .49, { cast: false });
@@ -150,7 +187,7 @@ function asBuild(s) {
     else hairG = asHair(s.hair, hairMat, accent);
     head.add(hairG); if (s.helmMode === "vestido") hairG.scale.multiplyScalar(.86);
     // acessórios e chapéus vindos do Estúdio (formas extras)
-    if (s.extraAcc || s.extraHelm) { const ex = new THREE.Group(); ex.scale.setScalar(1.13); const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; ex.add(m); return m; }; headExtras(ex, add, asM3, s.extraAcc, s.extraHelm, s.hair === 0 || s.hair === 2 ? .66 : .5); head.add(ex); }
+    if (s.extraAcc || s.extraHelm) { const ex = new THREE.Group(); ex.scale.setScalar(1.13); const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; ex.add(m); return m; }; headExtras(ex, add, asM3, s.extraAcc, s.extraHelm, s.hair === 7 || s.hair === 8 || s.hair === 6 || s.hair === 14 ? .68 : .5); head.add(ex); }
   }
   if (s.acc.oculos) { const gg = new THREE.Group(); gg.position.set(0, .16, .44); head.add(gg); asP(gg, asRB(.42, .14, .06, .03), asM(0x1c2230)); asP(gg, asBX(.36, .1, .02), asM(0x59d7ff, { t: true, o: .85, e: 0x2fa8dd, ei: .6 }), 0, 0, .035, { cast: false }); asP(head, asTO(.5, .022, Math.PI * 2, 8, 32), asM(0x1c2230), 0, .14, 0, { rx: Math.PI / 2, cast: false }); }
   if (s.acc.fones) { const hr = s.helmMode === "vestido" ? .74 : .56, fm = asM(0x222831); asP(head, asTO(hr, .035, Math.PI, 12, 32), fm, 0, .02, 0); [-1, 1].forEach((sd) => { asP(head, asCY(.11, .11, .07, 16), fm, hr * sd, .02, 0, { rz: Math.PI / 2 }); asP(head, asTO(.11, .02, Math.PI * 2, 8, 20), accent, (hr + .04) * sd, .02, 0, { ry: Math.PI / 2 }); }); }
@@ -196,7 +233,7 @@ function asState(e) {
   const sk = SKINS[e.sk] || SKINS.verde;
   return {
     skin: alien ? sk.c : LOOK.TONES[lk.t], alienGlow: alien ? sk.g : null, alien: alien ? e : null, alienHelm: helm,
-    hairCol: hasHair && hairIt.col ? hairIt.col : lk.hc, hair: AS.HAIR_OF[hasHair ? cxp(hairIt).sh : lk.hr] != null ? AS.HAIR_OF[hasHair ? cxp(hairIt).sh : lk.hr] : 3, drawnHair: hasHair && hairIt.hv ? hairIt : null,
+    hairCol: hasHair && hairIt.col ? hairIt.col : lk.hc, hair: hasHair ? (AS.S2N[AS.HAIR_OF[cxp(hairIt).sh]] != null ? AS.S2N[AS.HAIR_OF[cxp(hairIt).sh]] : 1) : (lk.h2 >= 0 ? lk.h2 : LOOK.OLD2NEW[lk.hr]), headSh: lk.hd, eyeSh: lk.es, boot: lk.ft, bootC: lk.bc || null, drawnHair: hasHair && hairIt.hv ? hairIt : null,
     eyes: (LOOK.EYEC[lk.ec] || LOOK.EYEC[0]), barba: lk.br > 0, glasses: lk.gl, accent, base, glow: suit.glow || null,
     pants: pant.col || "#e8ecf2", helm: helm.col || "#eef1f6", helmGlow: helm.glow || null, pack: alien && (!e.b || e.b === "b0") ? null : pack.col || "#9aa3ad", packGlow: pack.glow || null, packSz: bp.sz,
     helmMode: shaped || lk.hg === 2 ? "sem" : lk.hg === 1 ? "vestido" : "mao", flag: alien ? "" : lk.nc, nome: e.nm != null ? e.nm : null, bk: (alien ? 1 : [.9, 1, 1.12][lk.bd]) * ([1, .88, 1.15, 1][sp.sh] || 1), suitSh: sp.sh, suitPt: sp.pt, c2: sp.c2, pf: Array.isArray(suit.pf) && suit.pf.length === 6 ? suit.pf : null,
@@ -214,6 +251,6 @@ av = function (e) {
   const lk = lookNorm(e.lk); g.scale.setScalar(1.25 * (e.sp === "alien" ? 1 : [.93, 1, 1.07][lk.ht]));
   g.userData.legs = [rig.legL, rig.legR]; g.userData.arms = [rig.armL.sh, rig.armR.sh]; g.userData.rig = rig;
   // piscada e luz da antena (rodam nas prévias do Guarda-roupa/Estúdio)
-  let nb = 2 + Math.random() * 2; g.userData.anim = [(t) => { const ph = t % 4.2, bl = ph > nb && ph < nb + .13; rig.eyes.forEach((q) => (q.scale.y = bl ? .12 : 1)); if (rig.antennaTip) rig.antennaTip.material.emissiveIntensity = 1 + (Math.sin(t * 5) > 0 ? 1.6 : 0); }];
+  let nb = 2 + Math.random() * 2; g.userData.anim = [(t) => { const ph = t % 4.2, bl = ph > nb && ph < nb + .13; rig.eyes.forEach((q) => (q.scale.y = (q.userData.sy || 1) * (bl ? .12 : 1))); if (rig.antennaTip) rig.antennaTip.material.emissiveIntensity = 1 + (Math.sin(t * 5) > 0 ? 1.6 : 0); }];
   return g;
 };

@@ -5,7 +5,12 @@ window.settingsRefresh = function () {
   if (!$("#setm").classList.contains("on")) return; const M = Music, A = A11Y.get(), T = TILT.st, b = $("#setb"), scroll = (b.querySelector(".tl") || {}).scrollTop || 0;
   const cur = M.cur, row = (t) => `<button class="trk ${M.sel === t.id ? "sel" : ""}" data-t="${t.id}"><span style="font-size:22px">${t.kind === "file" ? "🎵" : "🎼"}</span><span><b>${esc(t.name)}</b><small>${esc(t.desc)}</small></span>${cur === t.id && M.on ? `<span class="np">▶ tocando</span>` : ""}</button>`;
   b.innerHTML = `<div class="up"><b style="font-size:20px">⚙ Configurações</b><button id="setx" class="pri">Fechar</button></div>
-  <h3 style="margin:10px 0 2px">🎧 Música</h3>
+  ${ACC.user ? `<h3 style="margin:10px 0 2px">👤 Conta · ${esc(ACC.user)}</h3>
+  <p class="mu" style="margin:2px 0 6px">Cadastre um e-mail para poder <b>redefinir a senha</b> se esquecer. Ele fica guardado só no servidor, criptografado.</p>
+  <div class="fm"><label class="f">E-mail<input id="sem" type="email" placeholder="voce@exemplo.com"></label><label class="f">Senha atual<input id="sep" type="password" autocomplete="current-password"></label></div>
+  <div class="srow"><button id="sems">Salvar e-mail</button><span class="mu" id="semr"></span></div>
+  <div class="srow"><span>Esqueceu ou quer trocar a senha?</span><button id="srst" class="pri">🔑 Redefinir senha</button></div>` : ""}
+  <h3 style="margin:14px 0 2px">🎧 Música</h3>
   <div class="srow"><span>Música ligada <small class="mu">(tecla M)</small></span><button id="mon" class="tgl ${M.on ? "sel" : ""}">${M.on ? "Sim" : "Não"}</button></div>
   <div class="srow"><span>Intensidade (volume)</span><input id="mvol" type="range" min="0" max="100" value="${Math.round(M.vol * 100)}"><span class="v">${Math.round(M.vol * 100)}%</span></div>
   <h3 style="margin:14px 0 2px">🎶 Trilha sonora</h3><p class="mu" style="margin:2px 0 4px">Tocando agora: <b>${esc(M.trackName() || "—")}</b>${M.sel === "auto" ? " (automática)" : ""}</p>
@@ -36,6 +41,7 @@ window.settingsRefresh = function () {
   <div class="srow"><span>Textos escondidos <small class="mu">(toque num texto para escondê-lo)</small></span><button id="ashow">Mostrar todos</button></div>
   <p class="mu" style="margin:8px 0 0">Dicas no celular: arraste para girar a câmera, use dois dedos (pinça) para aproximar e afastar, e o joystick à esquerda para andar.</p>`;
   const tl = b.querySelector(".tl"); if (tl) tl.scrollTop = scroll;
+  if ($("#sems")) { $("#sems").onclick = async () => { $("#semr").textContent = "Salvando…"; const x = await RESET.setEmail(ACC.user, $("#sep").value, $("#sem").value); $("#semr").textContent = x.ok ? "✔ Salvo: " + x.hint : x.err || "Falha"; }; $("#srst").onclick = () => { closeSettings(); RESET.ask(ACC.user); }; }
   $("#setx").onclick = closeSettings; $("#mon").onclick = () => M.toggle(); $("#son").onclick = () => M.setSfx(!M.sfxOn);
   const drag = (id, f) => { const el = $(id); el.oninput = () => { f(+el.value / 100); el.nextElementSibling.textContent = el.value + "%"; }; el.onchange = () => settingsRefresh(); };
   drag("#mvol", (v) => M.setVol(v)); drag("#svol", (v) => M.setSfxVol(v));

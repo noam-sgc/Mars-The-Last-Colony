@@ -29,3 +29,12 @@ O chat, os amigos online e as partidas continuam 100% WebRTC; a nuvem é só o "
 3. Sem Redis o jogo continua funcionando (mural entre navegadores), apenas sem persistência entre aparelhos.
 Localmente, `npm start` usa um cofre em memória para testes.
 Segurança: as validações são as mesmas do cliente (`shared/bulletin.js`); o cofre guarda o hash PBKDF2 da senha (nunca a senha).
+
+## E-mail de redefinição de senha
+O botão **🔑 Redefinir senha** (menu da conta, Configurações e tela de login) envia um e-mail com um link de uso único (30 min). A tela **Redefinir senha** abre **na mesma aba** que pediu. Requer a nuvem ligada (Blob/Redis) e um serviço de e-mail. Configure **uma** das opções nas variáveis de ambiente do projeto (Vercel → Settings → Environment Variables) e faça Redeploy:
+
+- **Gmail (mais simples, qualquer destinatário):** ative a verificação em duas etapas, crie uma *Senha de app* em myaccount.google.com/apppasswords e defina `SMTP_USER=seuemail@gmail.com` e `SMTP_PASS=<senha de app de 16 letras>` (opcional: `MAIL_FROM`).
+- **Resend:** `RESEND_API_KEY` e `MAIL_FROM` (precisa de domínio verificado para enviar a qualquer pessoa).
+- Opcional: `SITE_URL=https://seu-dominio` (base do link) e `MARS_SECRET` (chave para criptografar os e-mails; por padrão deriva do token do cofre).
+
+Privacidade: o e-mail de cada conta é guardado **criptografado** (AES-256-GCM) em registros `rst:` que nunca aparecem na API pública do mural. A nova senha é enviada só como hash PBKDF2. Contas antigas não têm e-mail: cadastre em *Configurações → Conta* (confirmando a senha atual). Nenhuma conta é apagada ou resetada.

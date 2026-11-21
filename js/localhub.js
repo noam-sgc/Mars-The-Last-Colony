@@ -22,7 +22,7 @@ const LocalHub = (() => {
   const hub = new MarsHub.Hub({ store, persist, hash, verify, onGlobal: (it) => BUL.add(it) });   // contas, eventos, itens e avisos vão para o mural global
   const ready = Promise.resolve();
   return {
-    ready, hub,
+    ready, hub, hashPw: hash,
     /** Conexão do próprio jogador (anfitrião) ao seu mundo. */
     connect(onmsg) {
       const c = hub.connect((m) => setTimeout(() => onmsg(m), 0));

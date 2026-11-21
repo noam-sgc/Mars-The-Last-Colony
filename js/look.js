@@ -7,20 +7,24 @@ const LOOK = {
   HCOLS: ["#1a1210", "#3b2a20", "#6a4630", "#a8742f", "#d9a441", "#e8d8a0", "#b3402a", "#6b5cff", "#2fd4c0", "#e84fa8"],
   FACES: ["Sorriso", "Neutro", "Sorrisão", "Surpreso"], GLASS: ["Sem óculos", "Redondos", "Quadrados", "Escuros"], BEARDS: ["Sem barba", "Bigode", "Barba", "Cavanhaque"], BUILDS: ["Esguio", "Médio", "Forte"], HEIGHTS: ["Baixo", "Médio", "Alto"],
   EYES: ["Redondos", "Amendoados", "Grandes"],
+  HAIRS2: ["Careca", "Curto com risca", "Curto liso", "Topete", "Loiro curto", "Ondulado curto", "Cacheado curto", "Afro / Black power", "Cacheado volumoso", "Chanel", "Médio repicado", "Longo liso", "Longo ondulado", "Longo com franja", "Cacheado longo", "Rabo alto", "Rabo baixo longo", "Coque alto", "Tranças longas", "Dreads longos", "Trança lateral", "Hijab", "Maria-chiquinhas"],
+  OLD2NEW: [0, 1, 7, 8, 11, 17, 15, 18, 3, 19, 21, 9, 3],   // cabelo antigo (hr 0..12) → lista nova
+  HEADS: ["Redonda", "Oval", "Larga", "Queixo quadrado", "Queixo fino"], EYESH: ["Redondos", "Amendoados", "Grandes", "Sonolentos", "Felinos"],
+  FEET: ["Bota padrão", "Tênis espacial", "Bota alta", "Bota robusta", "Bota com joelheira"], FEETC: ["", "#f4f4f8", "#2b2e36", "#8b909c", "#6b4a2f", "#d63031", "#2f6fe4", "#58b431", "#f07818", "#8e44ad"],
   EYEC: ["#2a1a10", "#5a3a1e", "#2e6e3e", "#2e5f9e", "#6e6e78"], EYEN: ["Castanho escuro", "Castanho", "Verde", "Azul", "Cinza"],
   AX: [["oculos", "🥽 Óculos"], ["fones", "🎧 Fones"], ["pulso", "⌚ Pulso"], ["tablet", "📟 Tablet"], ["garrafa", "🍶 Garrafa"], ["cinto", "🧷 Cinto"], ["kit", "⛑️ Kit médico"], ["chave", "🔧 Chave"], ["lanterna", "🔦 Lanterna"]],
-  DEF: { t: 3, hr: 3, hc: "#1a1210", ey: 0, fc: 0, gl: 1, br: 0, bd: 1, ht: 1, hg: 0, nc: "BR", ec: 0 },
+  DEF: { t: 3, hr: 3, hc: "#1a1210", ey: 0, fc: 0, gl: 1, br: 0, bd: 1, ht: 1, hg: 0, nc: "BR", ec: 0, h2: -1, hd: 0, es: 0, ft: 0, bc: "" },
 };
 const _in = (v, a, b, d) => (Number.isInteger(v) && v >= a && v <= b ? v : d);
 /** Valida/normaliza um objeto de aparência (vindo da rede ou do disco). */
 function lookNorm(l) {
   l = l && typeof l === "object" ? l : {}; const D = LOOK.DEF;
-  return { t: _in(l.t, 0, 7, D.t), hr: _in(l.hr, 0, 12, D.hr), hc: /^#[0-9a-fA-F]{6}$/.test(l.hc) ? l.hc : D.hc, ey: _in(l.ey, 0, 2, D.ey), fc: _in(l.fc, 0, 3, D.fc), gl: _in(l.gl, 0, 3, D.gl), br: _in(l.br, 0, 3, D.br), bd: _in(l.bd, 0, 2, D.bd), ht: _in(l.ht, 0, 2, D.ht), hg: _in(l.hg, 0, 2, 0), ec: _in(l.ec, 0, 4, 0), ax: _in(l.ax, 0, 511, 0), nc: /^[A-Z]{2}$/.test(l.nc) ? l.nc : "" };
+  return { t: _in(l.t, 0, 7, D.t), hr: _in(l.hr, 0, 12, D.hr), hc: /^#[0-9a-fA-F]{6}$/.test(l.hc) ? l.hc : D.hc, ey: _in(l.ey, 0, 2, D.ey), fc: _in(l.fc, 0, 3, D.fc), gl: _in(l.gl, 0, 3, D.gl), br: _in(l.br, 0, 3, D.br), bd: _in(l.bd, 0, 2, D.bd), ht: _in(l.ht, 0, 2, D.ht), hg: _in(l.hg, 0, 2, 0), ec: _in(l.ec, 0, 4, 0), h2: _in(l.h2, -1, 22, -1), hd: _in(l.hd, 0, 4, 0), es: _in(l.es, 0, 4, 0), ft: _in(l.ft, 0, 4, 0), bc: /^#[0-9a-fA-F]{6}$/.test(l.bc) ? l.bc : "", ax: _in(l.ax, 0, 511, 0), nc: /^[A-Z]{2}$/.test(l.nc) ? l.nc : "" };
 }
 /** Aparência aleatória determinística (colonos e bots variados). */
 function lookRandom(seed) {
   const r = (n) => { seed = (seed * 9301 + 49297) % 233280; return Math.floor(seed / 233280 * n); };
-  return lookNorm({ t: r(8), hr: r(10), hc: LOOK.HCOLS[r(7)], ey: r(3), fc: r(3), gl: r(4) == 0 ? 1 + r(3) : 0, br: r(5) == 0 ? 1 + r(3) : 0, bd: r(3), ht: r(3) });
+  return lookNorm({ h2: r(23), hd: r(5), es: r(5), ft: r(5), t: r(8), hr: r(10), hc: LOOK.HCOLS[r(7)], ey: r(3), fc: r(3), gl: r(4) == 0 ? 1 + r(3) : 0, br: r(5) == 0 ? 1 + r(3) : 0, bd: r(3), ht: r(3) });
 }
 const _ft = (v, a, b, d) => (Number.isFinite(+v) ? Math.min(b, Math.max(a, +v)) : d);
 /** Parâmetros de layout de um cosmético (forma, padrão, cor secundária, tamanho). */
@@ -118,15 +122,17 @@ function headExtras(H, add, M, accIt, helIt, hairR) {
 }
 
 // ---------- equipe pré-montada (fichas de personagens) ----------
-const TEAM = [   // a equipe do Avatar Studio (ax = acessórios: 1 óculos, 2 fones, 4 pulso, 8 tablet, 16 garrafa, 32 cinto, 64 kit, 128 chave, 256 lanterna)
-  { id: "tm1", n: "Yuki", d: "Engenheira de energia", look: { t: 0, hr: 11, hc: "#141414", ec: 0, gl: 0, hg: 0, nc: "JP", ax: 52 }, eq: { s: "s11", p: "p10", h: "h10", b: "b10" } },
-  { id: "tm2", n: "Kwame", d: "Geólogo", look: { t: 4, hr: 1, hc: "#141414", ec: 0, gl: 0, hg: 1, nc: "ZA", ax: 292 }, eq: { s: "s12", p: "p11", h: "h11", b: "b11" } },
-  { id: "tm3", n: "Saoirse", d: "Agricultora", look: { t: 0, hr: 3, hc: "#c0522a", ec: 2, gl: 0, hg: 0, nc: "GB", ax: 53 }, eq: { s: "s13", p: "p12", h: "h13", b: "b12" } },
-  { id: "tm4", n: "Amira", d: "Médica", look: { t: 2, hr: 10, hc: "#b9bec8", ec: 1, gl: 0, hg: 1, nc: "FR", ax: 44 }, eq: { s: "s14", p: "p13", h: "h12", b: "b13" } },
-  { id: "tm5", n: "Wei", d: "Piloto de rover", look: { t: 1, hr: 1, hc: "#141414", ec: 0, gl: 0, hg: 1, nc: "CN", ax: 38 }, eq: { s: "s17", p: "p10", h: "h15", b: "b16" } },
-  { id: "tm6", n: "Nia", d: "Comunicações", look: { t: 5, hr: 2, hc: "#141414", ec: 0, gl: 0, hg: 0, nc: "US", ax: 101 }, eq: { s: "s16", p: "p10", h: "h14", b: "b15" } },
-  { id: "tm7", n: "Rafael", d: "Comandante", look: { t: 3, hr: 1, hc: "#3a2a1c", ec: 1, br: 2, gl: 0, hg: 0, nc: "BR", ax: 436 }, eq: { s: "s13", p: "p10", h: "h13", b: "b12" } },
-  { id: "tm8", n: "Emma", d: "Cientista", look: { t: 0, hr: 6, hc: "#e8c56a", ec: 3, gl: 0, hg: 1, nc: "CA", ax: 46 }, eq: { s: "s18", p: "p14", h: "h10", b: "b17" } },
+const TEAM = [   // a equipe das fichas (ax = acessórios: 1 óculos, 2 fones, 4 pulso, 8 tablet, 16 garrafa, 32 cinto, 64 kit, 128 chave, 256 lanterna)
+  { id: "tm1", n: "Yuki", d: "Engenheira de energia", look: { t: 0, h2: 11, hc: "#141414", ec: 0, gl: 0, hg: 0, nc: "JP", ax: 52 }, eq: { s: "s11", p: "p10", h: "h10", b: "b10" } },
+  { id: "tm2", n: "Kwame", d: "Geólogo", look: { t: 4, h2: 6, hc: "#141414", ec: 0, gl: 0, hg: 0, nc: "ZA", ax: 292 }, eq: { s: "s12", p: "p11", h: "h11", b: "b11" } },
+  { id: "tm3", n: "Saoirse", d: "Agricultora", look: { t: 0, h2: 16, hc: "#c0522a", ec: 2, gl: 0, hg: 0, nc: "GB", ax: 53 }, eq: { s: "s12", p: "p11", h: "h13", b: "b12" } },
+  { id: "tm4", n: "Amira", d: "Médica", look: { t: 2, h2: 21, hc: "#b9bec8", ec: 1, gl: 0, hg: 0, nc: "FR", ax: 44 }, eq: { s: "s14", p: "p13", h: "h12", b: "b13" } },
+  { id: "tm5", n: "Wei", d: "Piloto de rover", look: { t: 1, h2: 1, hc: "#141414", ec: 0, gl: 0, hg: 0, nc: "CN", ax: 38 }, eq: { s: "s17", p: "p10", h: "h15", b: "b16" } },
+  { id: "tm6", n: "Nia", d: "Comunicações", look: { t: 5, h2: 18, hc: "#241d1a", ec: 0, gl: 0, hg: 0, nc: "US", ax: 101 }, eq: { s: "s17", p: "p10", h: "h14", b: "b16" } },
+  { id: "tm7", n: "Rafael", d: "Comandante", look: { t: 3, h2: 3, hc: "#6b4a2f", ec: 1, br: 2, gl: 0, hg: 0, nc: "BR", ax: 436 }, eq: { s: "s13", p: "p12", h: "h13", b: "b12" } },
+  { id: "tm8", n: "Emma", d: "Cientista", look: { t: 0, h2: 17, hc: "#e8c56a", ec: 3, gl: 0, hg: 0, nc: "CA", ax: 46 }, eq: { s: "s18", p: "p14", h: "h10", b: "b17" } },
+  { id: "tm9", n: "Leo", d: "Mecânico", look: { t: 1, h2: 1, hc: "#6b4a2f", ec: 1, gl: 0, hg: 0, nc: "DE", ax: 164 }, eq: { s: "s11", p: "p14", h: "h10", b: "b10" } },
+  { id: "tm10", n: "Zuri", d: "Botânica", look: { t: 6, h2: 8, hc: "#7a4de8", ec: 0, gl: 0, hg: 0, nc: "ZA", ax: 36 }, eq: { s: "s14", p: "p13", h: "h12", b: "b13" } },
 ];
 const teamAll = () => TEAM.concat((typeof CAT !== "undefined" && CAT.chr) || []);
 const teamEq = (pr, withLook) => Object.assign({}, DEF_EQ, pr.eq || {}, { sp: pr.sp || "human", sk: "verde", lk: lookNorm(pr.look), chr: MODELS.has(pr.id) ? pr.id : "", nm: pr.n });
@@ -151,16 +157,18 @@ function lazyThumb(img, fn) { _q.push([img, fn]); if (!_qt) _qt = requestAnimati
 function lookPanel(pv) {
   const wi = $("#wi"), L = () => P.look || (P.look = lookNorm());
   const prev = () => pv.setObj(av(Object.assign({}, myEq(), WTRY || {})), 0);
-  const set = (o) => { P.chr = ""; Object.assign(L(), o); P.look = lookNorm(P.look); saveP(); prev(); draw(); };
+  const set = (o) => { P.chr = ""; Object.assign(L(), o); if (o.h2 != null) L().hr = Math.max(0, LOOK.OLD2NEW.indexOf(o.h2)); P.look = lookNorm(P.look); saveP(); prev(); draw(); };
   const opts = (key, names) => `<div class="row" style="flex-wrap:wrap">${names.map((n, i) => `<button class="${L()[key] == i ? "sel" : ""}" data-k="${key}" data-v="${i}">${n}</button>`).join("")}</div>`;
   const draw = () => {
-    const l = L(), allC = MarsRules.COUNTRIES;
+    const l = L(), allC = MarsRules.COUNTRIES, cur = l.h2 >= 0 ? l.h2 : LOOK.OLD2NEW[l.hr];
     wi.innerHTML = `<div style="grid-column:1/-1;display:grid;gap:10px">${P.sp == "alien" ? `<p class="mu">👽 Aparência humana só vale para a espécie humana (alienígenas escolhem a cor da pele ao lado).</p>` : ""}
-    <div class="sec"><h4>TIPOS DE CABELO</h4><div class="thg">${LOOK.HAIRS.map((n, i) => `<button class="thb ${l.hr == i ? "sel" : ""}" data-k="hr" data-v="${i}" title="${n}"><img class="th2" alt="${n}"><small>${n}</small></button>`).join("")}</div>
+    <div class="sec"><h4>TIPOS DE CABELO (${LOOK.HAIRS2.length})</h4><div class="thg">${LOOK.HAIRS2.map((n, i) => `<button class="thb ${cur == i ? "sel" : ""}" data-k="h2" data-v="${i}" title="${n}"><img class="th2" alt="${n}"><small>${n}</small></button>`).join("")}</div>
       <b style="display:block;margin-top:8px">Cor do cabelo</b><div class="row" style="flex-wrap:wrap;margin:6px 0">${LOOK.HCOLS.map((c) => `<button data-k="hc" data-s="${c}" class="${l.hc == c ? "sel" : ""}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${c}"></button>`).join("")}<input type="color" id="lkc" value="${l.hc}" title="Cor personalizada" style="width:44px;height:34px"></div></div>
     <div class="sec"><h4>TONS DE PELE</h4><div class="row" style="flex-wrap:wrap">${LOOK.TONES.map((c, i) => `<button data-k="t" data-v="${i}" class="${l.t == i ? "sel" : ""}" style="width:42px;height:42px;padding:0;border-radius:50%;background:${c}"></button>`).join("")}</div></div>
     <div class="sec"><h4>NACIONALIDADES (${allC.length})</h4><div class="row" style="margin-bottom:6px"><input id="lkq" placeholder="🔎 Buscar país…" style="flex:1"><button data-k="nc" data-s="-">Sem bandeira</button></div>
       <div class="thg" id="lkf" style="max-height:250px;overflow:auto;grid-template-columns:repeat(auto-fill,minmax(70px,1fr))">${allC.map((c) => `<button class="thb ${l.nc == c.c ? "sel" : ""}" data-k="nc" data-s="${c.c}" data-n="${esc(c.n.toLowerCase())}" title="${esc(c.n)}"><img src="${flagURL(c.c)}" alt="${c.c}" style="width:54px;height:36px;border-radius:4px"><small>${esc(c.n)}</small></button>`).join("")}</div></div>
+    <div class="sec"><h4>FORMATO DA CABEÇA E DOS OLHOS</h4><b>Cabeça</b>${opts("hd", LOOK.HEADS)}<b style="display:block;margin-top:8px">Formato dos olhos</b>${opts("es", LOOK.EYESH)}</div>
+    <div class="sec"><h4>PÉS (BOTAS)</h4>${opts("ft", LOOK.FEET)}<b style="display:block;margin-top:8px">Cor das botas</b><div class="row" style="flex-wrap:wrap;margin:6px 0">${LOOK.FEETC.map((c, i) => `<button data-k="bc" data-s="${c || "-"}" title="${c ? c : "cor do traje"}" class="${(l.bc || "") == c ? "sel" : ""}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${c || "linear-gradient(135deg,#3d7bff 50%,#fff 50%)"}"></button>`).join("")}<input type="color" id="lkbc" value="${l.bc || "#2f6fe4"}" title="Cor personalizada" style="width:44px;height:34px"></div></div>
     <div class="sec"><h4>ROSTO E CORPO</h4><b>Cor dos olhos</b><div class="row" style="flex-wrap:wrap;margin:6px 0">${LOOK.EYEC.map((c, i) => `<button data-k="ec" data-v="${i}" title="${LOOK.EYEN[i]}" class="${l.ec == i ? "sel" : ""}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${c}"></button>`).join("")}</div><b>Rosto</b>${opts("fc", LOOK.FACES)}<b style="display:block;margin-top:8px">Olhos</b>${opts("ey", LOOK.EYES)}<b style="display:block;margin-top:8px">Óculos</b>${opts("gl", LOOK.GLASS)}<b style="display:block;margin-top:8px">Barba</b>${opts("br", LOOK.BEARDS)}
       <b style="display:block;margin-top:8px">Corpo</b>${opts("bd", LOOK.BUILDS)}<b style="display:block;margin-top:8px">Altura</b>${opts("ht", LOOK.HEIGHTS)}<b style="display:block;margin-top:8px">Capacete</b>${opts("hg", LOOK.HOLD)}</div>
     <div class="sec"><h4>ACESSÓRIOS DA MISSÃO (grátis)</h4><div class="row" style="flex-wrap:wrap">${LOOK.AX.map(([k, n], i) => `<button data-ax="${i}" class="${l.ax & (1 << i) ? "sel" : ""}">${n}</button>`).join("")}</div></div>
@@ -169,6 +177,7 @@ function lookPanel(pv) {
     $("#lkq").oninput = (e) => { const q = e.target.value.toLowerCase(); $("#lkf").querySelectorAll("[data-n]").forEach((b) => (b.style.display = !q || b.dataset.n.includes(q) || b.dataset.s.toLowerCase() == q ? "" : "none")); };
     wi.querySelectorAll("[data-ax]").forEach((b) => (b.onclick = () => set({ ax: L().ax ^ (1 << +b.dataset.ax) })));
     wi.querySelectorAll("img.th2").forEach((im, i) => lazyThumb(im, () => thumbHair(i, L())));
+    $("#lkbc").oninput = (e) => { Object.assign(L(), { bc: e.target.value }); P.look = lookNorm(P.look); saveP(); prev(); };
     $("#lkc").oninput = (e) => { Object.assign(L(), { hc: e.target.value }); P.look = lookNorm(P.look); saveP(); prev(); };
     $("#lkr").onclick = () => set(Object.assign(lookRandom(Math.floor(Math.random() * 1e6)), { nc: allC[Math.floor(Math.random() * allC.length)].c })); $("#lkd").onclick = () => set(LOOK.DEF);
   };
@@ -180,9 +189,9 @@ const THUMB = (() => {
   let r = null, sc, cam, cache = {}, ok = true;
   function init() { if (r || !ok) return; try { r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setSize(96, 120); sc = new THREE.Scene(); sc.add(new THREE.HemisphereLight(0xfff0e0, 0x402010, 1)); const d = new THREE.DirectionalLight(0xffffff, 1.1); d.position.set(3, 6, 6); sc.add(d); cam = new THREE.PerspectiveCamera(35, 96 / 120, .1, 60); } catch (e) { ok = false; } }
   /** Renderiza um objeto 3D; modo "head" mostra só a cabeça/busto, "full" o corpo. */
-  function shot(obj, mode) { init(); if (!r) return ""; sc.add(obj); const full = mode === "full"; const hd = obj.userData && obj.userData.legs; cam.position.set(0, full ? 2.1 : hd ? 3.25 : 3.0, full ? 8.6 : hd ? 4.6 : 3.6); cam.lookAt(0, full ? 1.95 : hd ? 3.12 : 2.95, 0); obj.rotation.y = full ? .35 : .25; r.render(sc, cam); const u = r.domElement.toDataURL("image/png"); sc.remove(obj); return u; }
+  function shot(obj, mode) { init(); if (!r) return ""; sc.add(obj); const full = mode === "full"; const hd = obj.userData && obj.userData.legs; cam.position.set(0, full ? 2.1 : hd ? 3.0 : 3.0, full ? 8.6 : hd ? 5.3 : 3.6); cam.lookAt(0, full ? 1.95 : hd ? 2.78 : 2.95, 0); obj.rotation.y = full ? .35 : .25; r.render(sc, cam); const u = r.domElement.toDataURL("image/png"); sc.remove(obj); return u; }
   return { shot, get: (key, fn) => cache[key] || (cache[key] = fn()), reset: () => { cache = {}; } };
 })();
 /** Miniatura do avatar com `eq` (corpo inteiro ou cabeça). */
 const thumbAv = (eq, mode) => THUMB.get("a|" + mode + "|" + JSON.stringify(eq) + "|" + allCX().length + "|" + (typeof TX_VER !== "undefined" ? TX_VER : 0), () => THUMB.shot(av(eq), mode));
-const thumbHair = (hr, lk) => THUMB.get("h2|" + hr + "|" + lk.t + "|" + lk.hc, () => THUMB.shot(av({ lk: Object.assign({}, lk, { hr, gl: 0, hg: 2, ax: 0 }), s: "s15", nm: null }), "head"));
+const thumbHair = (h2, lk) => THUMB.get("h3|" + h2 + "|" + lk.t + "|" + lk.hc + "|" + lk.hd, () => THUMB.shot(av({ lk: Object.assign({}, lk, { h2, gl: 0, hg: 2, ax: 0 }), s: "s15", nm: null }), "head"));

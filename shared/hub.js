@@ -10,7 +10,7 @@
   const clean = (s, n) => String(s == null ? "" : s).replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, n);
   const ri = (v, a, b, d) => (Number.isInteger(v) && v >= a && v <= b ? v : d);
   /** Normaliza a aparência (tom de pele, cabelo, rosto, corpo, nacionalidade). */
-  const cleanLook = (lo) => { lo = lo && typeof lo === "object" ? lo : {}; return { t: ri(lo.t, 0, 7, 3), hr: ri(lo.hr, 0, 12, 3), hc: /^#[0-9a-fA-F]{6}$/.test(lo.hc) ? lo.hc : "#1a1210", ey: ri(lo.ey, 0, 2, 0), fc: ri(lo.fc, 0, 3, 0), gl: ri(lo.gl, 0, 3, 1), br: ri(lo.br, 0, 3, 0), bd: ri(lo.bd, 0, 2, 1), ht: ri(lo.ht, 0, 2, 1), hg: ri(lo.hg, 0, 2, 0), ec: ri(lo.ec, 0, 4, 0), ax: ri(lo.ax, 0, 511, 0), nc: /^[A-Z]{2}$/.test(lo.nc) ? lo.nc : "" }; };
+  const cleanLook = (lo) => { lo = lo && typeof lo === "object" ? lo : {}; return { t: ri(lo.t, 0, 7, 3), hr: ri(lo.hr, 0, 12, 3), hc: /^#[0-9a-fA-F]{6}$/.test(lo.hc) ? lo.hc : "#1a1210", ey: ri(lo.ey, 0, 2, 0), fc: ri(lo.fc, 0, 3, 0), gl: ri(lo.gl, 0, 3, 1), br: ri(lo.br, 0, 3, 0), bd: ri(lo.bd, 0, 2, 1), ht: ri(lo.ht, 0, 2, 1), hg: ri(lo.hg, 0, 2, 0), ec: ri(lo.ec, 0, 4, 0), h2: ri(lo.h2, -1, 22, -1), hd: ri(lo.hd, 0, 4, 0), es: ri(lo.es, 0, 4, 0), ft: ri(lo.ft, 0, 4, 0), bc: /^#[0-9a-fA-F]{6}$/.test(lo.bc) ? lo.bc : "", ax: ri(lo.ax, 0, 511, 0), nc: /^[A-Z]{2}$/.test(lo.nc) ? lo.nc : "" }; };
   const num = (v, a, b, d) => { v = +v; return Number.isFinite(v) ? Math.max(a, Math.min(b, v)) : d; };
   const color = (c, d) => (/^#[0-9a-f]{6}$/i.test(c) ? c : d);
 
@@ -31,7 +31,8 @@
       const s = this.store; let ch = false;
       if (it.k === "acct") {
         const cur = s.users[it.id], d = it.d;
-        if (!cur || (!cur.npc && cur.pass !== d.pass && d.created < (cur.created || Infinity))) { s.users[it.id] = Object.assign(this.newUser(d.name, d.cc, d.pass), { created: d.created }); ch = true; }
+        if (!cur || (!cur.npc && cur.pass !== d.pass && d.created < (cur.created || Infinity))) { s.users[it.id] = Object.assign(this.newUser(d.name, d.cc, d.pass), { created: d.created, pwts: d.pwts || 0 }); ch = true; }
+        else if (cur && !cur.npc && d.pwts && d.pwts > (cur.pwts || 0) && d.created === cur.created) { cur.pass = d.pass; cur.pwts = d.pwts; ch = true; }   // senha redefinida (vem só da nuvem)
       } else if (it.k === "sav") {
         const u = s.users[it.id]; if (u && !u.npc && !it.del && it.ts > (u.profTs || 0)) { u.prof = this.sanitizeProf(u, it.d); u.profTs = it.ts; ch = true; }
       } else if (it.k === "ev") {
