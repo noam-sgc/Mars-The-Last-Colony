@@ -41,7 +41,7 @@ av = function (e) {
 /** Animação: modelos .glb usam o mixer (andar/parado); o avatar em código usa o balanço das pernas. */
 const walkAnimCode = walkAnim;
 walkAnim = function (g, t, speed) {
-  if (g.userData.art) return artAnim(g, t, speed);
+  if (g.userData.art || g.userData.art3d) return artAnim(g, t, speed);
   const mx = g.userData.mix; if (!mx) return g.userData.glb ? undefined : walkAnimCode(g, t, speed);
   const dt = mx.lt ? Math.min(.1, Math.max(0, t - mx.lt)) : 0; mx.lt = t; const wv = Math.min(1, speed * 1.5);
   mx.walk.setEffectiveWeight(mx.idle ? wv : 1); if (mx.idle) mx.idle.setEffectiveWeight(1 - wv); mx.walk.timeScale = mx.idle ? 1 : wv; mx.mix.update(dt);

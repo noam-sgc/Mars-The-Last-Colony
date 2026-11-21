@@ -171,7 +171,7 @@ function ward() {
   let items = []; if (WTAB == "e") items = allCX().filter((x) => x.ev || String(x.id).startsWith("ev_")); else if (WTAB == "adm") items = allCX().filter((x) => x.adm && canUseItem(x)); else items = allCX().filter((x) => x.l == WTAB && !x.ev && !String(x.id).startsWith("ev_") && !(x.adm));
   if (WTAB == "e") { EV.active.forEach((e) => { if (!items.some((i) => i.id == e.suit.id)) items.push(e.suit); }); }
   items = items.filter(spItem);
-  const wi = $("#wi"); if (lookNorm(P.look).v2) { const bn = document.createElement("div"); bn.className = "sec"; bn.style.gridColumn = "1/-1"; bn.innerHTML = `<small class="mu">🎨 Você está no visual <b>Arte 2D</b>: os itens desta aba valem para o visual 3D.</small> <button id="to3">Usar o visual 3D</button>`; wi.appendChild(bn); setTimeout(() => { const b3 = $("#to3"); if (b3) b3.onclick = () => { P.look.v2 = 0; saveP(); ward(); }; }); }
+  const wi = $("#wi"); if (lookNorm(P.look).v2) { const bn = document.createElement("div"); bn.className = "sec"; bn.style.gridColumn = "1/-1"; bn.innerHTML = `<small class="mu">🎨 Você está no visual <b>Arte 3D</b>: os itens desta aba valem para o visual 3D.</small> <button id="to3">Usar o visual 3D</button>`; wi.appendChild(bn); setTimeout(() => { const b3 = $("#to3"); if (b3) b3.onclick = () => { P.look.v2 = 0; saveP(); ward(); }; }); }
   if (!items.length) wi.innerHTML = `<p class="mu">Nada aqui ainda. ${WTAB == "e" ? "Resgate trajes durante os eventos!" : ""}</p>`;
   items.forEach((x) => {
     const o = P.own.includes(x.id), equipped = P.eq[x.l] == x.id, usable = canUseItem(x), d = document.createElement("div"); d.className = "it" + (equipped ? " eq" : "");
