@@ -175,7 +175,7 @@ const CX = [
   { id: "r6", l: "r", n: "Hijab de seda", c: 90, col: "#8a6ad6", sh: 10 }, { id: "r7", l: "r", n: "Chanel ruivo", c: 110, col: "#c8461e", sh: 11 }, { id: "r8", l: "r", n: "Topete castanho", c: 100, col: "#6a4630", sh: 12 },
   { id: "b0", l: "b", n: "Mochila padrão", c: 0, col: "#b9bcc4" }, { id: "b1", l: "b", n: "Mochila de oxigênio azul", c: 110, col: "#4a86e8" }, { id: "b2", l: "b", n: "Mochila reforçada", c: 170, col: "#6b5a44" }, { id: "b3", l: "b", n: "Mochila a jato", c: 350, col: "#ff6a2b", glow: "#ffa04a" },
 ];
-const SL = { s: "Trajes", p: "Calças", w: "Relógios", h: "Capacetes", b: "Mochilas", r: "Cabelos", a: "Acessórios", t: "Equipamentos", team: "Equipe", look: "Aparência", e: "Eventos", adm: "Admin" };
+const SL = { s: "Trajes", p: "Calças", w: "Relógios", h: "Capacetes", b: "Mochilas", r: "Cabelos", a: "Acessórios", t: "Equipamentos", team: "Equipe", art: "Arte 2D", look: "Aparência", e: "Eventos", adm: "Admin" };
 const LAYERS = ["s", "p", "w", "h", "b", "r", "a", "t"];
 const DEF_EQ = { s: "s0", p: "p0", w: "w0", h: "h0", b: "b0", r: "r0", a: "a0", t: "t0" };
 const DEF_OWN = ["s0", "p0", "w0", "h0", "b0", "r0", "a0", "t0"].concat(BASE_FREE.map((x) => x.id));
