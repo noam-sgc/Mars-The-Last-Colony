@@ -21,8 +21,9 @@ sc.add(sky);
 
 // terreno com crateras
 const CR = [[-60, 40, 16, 2.6], [55, -50, 22, 3.2], [-30, -70, 12, 2], [75, 60, 14, 2.4], [-85, -20, 18, 2.8]];
-const H = (x, z) => { let h = 1.2 * Math.sin(x * .07) * Math.cos(z * .06) + .6 * Math.sin(x * .19 + z * .13);
+const H0 = (x, z) => { let h = 1.2 * Math.sin(x * .07) * Math.cos(z * .06) + .6 * Math.sin(x * .19 + z * .13);
   for (const [cx, cz, r, d] of CR) { const q = Math.hypot(x - cx, z - cz) / r; if (q < 1.25) h += q < 1 ? -d * (1 - q * q) : d * .35 * Math.exp(-(((q - 1) * 6) ** 2)); } return h; };
+let HFN = H0; const H = (x, z) => HFN(x, z);   // o relevo depende do ambiente (Marte, Fobos, tubo de lava) — js/env.js
 const tg = new THREE.PlaneGeometry(300, 300, 150, 150); tg.rotateX(-Math.PI / 2);
 { const pa = tg.attributes.position, col = new Float32Array(pa.count * 3), c1 = new THREE.Color(0x9a4528), c2 = new THREE.Color(0xc2774a), c3 = new THREE.Color(0x5e2a1a), t = new THREE.Color();
   for (let i = 0; i < pa.count; i++) { const x = pa.getX(i), z = pa.getZ(i), h = H(x, z); pa.setY(i, h); const n = .5 + .5 * Math.sin(x * .31) * Math.sin(z * .27); t.copy(h > .8 ? c2 : c1).lerp(c3, clamp(-h / 3, 0, 1) * .8).lerp(c2, n * .22).multiplyScalar(.85 + Math.random() * .3); col[i * 3] = t.r; col[i * 3 + 1] = t.g; col[i * 3 + 2] = t.b; }
@@ -75,6 +76,24 @@ function mk(t, col) {
     add(BX(2.6, .8, 1.5), M(0xd5d8de), 0, 1, 0); add(BX(1, .7, 1.2), M(0x2a3a4a, { metalness: .9, roughness: .1 }), .5, 1.65, 0); add(CY(.04, .04, 1.5, 6), M(0xcccccc), -.9, 2.1, 0); add(new THREE.CircleGeometry(.4, 12), M(0xcfd3da), -.9, 2.9, 0, 0, 0, 0);
     add(BX(.9, .06, .9), M(0x1d3f8f, { emissive: 0x0a1a50 }), -.6, 1.45, 0);
     for (const x of [-1, 0, 1]) for (const z of [-.9, .9]) add(CY(.42, .42, .3, 12), M(0x222226, { roughness: .9 }), x, .45, z, Math.PI / 2);
+  } else if (t == "probe") {   // sonda: corpo hexagonal, antena parabólica, painéis solares e anel de propulsão
+    add(CY(.9, 1.05, 1.1, 6), M(0xe8eaee, { metalness: .5 }), 0, 1.6, 0); add(CY(.95, .95, .12, 6), M(0xc8a040, { metalness: .8, roughness: .3 }), 0, 2.2, 0);
+    const dish = new THREE.Group(); dish.position.set(0, 2.5, 0); g.add(dish); const bowl = new THREE.Mesh(new THREE.SphereGeometry(1.1, 18, 8, 0, 6.283, 0, 1.0), M(0xf2f4f8, { side: THREE.DoubleSide, metalness: .4 })); bowl.rotation.x = Math.PI; bowl.position.y = .5; dish.add(bowl);
+    const fd = new THREE.Mesh(CY(.04, .04, .9, 6), M(0x888888)); fd.position.y = .5; dish.add(fd);
+    [-1, 1].forEach((sg) => { const pn = new THREE.Mesh(BX(2.4, .08, 1.1), M(0x1d3f8f, { emissive: 0x0a1a50, emissiveIntensity: .7, metalness: .8, roughness: .2 })); pn.position.set(sg * 2.1, 1.6, 0); pn.castShadow = true; g.add(pn); const ar = new THREE.Mesh(CY(.05, .05, 1.1, 6), M(0x999999)); ar.rotation.z = Math.PI / 2; ar.position.set(sg * .9, 1.6, 0); g.add(ar); });
+    for (let i = 0; i < 4; i++) { const a = i * 1.571 + .78, l = new THREE.Mesh(CY(.05, .08, 1.1, 5), M(0x777777)); l.position.set(Math.cos(a) * .85, .55, Math.sin(a) * .85); l.rotation.set(Math.sin(a) * .35, 0, -Math.cos(a) * .35); g.add(l); }
+    add(new THREE.TorusGeometry(.7, .07, 6, 18), glow(0x66ddff, 1), 0, 1.0, 0, Math.PI / 2); add(CY(.3, .45, .4, 10), M(0x333338), 0, .9, 0);
+    g.anim.push((tt) => { dish.rotation.y = tt * .4; });
+  } else if (t == "pad") {   // estação de pouso: plataforma circular com luzes e torre de controle
+    add(CY(4.6, 4.8, .5, 28), M(0x3a3f4a, { metalness: .5 }), 0, .25, 0); add(new THREE.TorusGeometry(4.2, .12, 6, 40), glow(0x4fd08a, 1.2), 0, .55, 0, Math.PI / 2); add(new THREE.TorusGeometry(2.2, .08, 6, 32), glow(0x4fd08a, .9), 0, .55, 0, Math.PI / 2);
+    add(BX(.5, 5, .5), M(0xcfd3da), 3.6, 2.5, 3.2); add(BX(1.7, 1.1, 1.7), M(0x2a3a4a, { metalness: .9, roughness: .1 }), 3.6, 5.3, 3.2);
+    const bk = []; for (let i = 0; i < 8; i++) { const a = i * .785, l = new THREE.Mesh(new THREE.SphereGeometry(.18, 8, 6), new THREE.MeshBasicMaterial({ color: 0xbfffe8 })); l.position.set(Math.cos(a) * 4.2, .7, Math.sin(a) * 4.2); g.add(l); bk.push(l); }
+    g.anim.push((tt) => bk.forEach((l, i) => (l.visible = Math.sin(tt * 4 - i * .8) > -.2)));
+  } else if (t == "rocket") {   // foguete de missão
+    add(CY(1.3, 1.5, 7, 16), M(0xf2f4f8, { metalness: .4 }), 0, 4.2, 0); add(new THREE.ConeGeometry(1.3, 2.6, 16), M(0xff6a2b), 0, 9, 0); add(CY(1.31, 1.31, .5, 16), M(0x2255cc), 0, 6.5, 0);
+    add(new THREE.SphereGeometry(.55, 12, 8), M(0x66ddff, { emissive: 0x2288aa, emissiveIntensity: .8 }), 0, 7.4, 1.2);
+    for (let i = 0; i < 4; i++) { const a = i * 1.571 + .78; add(BX(.2, 2.4, 1.6), M(0xff6a2b), Math.cos(a) * 1.7, 1.5, Math.sin(a) * 1.7, 0, 0, -a); }
+    add(CY(.7, .95, .8, 12), M(0x333338), 0, .6, 0); add(new THREE.TorusGeometry(2.6, .1, 6, 28), glow(0xffcf3d, 1), 0, .1, 0, Math.PI / 2);
   } else if (t == "oxy") {
     add(CY(1.2, 1.2, 3.2, 16), M(0xdfe9f2, { metalness: .5 }), 0, 1.6, 0); add(SP(1.2, 16, 10), M(0x88ccff, { emissive: 0x113355, metalness: .3 }), 0, 3.2, 0);
     add(new THREE.TorusGeometry(1.25, .08, 6, 20), glow(0x66ddff, 1), 0, 1.2, 0, Math.PI / 2); add(new THREE.TorusGeometry(1.25, .08, 6, 20), glow(0x66ddff, 1), 0, 2.2, 0, Math.PI / 2);

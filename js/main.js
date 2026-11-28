@@ -40,9 +40,9 @@ function loop(n) {
     const st = G.mode == "solo" && PH[G.ph] && PH[G.ph].storm; sc.fog.density = st ? .014 + .008 * Math.sin(t * .8) : .006; sun.intensity = st ? .65 + .2 * Math.sin(t * 3) : 1.15;
     movePlayer(dt, t); moveColonists(dt, t);
     sun.position.set(PL.x + 50, 80, PL.z + 30); sun.target.position.set(PL.x, 0, PL.z); sun.target.updateMatrixWorld();
-    UFOS.children.forEach((u) => { const a = t * .15 + u.userData.a, r = u.userData.r; u.position.set(Math.cos(a) * r, 34 + Math.sin(t + u.userData.a) * 2, Math.sin(a) * r); u.rotation.y = t; });
+    UFOS.children.forEach((u) => { if (u.userData.ctl) return; const a = t * .15 + u.userData.a, r = u.userData.r; u.position.set(Math.cos(a) * r, 34 + Math.sin(t + u.userData.a) * 2, Math.sin(a) * r); u.rotation.y = t; });
   }
-  G.placed.forEach((p) => { const u = p.m.userData; if (p.t == "rover" && !p.park) { p.m.position.x = p.x + Math.cos(t * .5 + p.a) * 4; p.m.position.z = p.z + Math.sin(t * .5 + p.a) * 4; p.m.rotation.y = -(t * .5 + p.a); } if (u.anim) u.anim.forEach((f) => f(t)); });
+  G.placed.forEach((p) => { const u = p.m.userData; if (u.anim) u.anim.forEach((f) => f(t)); });
   Object.keys(peerG).forEach((k) => { if (peerG[k].m) peerG[k].m.forEach((o) => o.userData.anim && o.userData.anim.forEach((f) => f(t))); });
   dust.position.x = (PL.x || 0) + Math.sin(t * .1) * 4; dust.position.z = PL.z || 0; dust.rotation.y = t * .01;
   if (G.mode == "nav") navCam(); else camU(); R.render(sc, cam); requestAnimationFrame(loop);

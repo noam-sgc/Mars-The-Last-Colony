@@ -1,8 +1,8 @@
 /* Entrada: teclado (WASD/setas), joystick virtual e atalhos. */
-const INP = { l: 0, r: 0, u: 0, d: 0, s: 0, jx: 0, jy: 0, onE: null, onEsc: null };
+const INP = { l: 0, r: 0, u: 0, d: 0, s: 0, dn: 0, jx: 0, jy: 0, onE: null, onEsc: null };
 INP.tiltFn = null;
 INP.ax = () => { const k = [((INP.r - INP.l) || INP.jx), ((INP.u - INP.d) || -INP.jy)]; if (!k[0] && !k[1] && INP.tiltFn) { const t = INP.tiltFn(); if (t) return t; } return k; };
-const KM = { ArrowLeft: "l", a: "l", A: "l", ArrowRight: "r", d: "r", D: "r", ArrowUp: "u", w: "u", W: "u", ArrowDown: "d", s: "d", S: "d", " ": "s" };
+const KM = { ArrowLeft: "l", a: "l", A: "l", ArrowRight: "r", d: "r", D: "r", ArrowUp: "u", w: "u", W: "u", ArrowDown: "d", s: "d", S: "d", " ": "s", Shift: "dn", c: "dn", C: "dn" };
 const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || "");
 addEventListener("keydown", (e) => {
   if (typing()) return;
@@ -11,7 +11,7 @@ addEventListener("keydown", (e) => {
   if (e.key === "Escape" && INP.onEsc) INP.onEsc();
 });
 addEventListener("keyup", (e) => { const m = KM[e.key]; if (m) INP[m] = 0; });
-addEventListener("blur", () => { INP.l = INP.r = INP.u = INP.d = INP.s = 0; });
+addEventListener("blur", () => { INP.l = INP.r = INP.u = INP.d = INP.s = INP.dn = 0; });
 ["#joy", "#joy2"].forEach((id) => {
   const el = $(id), knob = el.firstElementChild; let act = null;
   const mv = (e) => { const r = el.getBoundingClientRect(), x = clamp((e.clientX - r.left - r.width / 2) / (r.width / 2), -1, 1), y = clamp((e.clientY - r.top - r.height / 2) / (r.height / 2), -1, 1), l = Math.hypot(x, y) || 1, k = Math.min(1, l);

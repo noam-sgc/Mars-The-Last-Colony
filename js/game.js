@@ -46,7 +46,7 @@ function addColonist(alien, i) {
 function pal() {
   const p = $("#pal"); p.innerHTML = "";
   const add = (txt, tool) => { const b = document.createElement("button"); b.textContent = txt; b.className = G.tool == tool ? "sel" : ""; b.onclick = () => { G.tool = tool; pal(); }; p.appendChild(b); };
-  partKeys().forEach((k) => { const t = TY[k]; if (t.alien && G.mode == "solo" && G.ph < ALIEN_START) return; add(t.n + (G.mode == "solo" ? " · " + cost(k) : ""), k); });
+  partKeys().forEach((k) => { const t = TY[k]; if (t.alien && G.mode == "solo" && (G.ph < ALIEN_START || G.ph >= P1_START)) return; add(t.n + (G.mode == "solo" ? " · " + cost(k) : ""), k); });
   add("🖐 Interagir", "use"); add("Demolir", "del");
   const c = document.createElement("input"); c.type = "color"; c.value = S.color; c.title = "Cor do habitat"; c.oninput = () => { S.color = c.value; save(); }; p.appendChild(c);
 }
@@ -169,7 +169,7 @@ const mpItems = () => (G.mode == "mp" ? mpMyItems() : null);
 function msProg(m) {
   switch (m.id) {
     case "talk": return G.st.talk; case "tidy": return G.st.tidy; case "enter": return G.st.enter.size; case "rec": return cnt("rec"); case "rover": return cnt("rover");
-    case "morale": return G.time < PH[G.ph].t - 15 + B("time") ? Math.floor(G.tk.morale) : 0; case "contact": return G.st.contact; case "loot": return G.st.loot || 0;
+    case "morale": return G.time < PH[G.ph].t - 15 + B("time") ? Math.floor(G.tk.morale) : 0; case "contact": return G.st.contact; case "loot": return G.st.loot || 0; case "scan": return G.st.scan || 0;
   } return 0;
 }
 function missions(dt) {
@@ -193,7 +193,7 @@ function end(w, rw) {
   const done = G.mode == "solo" ? PH[G.ph].ms.filter((m) => G.msd[m.id]).length + "/" + PH[G.ph].ms.length : "";
   $("#rp").innerHTML = w ? `Média dos tanques: ${G.avg}%. Você ganhou <b>${rw}</b> moedas${EV.mult > 1 ? ` (evento x${EV.mult} aplicado!)` : ""}; quanto mais cheios os tanques, maior o prêmio.<br>Pesquisa: +${10 + 3 * G.ph} RP · Missões bônus: ${done}.${G.mspent ? ` Manutenção dos upgrades paga: ${Math.round(G.mspent)} 🪙.` : ""}${G.nloss > 1 ? ` Fome/cansaço custaram ${Math.round(G.nloss)} 🪙.` : ""}` : "A colônia não sustentou os tanques. Construa as peças de cada classe, arrume os edifícios por dentro ou compre upgrades.";
   const b = $("#rb"); b.innerHTML = ""; const add = (t, f) => { const x = document.createElement("button"); x.textContent = t; x.onclick = () => { $("#res").classList.remove("on"); f(); }; b.appendChild(x); };
-  if (w && G.ph + 1 < PH.length && G.ph + 1 !== ALIEN_START) add("Próxima fase", () => { const q = PH[G.ph + 1]; start(q.nav ? "nav" : "solo", G.ph + 1); }); else if (w) { add("Ver final", () => fin(SV.fb)); if (G.ph + 1 === ALIEN_START) add("👽 Campanha alienígena", () => start("solo", ALIEN_START)); } else if (S.coins < 20) add("Ver final", () => fin(SV.fr)); else add("Tentar de novo", () => start(PH[G.ph].nav ? "nav" : "solo", G.ph));
+  if (w && G.ph + 1 < PH.length && G.ph + 1 !== ALIEN_START && G.ph + 1 !== P1_START) add("Próxima fase", () => { const q = PH[G.ph + 1]; start(q.nav ? "nav" : "solo", G.ph + 1); }); else if (w) { add("Ver final", () => fin(SV.fb)); if (G.ph + 1 === ALIEN_START) add("👽 Campanha alienígena", () => start("solo", ALIEN_START)); if (G.ph + 1 === P1_START) add("🌑 Missão Phobos-1", () => start("solo", P1_START)); } else if (S.coins < 20) add("Ver final", () => fin(SV.fr)); else add("Tentar de novo", () => start(PH[G.ph].nav ? "nav" : "solo", G.ph));
   add("Loja", () => { menu(); shop(true); }); add("Catálogo", () => { clear(); cat(); }); $("#res").classList.add("on");
 }
 /** Necessidades pessoais (campanha): fome e cansaço. Comer em Hidroponia, dormir em Habitat (dentro do edifício). */
@@ -248,7 +248,7 @@ function camU() {
   cam.lookAt(tx, ty, tz);
 }
 // ---------- colisão: ninguém atravessa edifícios, rochas ou peças dos outros ----------
-const COLR = { hab: 3.0, green: 3.3, rec: 2.7, emb: 2.9, xeno: 2.6, fuel: 2.5, solar: 2.2, ctrl: 2.2, hydro: 2.1, drill: 1.9, rover: 1.8, purif: 1.7, oxy: 1.5, ant: 1.2 };
+const COLR = { hab: 3.0, green: 3.3, rec: 2.7, emb: 2.9, xeno: 2.6, fuel: 2.5, solar: 2.2, ctrl: 2.2, hydro: 2.1, drill: 1.9, rover: 1.8, probe: 1.5, pad: 4.6, rocket: 2.2, purif: 1.7, oxy: 1.5, ant: 1.2 };
 const solidR = (t) => { const c = TY[t] && TY[t].custom; return COLR[t] || (c ? Math.max(1.8, c.shape == "dome" ? (c.w || 3) + .3 : (c.w || 3) / 2 + .8) : 2.2); };
 /** Círculos sólidos do mundo: peças próprias (rover em movimento incluído), peças de outros jogadores/bots e rochas. */
 function solids(withExt, skip) {

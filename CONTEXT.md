@@ -165,3 +165,10 @@ Veja `docs/DEPLOY.md` (site estático na Vercel; sem servidor de jogo).
 - `js/art2d.js`: `ART` (compõe o boneco em canvas), `av()` devolve um sprite (billboard) quando `P.look.v2 = 1` (humanos), `artAnim` (respira/balança), aba **Arte 2D** no guarda-roupa. `look.pd` = `[corpo, cabeça, cabelo, capacete, mochila, luvas, bandeira, equipamento, cabeça pronta]`.
 - `js/art3d.js` (`A3`): converte cada sprite em malha 3D: contorno → campo de distância → perfil de almofada (corpo/peças) ou superelipsoide (cabeça); a arte original é a textura da frente (idêntica de frente), o verso é cor chapada, vértices de fora do contorno encolhem para o pixel opaco mais próximo com z=0 (frente e verso se fecham, sem fresta), borda usa cor de pixel interno (sem halo). **Relevo por elemento**: rosto com profundidades próprias (nariz sai, boca e órbitas afundam, sobrancelhas/bochechas/queixo avançam) + relevo por luminância (dobras, bolsos, fios) e sombreamento leve pela normal. Só altera z (não distorce a cara de frente).
 - `av()` com `look.v2 = 1` devolve esse boneco 3D (gira 360°); `artAnim` quica/balança. Miniaturas e personagens prontos continuam as imagens 2D da arte.
+
+## Missões ligadas às fases, veículos, chat e Phobos-1
+- `js/env.js`: ambientes (Marte, Fobos com baixa gravidade e Marte no céu, tubo de lava). `setEnv(nome)`; fases definem `env`.
+- `js/craft.js`: rovers com nomes reais (Sojourner, Spirit…; depois "2º Sojourner"), parados até você dirigir; sondas (Mariner 4, Viking 1…) construíveis e pilotáveis (E embarca/pousa, Espaço sobe, Shift/C desce) que escaneiam pontos de interesse (missão `scan`).
+- `js/scn.js`: cenários por fase (`PH[i].scn`): **Missão a Fobos** (fase 21: voo real Marte→Fobos via minigame nav, depois base com amostras/módulos/foguete), **Tubos de Lava** (fase 14: entrada real, gelo/basalto/habitats/câmara), **Luzes sobre Tharsis** (fase 30: mensagens de rádio, naves que descem em Estações de pouso, novos habitantes).
+- `js/chat.js`: conversa com colonos com feedback (elogio, melhoria, bronca, sugestão, presente).
+- Campanha **Phobos-1**: fases 45–59 (`P1_START`), seção própria no catálogo, ambiente Fobos.
