@@ -54,7 +54,7 @@ const A3 = (() => {
   function build(cat, i, o) {
     const key = [cat, i, o.cx, o.y, o.sc, o.flip ? 1 : 0, o.mode, o.zmax, o.zoff].join("|"); if (geo[key]) return geo[key];
     const f = field(cat, i), p = ART.cell(cat, i), iw = p.im.width, ih = p.im.height, sc = o.sc || 1, STEP = o.step || ((cat === "heads" || cat === "hh" || cat === "gloves") ? 1 : 2), gw = Math.ceil(f.w / STEP) + 1, gh = Math.ceil(f.h / STEP) + 1;
-    const pos = [], uvs = [], col = [], idx = [], vid = new Int32Array(gw * gh).fill(-1), inside = (x, y) => { x = Math.min(f.w - 1, Math.max(0, x)); y = Math.min(f.h - 1, Math.max(0, y)); return f.a[y * f.w + x] >= 90; };
+    const zBack = [], pos = [], uvs = [], col = [], idx = [], vid = new Int32Array(gw * gh).fill(-1), inside = (x, y) => { x = Math.min(f.w - 1, Math.max(0, x)); y = Math.min(f.h - 1, Math.max(0, y)); return f.a[y * f.w + x] >= 90; };
     const zAt = (ax, ay) => {
       const px = Math.min(f.w - 1, Math.max(0, Math.round(ax))), py = Math.min(f.h - 1, Math.max(0, Math.round(ay))), d = f.dist[py * f.w + px], own = pillow(d, Math.min(o.zmax * 1.1, Math.max(4, f.max)), o.zmax);
       const dx = o.cx + (o.flip ? -1 : 1) * (ax - f.w / 2) * sc, dy = o.y + ay * sc;
@@ -72,6 +72,7 @@ const A3 = (() => {
       if (!near) continue;
       if (!inside(ax, ay)) { const nn = nearOpaque(Math.min(f.w - 1, Math.round(ax)), Math.min(f.h - 1, Math.round(ay))); if (!nn) continue; ax = nn[0]; ay = nn[1]; out = true; }
       vid[gy * gw + gx] = pos.length / 3;
+      const zb = out ? 0 : Math.max(0, zAt(ax, ay)) * K; zBack.push(zb);   // verso: só o volume (sem relevo do rosto/dobras)
       const z = out ? 0 : Math.max(0, zAt(ax, ay) + zRel(ax, ay)) * K, dxp = o.cx + (o.flip ? -1 : 1) * (ax - f.w / 2) * sc, dyp = o.y + ay * sc, wx = (dxp - X0) * K, wy = (FEET - dyp) * K;
       let ux = ax, uy = ay; if (f.dist[Math.min(f.h - 1, Math.round(ay)) * f.w + Math.min(f.w - 1, Math.round(ax))] < 2.5) { const iq = inner(Math.round(ax), Math.round(ay)); if (iq) { ux = iq[0]; uy = iq[1]; } }   // borda: usa a cor de um pixel mais para dentro (some o halo branco que esticaria na lateral)
       pos.push(wx, wy, z); uvs.push((p.x + ux + .5) / iw, 1 - (p.y + uy + .5) / ih);
@@ -84,7 +85,7 @@ const A3 = (() => {
       const cxp = Math.min(f.w - 1, gx * STEP + (STEP >> 1)), cyp = Math.min(f.h - 1, gy * STEP + (STEP >> 1)); if (!inside(cxp, cyp) && !inside(gx * STEP, gy * STEP) && !inside((gx + 1) * STEP, (gy + 1) * STEP)) continue;
       if (o.flip) { idx.push(a, b, c, b, d, c); idxB.push(a, c, b, b, c, d); } else { idx.push(a, c, b, b, c, d); idxB.push(a, b, c, b, d, c); }
     }
-    const mk = (index, back) => { const g = new THREE.BufferGeometry(), P = [], C = []; for (let n = 0; n < nf; n++) { P.push(pos[n * 3], pos[n * 3 + 1], back ? -pos[n * 3 + 2] : pos[n * 3 + 2]); C.push(...(back ? [col[n * 3] * .8, col[n * 3 + 1] * .8, col[n * 3 + 2] * .8] : [col[n * 3], col[n * 3 + 1], col[n * 3 + 2]])); }
+    const mk = (index, back) => { const g = new THREE.BufferGeometry(), P = [], C = []; for (let n = 0; n < nf; n++) { P.push(pos[n * 3], pos[n * 3 + 1], back ? -zBack[n] : pos[n * 3 + 2]); C.push(...(back ? [col[n * 3] * .8, col[n * 3 + 1] * .8, col[n * 3 + 2] * .8] : [col[n * 3], col[n * 3 + 1], col[n * 3 + 2]])); }
       g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g.setAttribute("color", new THREE.Float32BufferAttribute(C, 3)); if (!back) g.setAttribute("uv", new THREE.Float32BufferAttribute(uvs.slice(0, nf * 2), 2)); g.setIndex(index); g.computeBoundingSphere(); return g; };
     const front = mk(idx, false); front.computeVertexNormals(); { const N = front.attributes.normal, C = front.attributes.color; for (let n = 0; n < N.count; n++) { const l = Math.max(0, N.getX(n) * -.35 + N.getY(n) * .45 + N.getZ(n) * .82), k = .82 + .24 * Math.min(1, l); C.setXYZ(n, C.getX(n) * k, C.getY(n) * k, C.getZ(n) * k); } }
     const g = { front, back: mk(idxB, true), avg: f.avg };
@@ -94,7 +95,7 @@ const A3 = (() => {
   function avatar(pd, nc) {
     pd = ART.norm(pd); const [b, hd, hr, hm, pk, gl, fg, dv, hh] = pd, g = new THREE.Group(), add = (cat, i, o) => { if (i < 0 || !ART.cell(cat, i)) return null; const b = build(cat, i, o), m = new THREE.Group(); m.add(new THREE.Mesh(b.front, material(cat)), new THREE.Mesh(b.back, backMat(b.avg))); g.add(m); return m; };
     const place = (cat, i, sc, cxx, yy) => { const p = ART.cell(cat, i); return { cx: cxx, y: yy, sc, h: p.h * sc }; };
-    if (pk >= 0) { const p = ART.cell("packs", pk), sc = 1.5; add("packs", pk, { cx: X0, y: Y0 - 12, sc, mode: "own", zmax: 24, zoff: 0 }); const m = g.children[g.children.length - 1]; if (m) m.position.z = -30 * K; }
+    if (pk >= 0) { const p = ART.cell("packs", pk), sc = 1.5; add("packs", pk, { cx: X0, y: Y0 - 12, sc, mode: "own", zmax: 24, zoff: 0 }); const m = g.children[g.children.length - 1]; if (m) { m.rotation.y = Math.PI; m.position.z = -30 * K; } }
     add("bodies", Math.max(0, b), { cx: X0, y: Y0, sc: 1, mode: "own", zmax: 24 });
     const fi = fg === -2 ? ART.NAMES.FLAGCC.indexOf(nc) : fg; if (fi >= 0) add("flags", fi, { cx: X0 - 31, y: Y0 + 25, sc: .34, mode: "onbody", zoff: 3, zmax: 3 });
     if (gl >= 0) { add("gloves", gl, { cx: X0 - 35, y: Y0 + 70, sc: .46, mode: "own", zmax: 7 }); add("gloves", gl, { cx: X0 + 36, y: Y0 + 70, sc: .46, flip: true, mode: "own", zmax: 7 }); }

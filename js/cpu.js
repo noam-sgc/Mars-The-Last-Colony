@@ -17,6 +17,7 @@ const CPU = (() => {
     const first = PH.findIndex((p, i) => !S.done[i] && (i === ALIEN_START || i === 0 || S.done[i - 1]) && i < ALIEN_START);
     if (first >= 0) push(2, "🚀", `Jogue a Fase ${first + 1}: ${PH[first].n} (Modo Solo → Catálogo).`, PH[first].d);
     else if (!S.done[ALIEN_START]) push(2, "👽", "Comece a campanha alienígena: Fase 31 já está liberada.", "É uma campanha à parte, com visitantes pacíficos.");
+    if (!S.done[P1_START]) push(4, "🌑", "Experimente a Missão Phobos-1: 15 fases construindo uma colônia na lua de Marte.", "Campanha separada (fases 46–60), já liberada.");
     if (S.coins >= 300 && S.own.length === 0) push(3, "🛒", "Visite a Loja e compre seu primeiro upgrade.", "Cada upgrade tem manutenção baixa, mas melhora a colônia.");
     if (nextUnread() >= 0) push(4, "📡", "Leia um Fato Espacial: ganha PP e moedas se ler até o fim.");
     if (P.quiz.ok.length < QUIZ.length) push(5, "🛰", `Faça o Quiz Espacial: ${QUIZ.length - P.quiz.ok.length} perguntas inéditas, ${QZ.PER_Q} 🪙 por acerto.`);

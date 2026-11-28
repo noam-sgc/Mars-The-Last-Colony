@@ -109,8 +109,8 @@ function cat() {
   let w = null; const sep = (t) => { const d = document.createElement("div"); d.className = "sep"; d.textContent = t; g.appendChild(d); w = document.createElement("div"); w.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:10px"; g.appendChild(w); };
   const qc = document.createElement("div"); qc.className = "card"; qc.style.cssText = "max-width:420px;margin:0 0 12px;border-color:#6a9cff"; qc.innerHTML = `<div style="padding:12px"><b>🛰 Quiz Espacial · muitas moedas</b><p>${QUIZ.length} perguntas sobre Marte e o espaço: ${QZ.PER_Q} 🪙 por acerto inédito e bônus de até ${QZ.BONUS80 + QZ.BONUS100} 🪙 por rodada.</p></div>`; qc.onclick = quizHome; g.appendChild(qc);
   PH.forEach((p, i) => {
-    if (i == 0) sep("Campanha da colônia · fases 1–30"); if (i == ALIEN_START) sep("👽 Nova campanha · Invasão alienígena pacífica · Ultimate · fases 31–45 (começa liberada, independente da campanha principal)");
-    const lk = i > 0 && i !== ALIEN_START && !S.done[i - 1], c = document.createElement("div"); c.className = "card" + (lk ? " lk" : "") + (p.alien ? " al" : "");
+    if (i == 0) sep("Campanha da colônia · fases 1–30"); if (i == ALIEN_START) sep("👽 Nova campanha · Invasão alienígena pacífica · Ultimate · fases 31–45 (começa liberada, independente da campanha principal)"); if (i == P1_START) sep("🌑 Missão Phobos-1 · 15 fases na lua de Marte · fases 46–60 (campanha separada, começa liberada)");
+    const lk = i > 0 && i !== ALIEN_START && i !== P1_START && !S.done[i - 1], c = document.createElement("div"); c.className = "card" + (lk ? " lk" : "") + (p.alien ? " al" : "") + (p.p1 ? " al" : "");
     c.innerHTML = `<img src="${p.img}" alt=""><div><b>Fase ${String(i + 1).padStart(2, "0")} · ${esc(p.n)}</b><p>${esc(p.d)}</p><p>${S.done[i] ? "✔ Concluída · " : lk ? "🔒 Bloqueada · " : ""}Recompensa: ${p.r} 🪙${p.nav ? "" : " · ⏱ " + Math.round(p.t / 6) / 10 + " min"}${p.ms.length ? " · 🎯 " + p.ms.length + " missões" : ""}</p></div>`;
     if (!lk) c.onclick = () => factBeforePhase(() => start(p.nav ? "nav" : "solo", i)); w.appendChild(c);
   });

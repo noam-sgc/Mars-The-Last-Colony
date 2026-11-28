@@ -35,3 +35,6 @@ PeerJS só ajuda a se achar; os dados do jogo não passam por ele. As contas, sa
 ```bash
 npm test
 ```
+
+### Novidades: veículos, cenários e Phobos-1
+Rovers com nomes reais de Marte, sondas pilotáveis, voo real a Fobos, entrada real no tubo de lava, naves e estações de pouso em Tharsis, chat de feedback com colonos e a campanha **Phobos-1** (15 fases na lua de Marte).

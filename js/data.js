@@ -13,6 +13,7 @@ const TY = {
   oxy: { n: "Gerador de O₂", c: 45, k: "oxy", p: 1.3 }, fuel: { n: "Refinaria", c: 55, k: "fuel", p: 1.1 },
   rec: { n: "Cúpula de lazer", c: 40, k: "morale", p: .9 }, hab: { n: "Habitat", c: 40, k: "crew", p: 0 },
   // peças da saga alienígena (liberadas a partir da fase 31)
+  probe: { n: "Sonda", c: 70, k: "eff", p: .8 }, pad: { n: "Estação de pouso", c: 90, k: "eff", p: 1 },
   ant: { n: "Antena de contato", c: 65, k: "eff", p: 1.5, alien: 1 }, emb: { n: "Embaixada", c: 80, k: "morale", p: 1.6, alien: 1 }, xeno: { n: "Jardim xeno", c: 75, k: "food", p: 1.9, alien: 1 },
 };
 const BUILTIN = Object.keys(TY);
@@ -28,6 +29,8 @@ const cov = (t, h) => "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmln
 // capas da saga alienígena: nave-mãe pacífica sobre a colônia
 const covU = (t, h, n) => "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="hsl(${h},70%,8%)"/><stop offset="1" stop-color="hsl(${h},60%,30%)"/></linearGradient><radialGradient id="b" cx=".5" cy="0" r=".9"><stop offset="0" stop-color="hsl(${h + 60},100%,80%)" stop-opacity=".75"/><stop offset="1" stop-color="hsl(${h + 60},100%,60%)" stop-opacity="0"/></radialGradient></defs><rect width="640" height="360" fill="url(#g)"/>${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 97 + h * 7) % 640}" cy="${(i * 53 + h * 3) % 200}" r="${(i % 3) * .6 + .6}" fill="#fff" opacity=".7"/>`).join("")}<path d="M250 90 L180 300 H460 L390 90Z" fill="url(#b)"/><ellipse cx="320" cy="88" rx="${70 + n % 5 * 8}" ry="18" fill="hsl(${h + 40},20%,72%)"/><ellipse cx="320" cy="78" rx="34" ry="20" fill="hsl(${h + 60},80%,75%)" opacity=".9"/>${[-44, -22, 0, 22, 44].map((x) => `<circle cx="${320 + x}" cy="90" r="3.4" fill="#aaffdd"/>`).join("")}<path d="M0 310 Q160 ${260 + h % 30} 320 300 T640 295 V360 H0Z" fill="hsl(${h - 160},45%,14%)"/><text x="24" y="338" fill="#fff" font-family="sans-serif" font-size="26" font-weight="700">${t.replace(/&/g, "&amp;")}</text></svg>`);
 
+// capas da missão Phobos-1: Marte gigante sobre a lua
+const covP = (t, n) => "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05060d"/><stop offset="1" stop-color="#2a2b34"/></linearGradient><radialGradient id="m" cx=".35" cy=".35"><stop offset="0" stop-color="#e08a5a"/><stop offset="1" stop-color="#6a2a18"/></radialGradient></defs><rect width="640" height="360" fill="url(#g)"/>${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 97 + n * 31) % 640}" cy="${(i * 53 + n * 17) % 200}" r="${i % 5 ? 1 : 1.8}" fill="#fff" opacity=".7"/>`).join("")}<circle cx="${420 + (n % 5) * 20}" cy="${70 + (n % 3) * 10}" r="${90 + n * 3}" fill="url(#m)"/><path d="M0 300 Q160 ${250 - n * 2} 320 290 T640 280 V360 H0Z" fill="#4a4a52"/><ellipse cx="${120 + n * 12}" cy="318" rx="46" ry="9" fill="#35353c"/><text x="22" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8f0ff">${t.replace(/[<&]/g, "")}</text></svg>`);
 // ---------- fases ----------
 // [título, descrição, capa, tempestade(1)/nav(2 parâmetros), nav]
 const A = [
@@ -81,11 +84,31 @@ const ALIEN = [
   ["Ultimate: Um Só Povo", "O teste final pacífico: duas civilizações, uma colônia, nenhuma falha.", 70, { emb: 3, ant: 3, xeno: 3 }],
 ];
 ALIEN.forEach((a, n) => A.push([a[0], a[1], covU(a[0], a[2], n), a[4] || 0, 0, a[3] || {}]));
+// Missão Phobos-1 (campanha separada, 15 fases novas · 46–60): construa uma colônia na lua de Marte
+const P1_START = 45;
+const PHOBOS = [
+  ["Pouso em Fobos", "O módulo toca a poeira cinzenta de Fobos. Energia e o primeiro habitat sob a gravidade quase nula.", {}],
+  ["Estação Stickney", "Instale a base na borda da cratera Stickney: o horizonte curvo mostra Marte gigante.", {}],
+  ["Âncoras no Regolito", "Com tão pouca gravidade, tudo flutua: ancore os habitats e mantenha a colônia estável.", {}],
+  ["Regolito Cinzento", "Minere o regolito: ferro, silício e água ligada aos minerais para construir sem importar da Terra.", {}],
+  ["Sombra de Marte", "Eclipses cortam o Sol por minutos: estoque energia e mantenha o suporte de vida.", {}, 1],
+  ["Marés de Marte", "A gravidade de Marte flexiona a lua: monitore a estrutura e reforce as cúpulas.", {}],
+  ["Gelo nas Crateras", "Gelo em crateras sempre na sombra: perfure e leve água à colônia.", {}],
+  ["Fábrica de Combustível", "Produza propelente em órbita: a lua é o posto de abastecimento do sistema marciano.", {}],
+  ["Observatório de Fobos", "Antenas e telescópios com visão perfeita de Marte e do espaço profundo.", { ant: 1 }],
+  ["Colônia Subterrânea", "Enterre habitats sob metros de regolito: radiação reduzida e moral em alta.", {}],
+  ["Rota para Deimos", "Prepare a logística para a lua irmã: estações de apoio, combustível e comunicações.", { ant: 1 }],
+  ["Porto de Cargas", "Pistas, guindastes e refinarias recebem naves de carga em fila.", {}],
+  ["Cidade de Regolito", "Cúpulas conectadas formam a primeira cidade lunar de Marte.", {}],
+  ["Elevador Orbital", "A torre que liga Fobos ao céu: energia máxima e todos os tanques cheios.", {}],
+  ["Phobos-1: Independência Lunar", "O teste final: uma colônia autônoma em tudo, em órbita de Marte.", {}],
+];
+PHOBOS.forEach((a, n) => A.push([a[0], a[1], covP(a[0], n), a[3] || 0, 0, a[2] || {}]));
 const ALIEN_START = 30;
 
 const MS_POOL = ["talk", "tidy", "enter", "rec", "morale", "rover"];
 function genMissions(i, alien) {
-  const j = Math.max(0, i - 2), out = [], rw = 30 + j * 4;
+  const j = i >= P1_START ? (i - P1_START) * 2 : Math.max(0, i - 2), out = [], rw = 30 + j * 4;
   const mk = (ty) => ({
     talk: { id: "talk", txt: "Converse com colonos", n: 2 + (j >> 2), rw },
     tidy: { id: "tidy", txt: "Arrume itens dentro dos edifícios", n: 4 + (j >> 2), rw },
@@ -95,18 +118,24 @@ function genMissions(i, alien) {
     rover: { id: "rover", txt: "Construa rovers", n: 1 + (j >> 4), rw },
   }[ty]);
   out.push(mk(MS_POOL[i % 6])); out.push(mk(MS_POOL[(i + 3) % 6]));
+  if (j >= 3) out.push({ id: "scan", txt: "Escaneie pontos de interesse voando numa sonda", n: 2 + (j >> 3), rw });
   out.push({ id: "loot", txt: "Colete achados (edifícios e rovers)", n: 3 + (j >> 3), rw });
   if (alien) out.push({ id: "contact", txt: "Converse com emissários alienígenas", n: 2 + ((i - ALIEN_START) >> 3), rw: rw + 20 });
   return out;
 }
 const PH = A.map((a, i) => {
   if (a[4]) return { n: a[0], d: a[1], img: a[2], nav: a[4], need: {}, parts: {}, hab: 0, tg: 0, t: 0, r: a[4] == 1 ? 320 : 420, ms: [] };
-  const alien = i >= ALIEN_START, j = i - 2, n = Math.min(6, 2 + Math.floor(j / 2)), np = Math.min(4, 1 + Math.floor(j / 7)), hab = np, need = {}; let c = hab * 40;
+  const alien = i >= ALIEN_START && i < P1_START, p1 = i >= P1_START, j = p1 ? (i - P1_START) * 2 : i - 2, n = Math.min(6, 2 + Math.floor(j / 2)), np = Math.min(4, 1 + Math.floor(j / 7)), hab = np, need = {}; let c = hab * 40;
   CL.slice(0, n).forEach((k) => { need[k] = np; c += np * MC[k]; });
   const parts = a[5] || {}; Object.keys(parts).forEach((k) => { c += parts[k] * TY[k].c; });
-  return { n: a[0], d: a[1], img: a[2], storm: a[3], alien, need, parts, hab, tg: Math.min(alien ? 90 : 85, 45 + j * 3), t: Math.round((180 + j * 10 + (alien ? 60 : 0)) * 1.5), r: Math.ceil(c * 2 / 10) * 10, ms: genMissions(i, alien) };
+  return { n: a[0], d: a[1], img: a[2], storm: a[3], alien, p1, env: p1 ? "phobos" : "mars", need, parts, hab, tg: Math.min(alien ? 90 : 85, 45 + j * 3), t: Math.round((180 + j * 10 + (alien ? 60 : 0)) * 1.5), r: Math.ceil(c * 2 / 10) * 10, ms: genMissions(i, alien) };
 });
 
+// cenários jogáveis que ligam o nome da fase à missão (js/scn.js)
+PH[14].scn = { id: "tube" };       // Tubos de Lava: você entra de verdade no tubo
+PH[21].scn = { id: "phobos" };     // Missão a Fobos: voo com o foguete e base em Fobos
+PH[21].env = "phobos";
+PH[30].scn = { id: "tharsis" };    // Luzes sobre Tharsis: naves, mensagens, estações de pouso e novos habitantes
 // ---------- upgrades ----------
 const UP = [
   { id: "h1", k: "Hardware", n: "Painéis de perovskita", d: "+30% de Eficiência produzida", c: 300, pm: { eff: .3 } },
